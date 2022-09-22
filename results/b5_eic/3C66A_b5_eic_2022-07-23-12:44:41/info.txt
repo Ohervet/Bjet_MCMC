@@ -1,0 +1,41 @@
+report description: 3C66A b5 eic CONT from 'local_results/3C66A_b5_eic_2022-07-21-23:45:49/backend.h5'
+time: 8:30:28.064893
+p0 from From local_results/3C66A_b5_eic_2022-07-21-23:45:49/backend.h5
+
+configurations: 
+{'description': "3C66A b5 eic CONT from 'local_results/3C66A_b5_eic_2022-07-21-23:45:49/backend.h5'", 'folder_label': '3C66A_b5_eic', 'eic': True, 'data_file': 'real_data/3C66A_sed_block5.dat', 'n_steps': 700, 'n_walkers': 300, 'discard': 0, 'parallel': True, 'use_variability': True, 'tau_variability': 19320.0, 'redshift': 0.34, 'custom_alpha2_limits': False, 'alpha2_limits': [1.5, 7.5]}
+
+  Parameter    Best Value       1sigma Range    
+    delta       4.35e+01    3.79e+01 - 7.48e+01 
+      K         8.73e+00    1.00e+00 - 3.90e+01 
+   alpha_1      2.08e+00    1.68e+00 - 2.25e+00 
+   alpha_2      4.40e+00    4.29e+00 - 4.64e+00 
+  gamma_min     5.47e+00    1.00e+00 - 5.77e+03 
+  gamma_max     4.00e+06    1.87e+06 - 9.99e+07 
+ gamma_break    5.21e+04    2.93e+04 - 6.79e+04 
+      B         1.08e-03    4.50e-04 - 2.68e-03 
+      R         2.74e+18    6.73e+17 - 5.46e+18 
+   bb_temp      1.01e+04    1.00e+01 - 9.98e+05 
+    l_nuc       1.61e+45    1.00e+20 - 6.91e+48 
+     tau        4.33e-07    1.00e-10 - 9.92e-01 
+  blob_dist     2.59e+19    1.01e+10 - 9.96e+20 
+Reduced chi squared: 60.87 / 26 = 2.34
+
+
+best params: [43.548232    0.9410029   2.08025436  4.40097412  0.73801703  6.60228526
+  4.71679723 -2.96588451 18.43772622  4.00306655 45.20772606 -6.36324395
+ 19.41339074], chi squared = 60.87049243258342
+
+min_1sigma_params: [ 3.79407889e+01  1.96867275e-03  1.68362802e+00  4.29352873e+00
+  4.32819237e-04  6.27177636e+00  4.46668128e+00 -3.34649572e+00
+  1.78279163e+01  1.00117658e+00  2.00018306e+01 -9.99943529e+00
+  1.00031034e+01]
+max_1sigma_params: [ 7.48330702e+01  1.59147244e+00  2.24570120e+00  4.63670433e+00
+  3.76105425e+00  7.99948746e+00  4.83165006e+00 -2.57126834e+00
+  1.87370956e+01  5.99921386e+00  4.88392283e+01 -3.70213618e-03
+  2.09981766e+01]
+
+acceptance fraction: avg = 0.06801428571428571
+
+tau: avg = nan
+

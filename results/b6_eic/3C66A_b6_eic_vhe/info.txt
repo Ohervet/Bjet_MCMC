@@ -1,0 +1,36 @@
+report description: 3C66A Block 6 with EIC (POST REDSHIFT FIX) on vhe7
+configurations: 
+{'description': '3C66A Block 6 with EIC (POST REDSHIFT FIX) on vhe7', 'folder_label': 'vhe7_3C66A_b6_eic', 'eic': True, 'data_file': 'real_data/3C66A_sed_block6.dat', 'n_steps': 4000, 'n_walkers': 300, 'discard': 500, 'parallel': True, 'use_variability': True, 'tau_variability': 47472.0, 'redshift': 0.34, 'custom_alpha2_limits': False, 'alpha2_limits': [1.5, 7.5]}
+
+  Parameter    Best Value       1sigma Range    
+    delta       4.66e+01    3.79e+01 - 7.17e+01 
+      K         1.71e+01    1.00e+00 - 5.22e+04 
+   alpha_1      2.04e+00    1.60e+00 - 2.67e+00 
+   alpha_2      4.04e+00    3.96e+00 - 4.16e+00 
+  gamma_min     8.34e+02    1.01e+00 - 9.01e+03 
+  gamma_max     3.07e+07    4.02e+05 - 1.00e+08 
+ gamma_break    3.92e+04    6.58e+03 - 5.46e+04 
+      B         1.22e-03    5.30e-04 - 1.16e-01 
+      R         1.29e+18    2.48e+16 - 3.08e+18 
+   bb_temp      3.18e+05    1.00e+01 - 1.00e+06 
+    l_nuc       3.68e+38    1.00e+20 - 6.84e+49 
+     tau        2.09e-09    1.00e-10 - 1.00e+00 
+  blob_dist     1.26e+12    1.02e+10 - 9.99e+20 
+Reduced chi squared: 137.95 / 27 = 5.11
+
+
+best params: [46.62772702  1.23197175  2.04136948  4.03969462  2.92098963  7.48694616
+  4.59348301 -2.91251305 18.11172936  5.50237079 38.56558939 -8.68006091
+ 12.09950368], chi squared = 137.95068937528742
+
+min_1sigma_params: [ 3.79326019e+01  3.98783532e-04  1.60344147e+00  3.96247929e+00
+  4.82810637e-03  5.60372827e+00  3.81790335e+00 -3.27577454e+00
+  1.63938520e+01  1.00032944e+00  2.00006551e+01 -9.99904399e+00
+  1.00065037e+01]
+max_1sigma_params: [ 7.16846563e+01  4.71783118e+00  2.67087637e+00  4.15648759e+00
+  3.95463934e+00  7.99995432e+00  4.73737400e+00 -9.35055660e-01
+  1.84883180e+01  5.99979114e+00  4.98349081e+01 -1.46496718e-04
+  2.09995673e+01]
+
+tau: avg = 297.12861493021234
+

@@ -1,0 +1,53 @@
+------------------------------------------------------------------------------ 
+Transformation_parameters 
+------------------------------------------------------------------------------ 
+0.143          redshift 
+71.0           Hubble_constant______________________________________[km/(sMpc)] 
+0.57            angle_to_the_line_of_sight___________________________[degrees] 
+------------------------------------------------------------------------------ 
+Blob_parameters 
+------------------------------------------------------------------------------ 
+60.96670556175234             Doppler_factor 
+15.268580142272329        Particle_density_____________________________________[1/cm^3] 
+1.4142583737909022            First_slope_of_particle_energy_spectrum 
+3.731479997860719            Second_slope_of_particle_energy_spectrum 
+2047.7752990931574            Minimum_electrons_energy 
+575182.2578401188          Maximum_electrons_energy 
+12015.454846378623        Break_in_electrons_energy_spectrum 
+0.018037596626133134            Magnetic_field_______________________________________[G] 
+1.9675545918818356e+16        Radius_of_emitting_region____________________________[cm] 
+0              length_of_emitting_region_(0_for_spherical_geometry)_[cm] 
+1              absorption_by_EBL_(0=NO___1=YES) 
+9.0e+17        distance_blob_SMBH_(host_galaxy_frame)_______________[cm] 
+------------------------------------------------------------------------------ 
+Extern_Inverse_Compton_parameter 
+------------------------------------------------------------------------------ 
+0              compute_EIC_(0=NO___1=YES) 
+0              compute_X_corona_(0=NO___1=YES) 
+4.0e+4         Disk_black_body_temperature__________________________[K] 
+2.0e+4         Torus_black_body_temperature_________________________[K] 
+3.0e+43        Luminosity_of_the_disk_______________________________[erg/s] 
+9.0e-5         Tau___fraction_of_L_disk_reprocessed_isotropically 
+5.5e+20        Luminosity_of_the_torus______________________________[erg/s] 
+9.0e-5         Tau___fraction_of_L_tor_reprocessed_isotropically 
+------------------------------------------------------------------------------ 
+Jet_parameters  
+------------------------------------------------------------------------------ 
+0              compute_JET_(0=NO___1=YES) 
+3.0            Doppler_factor 
+1.0e+2         Initial_particle_density_____________________________[1/cm^3] 
+2.1            Slope_of_particle_energy_spectrum 
+1.0e+3         Minimum_electrons_energy 
+2.0e+4         Maximum_electrons_energy 
+0.08           Initial_magnetic_field_______________________________[G] 
+1.2e+17        Inner_radius_(host_galaxy_frame)_____________________[cm] 
+300            Jet_length_(host_galaxy_frame)_______________________[pc] 
+1.0            Half-opening_angle_of_jet_(host_galaxy_frame)________[deg] 
+50             number_of_slices 
+------------------------------------------------------------------------------ 
+Numerical_parameters 
+------------------------------------------------------------------------------ 
+99             number_of_spectral_points 
+50000000.0        minimal_frequency____________________________________[Hz] 
+1e+29        maximal_frequency____________________________________[Hz] 
+run        prefix_of_file_names 

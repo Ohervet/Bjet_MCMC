@@ -1,0 +1,53 @@
+------------------------------------------------------------------------------
+General_ransformation_parameters
+------------------------------------------------------------------------------
+0.0686         redshift 
+71          Hubble_constant______________________________________[km/(sMpc)]
+2.2        angle_to_the_line_of_sight___________________________[degrees]
+------------------------------------------------------------------------------
+Blob_parameters
+------------------------------------------------------------------------------
+24             Doppler_factor
+3.0e+05        Particle_density___________________________________[1/cm^3]
+2.0            First_slope_of_particle_energy_spectrum
+3.8           Second_slope_of_particle_energy_spectrum
+3.0e2          Minimum_electrons_energy
+8.0e+06        Maximum_electrons_energy
+2.0e+03        Break_in_electrons_energy_spectrum
+0.2          Magnetic_field_______________________________________[G]
+2.6e+15        Radius_of_emitting_region____________________________[cm]
+0              length_of_emitting_region_(0_for_spherical_geometry)_[cm]
+1              absorption_by_EBL_(0=NO___1=YES)
+------------------------------------------------------------------------------
+Extern_Inverse_Compton_parameter
+------------------------------------------------------------------------------
+1              compute_EIC_(0=NO___1=YES)
+0              compute_X_corona_(0=NO___1=YES)
+1.0e+4         black_body_temperature_______________________________[K]
+3.5e+2         Torus_black_body_temperature_______________________________[K]
+7.0e+43        Luminosity_of_the_nucleus____________________________[erg/s]
+1.0e-2         Tau___fraction_of_L_tore_reprocessed_isotropically
+5.5e+20        Luminosity_of_the_torus____________________________[erg/s]
+1.2e-1         Tau___fraction_of_L_nuc_reprocessed_isotropically
+1.1e19        radius_of_BLR________________________________________[cm]
+------------------------------------------------------------------------------
+Jet_parameters
+------------------------------------------------------------------------------
+1              compute_JET_(0=NO___1=YES)
+6.0            Doppler_factor
+1.3e+4         Initial_particle_density____________________________[1/cm^3]
+2.3            Slope_of_particle_energy_spectrum
+1.1e+4         Maximum_electrons_energy
+4.0e-1            Initial_magnetic_field______________________________[G]
+1.1e19         distance_blob_SMBH_(host_galaxy_frame)_______________[cm]
+1.2e+16        Inner_radius_(host_galaxy_frame)_____________________[cm]
+300            Jet_length_(host_galaxy_frame)_______________________[pc]
+0.17            Half-opening_angle_of_jet_(host_galaxy_frame)________[deg]
+50             number_of_slices
+------------------------------------------------------------------------------
+Numerical_parameters
+------------------------------------------------------------------------------
+99             number_of_spectral_points
+1.0e+08        minimal_frequency____________________________________[Hz]
+1.0e+30        maximal_frequency____________________________________[Hz]
+test_bj        prefix_of_file_names

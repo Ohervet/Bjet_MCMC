@@ -1,0 +1,12 @@
+folder name: local_results/3C66A_b6_eic_cont_2022-06-20-22:06:44
+report description: 3C66A b6 EIC cont from the VHE RUN
+
+config file: mcmc_config.txt
+prev_files: False, use_param_file: False
+
+configurations:
+{'description': '3C66A b6 EIC cont from the VHE RUN', 'folder_label': '3C66A_b6_eic_cont', 'eic': True, 'data_file': 'real_data/3C66A_sed_block6.dat', 'n_steps': 4000, 'n_walkers': 300, 'discard': 0, 'parallel': True, 'use_variability': True, 'tau_variability': 47472.0, 'redshift': 0.34, 'custom_alpha2_limits': False, 'alpha2_limits': [1.5, 7.5]}
+
+p0: local_results/3C66A_b6_eic_vhe/backend.h5
+
+time: 3 days, 6:58:34.216280

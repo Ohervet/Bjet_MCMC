@@ -1,0 +1,12 @@
+backports.statistics==0.1.0
+corner==2.2.1
+Cython==0.29.28
+dl==0.1.0
+emcee==3.1.1
+invoke==1.7.0
+matplotlib==3.3.4
+numpy==1.19.5
+ordereddict==1.1
+scipy==1.5.4
+tqdm==4.64.0
+wincertstore==0.2.1

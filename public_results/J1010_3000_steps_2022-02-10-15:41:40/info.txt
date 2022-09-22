@@ -1,0 +1,33 @@
+time: 22:52:19.289232
+p0 from random
+
+configurations: 
+{'data_file': 'J1010_SED_reduced.dat', 'n_steps': 3000, 'n_walkers': 300, 'discard': 200, 'parallel': True, 'cores': 9, 'tau_variability': 24.0, 'custom_alpha2_limits': False}
+discard number: 200
+
+  Parameter    Best Value       1sigma Range    
+    delta       8.78e+01    3.89e+01 - 1.00e+02 
+  K [cm^-3]     3.02e+03    2.29e+02 - 1.06e+06 
+   alpha_1      2.53e+00    2.31e+00 - 2.73e+00 
+   alpha_2      3.75e+00    3.23e+00 - 4.22e+00 
+  gamma_min     5.45e+00    1.00e+00 - 1.53e+04 
+  gamma_max     1.96e+06    2.58e+05 - 1.00e+08 
+ gamma_break    2.02e+05    2.52e+04 - 3.88e+05 
+    B [G]       1.71e-03    7.83e-04 - 1.38e-01 
+   R [cm]       1.32e+17    1.64e+15 - 2.23e+17 
+Reduced chi squared: 187.21 / 24 = 7.80
+
+
+best params: [87.77913318  3.48041065  2.52693434  3.74931623  0.73634785  6.29326483
+  5.30468775 -2.76764828 17.11945528], chi squared = 187.20542826316733
+
+min_1sigma_params: [ 3.88809768e+01  2.36074425e+00  2.31184193e+00  3.23147480e+00
+  2.26847746e-05  5.41113468e+00  4.40103324e+00 -3.10611831e+00
+  1.52137159e+01]
+max_1sigma_params: [99.99919083  6.02660962  2.73127828  4.22243385  4.18602027  7.9998799
+  5.588521   -0.85916383 17.34927009]
+
+acceptance fraction: avg = 0.14470222222222223
+
+tau: avg = 252.3303731634762
+

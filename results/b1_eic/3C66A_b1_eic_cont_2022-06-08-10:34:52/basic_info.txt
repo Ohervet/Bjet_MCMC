@@ -1,0 +1,6 @@
+folder name: local_results/3C66A_b1_eic_2022-06-08-10:34:52
+report description: 3C66A b1 with EIC, CONTINUE FROM CRASH, last few steps POST FIX (correct redshift)
+
+configurations:
+{'description': '3C66A b1 with EIC, CONTINUE FROM CRASH, last few steps POST FIX (correct redshift)', 'folder_label': '3C66A_b1_eic', 'eic': True, 'data_file': 'real_data/3C66A_sed_block1.dat', 'n_steps': 62, 'n_walkers': 300, 'discard': 0, 'parallel': True, 'use_variability': True, 'tau_variability': 1392.0, 'redshift': 0.34, 'custom_alpha2_limits': False, 'alpha2_limits': [1.5, 7.5]}
+time: 1:09:19.888064

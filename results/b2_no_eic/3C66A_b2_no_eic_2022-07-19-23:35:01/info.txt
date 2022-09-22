@@ -1,0 +1,33 @@
+report description: 3C66A b2 no eic
+time: 19:47:25.850819
+p0 from random
+
+configurations: 
+{'description': '3C66A b2 no eic', 'folder_label': '3C66A_b2_no_eic', 'eic': False, 'data_file': 'real_data/3C66A_sed_block2.dat', 'n_steps': 4000, 'n_walkers': 300, 'discard': 500, 'parallel': True, 'use_variability': True, 'tau_variability': 168.0, 'redshift': 0.34, 'custom_alpha2_limits': False, 'alpha2_limits': [1.5, 7.5]}
+
+  Parameter    Best Value       1sigma Range    
+    delta       5.82e+01    4.03e+01 - 9.61e+01 
+      K         2.84e+03    1.01e+00 - 9.72e+07 
+   alpha_1      2.11e+00    1.12e+00 - 3.07e+00 
+   alpha_2      3.92e+00    3.85e+00 - 4.36e+00 
+  gamma_min     2.22e+02    1.00e+00 - 6.31e+03 
+  gamma_max     6.91e+05    3.91e+05 - 1.21e+07 
+ gamma_break    2.58e+04    1.37e+04 - 4.69e+04 
+      B         6.84e-03    3.09e-03 - 2.07e-02 
+      R         9.10e+16    1.19e+16 - 2.31e+17 
+Reduced chi squared: 62.92 / 28 = 2.25
+
+
+best params: [58.18323449  3.4525652   2.11011764  3.9180508   2.34585393  5.83932203
+  4.41228677 -2.16498403 16.95912339], chi squared = 62.92086763395344
+
+min_1sigma_params: [ 4.03237410e+01  2.98132220e-03  1.11668193e+00  3.84604100e+00
+  2.93237745e-06  5.59177172e+00  4.13521977e+00 -2.51049679e+00
+  1.60756724e+01]
+max_1sigma_params: [96.09654745  7.98766144  3.06928502  4.36404357  3.80023875  7.08303647
+  4.67154932 -1.68305944 17.36391524]
+
+acceptance fraction: avg = 0.10946916666666667
+
+tau: avg = 339.4385388251983
+
