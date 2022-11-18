@@ -1,6 +1,6 @@
-# blazars-mcmc
+# Bjet-MCMC
 
-blazars-mcmc contains code to use MCMC to model the spectral energy distributions of blazars. It can be used for a synchrotron-self-Compton model and for a model that is SSC + external inverse-Compton.
+Bjet-MCMC contains code to use MCMC to model the spectral energy distributions of blazars. It can be used for a synchrotron-self-Compton model and for a model that is SSC + external inverse-Compton.
 
 ## To Use:
 By default, results are written to a file in `local_results` entitled `run_yyyy-mm-dd-hh:mm:ss` and configurations are read from `mcmc_config.txt`. 
