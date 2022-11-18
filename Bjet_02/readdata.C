@@ -1,1 +1,0 @@
-display/OJ_287/readdata_OJ_287_Flare.C
