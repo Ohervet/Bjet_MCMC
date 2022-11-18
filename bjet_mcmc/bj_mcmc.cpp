@@ -5,10 +5,11 @@
 // AND SSC OF SECOND ORDER
 // AND A SELF CONSISTENT BLOB-JET INTERACTION
 //
+//        2021: Added: Consistent BLR absorption and implementing a BLR density profile based on Navelajko et al. 2014
 // Nov    2018: Added: Direct EIC from the blob on the disk radiation
 // August 2018: Added: IIR absorbption by Franceschini 2017
 // March  2016: Added: Consistent relativistic aberration for jet slices and blob emission in the jet
-//              BUT still not consistent for the entire jet, advised to stay at THETA <~= PHI (half jet aperture) and THETA <~= 1/Lorentz jet
+//              BUT still fully consistent for the entire jet, advised to stay at THETA <~= PHI (half jet aperture) and THETA <~= 1/Lorentz jet
 // August 2013: Added: IIR absorbption by Franceschini 2008, an extended jet emission (synchrotron, SSC), EIC on jet
 // May    2010: Added: SSC 2nd order
 // July   2008: Added: IIR ABSORPTION BY KNEISKE ET AL 2004
@@ -119,17 +120,20 @@ namespace bj_mcmc02 {
 
 // GLOBAL VARIABLES
 
-    int IIR_level = 0;
-    int NU_DIM = 50;      // CURRENT NUMBER OF SPECTRAL POINTS
-    double NU_STR = 1.0e+10; // START FREQUENCY
-    double NU_END = 1.0e+26; // END FREQUENCY
+int    IIR_level    = 0;
+int    NU_DIM       = 50;      // CURRENT NUMBER OF SPECTRAL POINTS
+double NU_STR       = 0.0; // START FREQUENCY Obs frame
+double NU_END       = 0.0; // END FREQUENCY Obs frame
+double NU_STR_B     = 0.0; // START FREQUENCY Blob frame
+double NU_END_B     = 0.0; // END FREQUENCY Blob frame
+
 
 //double GAMMA_MIN1      = 200.0; //Minimal gamma for the jet particles
-    double Utot_e = 0.0;
-    double Utot_B = 0.0;
-    double Utot_p = 0.0;
-    double I_BASE = 0.0;
-    double I_JET = 0.0;
+double Utot_e          = 0.0;
+double Utot_B          = 0.0;
+double Utot_p          = 0.0;
+double I_BASE	       = 0.0;
+double I_JET	       = 0.0;
 
 
 
@@ -151,6 +155,7 @@ namespace bj_mcmc02 {
     double GAMMA_MAX;
     double T_BB;
     double tau;  // fraction of L_nuc scattered/rerocessed isotropically (EIC)
+    double tau_tor;  // fraction of L_tor scattered/rerocessed isotropically (EIC)
     double B_0;
     double N_0;
     double n_n;
@@ -386,13 +391,15 @@ double N_e_Jet(double gg) {
 
     // METHODS ========================================================================================================
     void description() {
-      cout
-          << "This code computes the radiative output from a homogeneous blob and a stratified jet given ther particle energy distribution"
-          << endl << "The processes accounted for are:" << endl << endl << " - synchrotron radiation (blob and jet)"
-          << endl << " - SSC radiation (blob and jet)" << endl << " - 2nd order SSC radiation (blob)" << endl
-          << " - external inverse Compton on a disk/corona/dust torus radiation field" << endl
-          << " - external inverse Compton on the CMB" << endl
-          << " - external inverse Compton on the jet synchrotoron radiation field" << endl << endl;
+    cout << "This code computes the radiative output from a homogeneous blob and a stratified jet given their particle energy distribution" << endl
+        << "The processes accounted for are:" << endl
+        << endl
+        << " - synchrotron radiation (blob and jet)" << endl
+        << " - SSC radiation (blob and jet)" << endl
+        << " - 2nd order SSC radiation (blob)" << endl
+        << " - external inverse Compton & absoption on a disk, hot corona & BLR radiation field" << endl
+        << " - external inverse Compton on the jet synchrotoron radiation field" << endl
+        << endl;
     }
 
     int load_params(char *name) {
@@ -1199,10 +1206,13 @@ double N_e_Jet(double gg) {
 
       // PREPARING FREQUENCY VECTOR
 
-      tmp_min = log10(FreqTransO2S(NU_STR, DOP_B, z));
-      tmp_max = log10(FreqTransO2S(NU_END, DOP_B, z));
-      tmp_stp = (tmp_max - tmp_min) / (NU_DIM);
-      tmp_val = tmp_min;
+      NU_STR_B = FreqTransO2S(NU_STR, DOP_B, z);
+      NU_END_B = FreqTransO2S(NU_END, DOP_B, z);
+        
+      tmp_min   = log10(NU_STR_B);
+      tmp_max   = log10(NU_END_B);
+      tmp_stp   = (tmp_max - tmp_min) / (NU_DIM);
+      tmp_val   = tmp_min;
 
       for (i = 1; i <= NU_DIM; i++) {
         tmp_cur = pow(10.0, tmp_val);
@@ -1210,7 +1220,7 @@ double N_e_Jet(double gg) {
         tmp_val = tmp_val + tmp_stp;
       }
       //Warning:: NU[1] < FreqTransO2S(NU_STR, DOP_B, z) !!
-      NU[1] = FreqTransO2S(NU_STR, DOP_B, z);
+      NU[1] = NU_STR_B;
 
 
       fprintf(stderr, "CALCULATING SYNCHROTRON SPECTRUM ... ");
@@ -1305,11 +1315,14 @@ double N_e_Jet(double gg) {
         if (PRINT) fprintf(stderr, "%3i", i);
 
         // emission & absorption coefficients
-        jj = j_com(N_e, GAMMA_MIN, GAMMA_MAX, I_rad, FreqTransO2S(NU_STR, DOP_B, z), FreqTransO2S(NU_END, DOP_B, z),
-                   NU_DIM, NU[i], COM_PREC1, COM_PREC2);
+        jj = j_com(N_e, GAMMA_MIN, GAMMA_MAX, I_rad, 
+                  NU_STR_B, 
+		  NU_END_B, 
+                  NU_DIM, NU[i], COM_PREC1, COM_PREC2); 
 
-        kk = gg_abs(NU[i], I_rad, NU_DIM, FreqTransO2S(NU_STR, DOP_B, z), FreqTransO2S(NU_END, DOP_B, z), SYN_PREC1,
-                    SYN_PREC2);
+        kk = gg_abs(NU[i], I_rad, NU_DIM, 
+                    NU_STR_B, 
+                    NU_END_B, SYN_PREC1, SYN_PREC2);
 
         // absorption by pair production
         if (L_src == 0.0) {
@@ -1414,11 +1427,14 @@ double N_e_Jet(double gg) {
         if (PRINT) fprintf(stderr, "%3i", i);
 
         // emission & absorption coefficients
-        jj = j_com(N_e, GAMMA_MIN, GAMMA_MAX, I_rad1st, FreqTransO2S(NU_STR, DOP_B, z), FreqTransO2S(NU_END, DOP_B, z),
-                   NU_DIM, NU[i], COM_PREC1, COM_PREC2);
+        jj = j_com(N_e, GAMMA_MIN, GAMMA_MAX, I_rad1st, 
+                   NU_STR_B, 
+		   NU_END_B, 
+		   NU_DIM, NU[i], COM_PREC1, COM_PREC2); 
 
-        kk = gg_abs(NU[i], I_rad1st, NU_DIM, FreqTransO2S(NU_STR, DOP_B, z), FreqTransO2S(NU_END, DOP_B, z), COM_PREC1,
-                    COM_PREC2);
+        kk = gg_abs(NU[i], I_rad1st, NU_DIM, 
+                    NU_STR_B, 
+                    NU_END_B, COM_PREC1, COM_PREC2);
         //computed in the source frame
 
 
@@ -1598,9 +1614,11 @@ double N_e_Jet(double gg) {
 
           // emission & absorption coefficients
 
-          //How the blob sees the direct disk radiation (redshift)
-          jj = j_com(N_e, GAMMA_MIN, GAMMA_MAX, I_rad_ext, FreqTransO2S(NU_STR, DOP_B, z) / LOR_B,
-                     FreqTransO2S(NU_END, DOP_B, z) / LOR_B, NU_DIM, NU[i] / LOR_B, COM_PREC1, COM_PREC2);
+         //How the blob sees the direct disk radiation (redshift)
+         jj = j_com(N_e, GAMMA_MIN, GAMMA_MAX, I_rad_ext, 
+                    NU_STR_B/LOR_B,
+                    NU_END_B/LOR_B,
+                    NU_DIM, NU[i], COM_PREC1, COM_PREC2); 
 
           // absorption by pair production on direct disc, not sure if it should be taken into account
           //pure anisotropic backward radiation, already abs on BLR
@@ -1611,8 +1629,9 @@ double N_e_Jet(double gg) {
           */
 
           // absorption by pair production (on synch field)
-          kk1 = gg_abs(NU[i], I_rad, NU_DIM, FreqTransO2S(NU_STR, DOP_B, z), FreqTransO2S(NU_END, DOP_B, z), SYN_PREC1,
-                       SYN_PREC2);
+          kk1 = gg_abs(NU[i], I_rad, NU_DIM, 
+                       NU_STR_B, 
+                       NU_END_B, SYN_PREC1, SYN_PREC2);
 
           if (L_src == 0.0) {
             I_com = SphTransfEquat(jj, kk1, R_src);
@@ -1622,7 +1641,7 @@ double N_e_Jet(double gg) {
           I_com_disc[i] = I_com;
 
           // frequency transformation to observer frame
-          nu_tmp = FreqTransS2O(NU[i] / LOR_B, DOP_B, z);
+          nu_tmp = FreqTransS2O(NU[i], DOP_B, z);
           NU_IC_disk[i] = nu_tmp;
 
 
@@ -1704,8 +1723,7 @@ double N_e_Jet(double gg) {
           //I_rad_ext[i] = L_BB_nuc[i] * LOR_B / (4.0 * M_PI * D_b*D_b) * tau * R_blr*R_blr/(D_b*D_b);
 
           //BLR intensity in blob frame. Use the same as Nalewajko 2014:
-          I_rad_ext[i] =
-              L_BB_nuc[i] * LOR_B / (4.0 * M_PI * D_b * D_b) * tau * pow(D_b / R_blr, 2) / (1. + pow(D_b / R_blr, 4));
+          I_rad_ext[i] = L_BB_nuc[i] * LOR_B / (4.0 * M_PI * D_b * D_b) * tau * pow(D_b / R_blr, 2) / (1. + pow(D_b / R_blr, 4));
 
 
 
@@ -1741,8 +1759,12 @@ double N_e_Jet(double gg) {
           // emission & absorption coefficients
 
           //How the blob sees the BLR radiation
-          jj = j_com(N_e, GAMMA_MIN, GAMMA_MAX, I_rad_ext, FreqTransO2S(NU_STR, DOP_B, z) * LOR_B,
-                     FreqTransO2S(NU_END, DOP_B, z) * LOR_B, NU_DIM, NU[i] * LOR_B, COM_PREC1, COM_PREC2);
+          //I_rad_ext freq is boosted in blob's frame (NU_STR_B*LOR_B, NU_END_B*LOR_B)
+          //NU is the blob's emission frequency, it is not impacted
+          jj = j_com(N_e, GAMMA_MIN, GAMMA_MAX, I_rad_ext, 
+                     NU_STR_B*LOR_B,
+                     NU_END_B*LOR_B,
+                     NU_DIM, NU[i], COM_PREC1, COM_PREC2);
 /*
         kk = gg_abs(NU[i]*LOR_B, I_rad_ext, NU_DIM,
                         FreqTransO2S(NU_STR, DOP_B, z)*LOR_B,
@@ -1750,9 +1772,10 @@ double N_e_Jet(double gg) {
         //absorption on BLR done further
         */
 
-          // absorption by pair production (inside the blob, on synch field)
-          kk1 = gg_abs(NU[i], I_rad, NU_DIM, FreqTransO2S(NU_STR, DOP_B, z), FreqTransO2S(NU_END, DOP_B, z), SYN_PREC1,
-                       SYN_PREC2);
+        // absorption by pair production (inside the blob, on synch field)
+        kk1 = gg_abs(NU[i], I_rad, NU_DIM, 
+                     NU_STR_B, 
+                     NU_END_B, SYN_PREC1, SYN_PREC2);
 
           if (L_src == 0.0) {
             I_com = SphTransfEquat(jj, kk1, R_src);
@@ -1766,7 +1789,7 @@ double N_e_Jet(double gg) {
 
           if (CASE_JET == 0) {
             // frequency transformation to observer frame
-            nu_tmp = FreqTransS2O(NU[i] * LOR_B, DOP_B, z);
+            nu_tmp = FreqTransS2O(NU[i], DOP_B, z);
             //fprintf(stderr, "%6.3e\n", NU[i]);
 
             // optical depth for absorption of VHE gamma rays by IIR
@@ -1823,16 +1846,19 @@ double N_e_Jet(double gg) {
 
 
           // Blackbody radiation field from the dust torus
-          I_rad[i] = LOR_B * tau * L_tor / (4.0 * M_PI * R_blr * R_blr) * Planck((NU[i] / LOR_B), T_BB_tor) /
-                     (sig / M_PI * pow(T_BB_tor, 4.0));
+          I_rad[i] = LOR_B * tau_tor * L_tor/(4.0 * M_PI * R_blr*R_blr) *
+                     Planck((NU[i]/LOR_B), T_BB_tor) / (sig/M_PI * pow(T_BB_tor,4.0));
 
 
           // emission & absorption coefficients
-          jj = j_com(N_e, GAMMA_MIN, GAMMA_MAX, I_rad, FreqTransO2S(NU_STR, DOP_B, z) * LOR_B,
-                     FreqTransO2S(NU_END, DOP_B, z) * LOR_B, NU_DIM, NU[i] * LOR_B, COM_PREC1, COM_PREC2);
-
-          kk = gg_abs(NU[i] * LOR_B, I_rad, NU_DIM, FreqTransO2S(NU_STR, DOP_B, z) * LOR_B,
-                      FreqTransO2S(NU_END, DOP_B, z) * LOR_B, COM_PREC1, COM_PREC2);
+          jj = j_com(N_e, GAMMA_MIN, GAMMA_MAX, I_rad, 
+                     NU_STR_B*LOR_B,
+                     NU_END_B*LOR_B,
+                     NU_DIM, NU[i]*LOR_B, COM_PREC1, COM_PREC2); 
+        
+          kk = gg_abs(NU[i]*LOR_B, I_rad, NU_DIM, 
+                      NU_STR_B*LOR_B, 
+                      NU_END_B*LOR_B, COM_PREC1, COM_PREC2);
 
 
           // absorption by pair production
@@ -2533,11 +2559,15 @@ double N_e_Jet(double gg) {
 
 
           // emission & absorption coefficients (how the blob sees the jet)
-          C_e1[i] = j_com(N_e, GAMMA_MIN, GAMMA_MAX, I_rad_ext1, FreqTransO2S(NU_STR, DOP_JET, z) * LOR_B_J,
-                          FreqTransO2S(NU_END, DOP_JET, z) * LOR_B_J, NU_DIM, NU[i] * LOR_B_J, COM_PREC1, COM_PREC2);
-
-          C_a1[i] = gg_abs(NU[i] * LOR_B_J, I_rad_ext1, NU_DIM, FreqTransO2S(NU_STR, DOP_JET, z) * LOR_B_J,
-                           FreqTransO2S(NU_END, DOP_JET, z) * LOR_B_J, COM_PREC1, COM_PREC2);
+          C_e1[i] = j_com(N_e, GAMMA_MIN, GAMMA_MAX, I_rad_ext1,
+                    FreqTransO2S(NU_STR, DOP_JET, z)*LOR_B_J,
+                    FreqTransO2S(NU_END, DOP_JET, z)*LOR_B_J,
+                    NU_DIM, NU[i]*LOR_B_J, COM_PREC1, COM_PREC2);
+        
+          C_a1[i] = gg_abs(NU[i]*LOR_B_J, I_rad_ext1, NU_DIM, 
+                    FreqTransO2S(NU_STR, DOP_JET, z)*LOR_B_J, 
+                    FreqTransO2S(NU_END, DOP_JET, z)*LOR_B_J, 
+                    COM_PREC1, COM_PREC2);
 
           if (PRINT) fprintf(stderr, "\b\b\b");
         }
@@ -2578,27 +2608,28 @@ double N_e_Jet(double gg) {
       fprintf(stderr, "CALCULATING RADIATION ABSORPTION OF THE BLOB EMISSION THROUGH THE BLR ... ");
 
       // PREPARING FREQUENCY VECTOR
-      tmp_min = log10(FreqTransO2S(NU_STR, DOP_B, z) * LOR_B);
-      tmp_max = log10(FreqTransO2S(NU_END, DOP_B, z) * LOR_B);
-      tmp_stp = (tmp_max - tmp_min) / (NU_DIM);
-      tmp_val = tmp_min;
+      tmp_min   = log10(NU_STR_B);
+      tmp_max   = log10(NU_END_B);
+      tmp_stp   = (tmp_max - tmp_min) / (NU_DIM);
+      tmp_val   = tmp_min; 
       for (i = 1; i <= NU_DIM; i++) {
-        tmp_cur = pow(10.0, tmp_val);
-        NU[i] = tmp_cur;
-        tmp_val = tmp_val + tmp_stp;
+          tmp_cur   = pow(10.0, tmp_val);
+          NU[i] = tmp_cur;
+          tmp_val   = tmp_val + tmp_stp;
       }
       //Warning:: NU[1] < FreqTransO2S(NU_STR, DOP_B, z) !!
-      NU[1] = FreqTransO2S(NU_STR, DOP_B, z) * LOR_B;
+      NU[1] = NU_STR_B;
+    
       fprintf(stderr, "%6.3e\n", NU_END);
 
-      //absorption of SSC
       //blob frame
       for (i = 1; i <= NU_DIM; i++) {
         //fprintf(stderr, "%6.3e\n", NU[i]);
 
         // absorption by pair production on BLR soft photons, use of the already integrated rad field: I_rad_ext_Int
-        kk = gg_abs(NU[i], I_rad_ext_Int, NU_DIM, FreqTransO2S(NU_STR, DOP_B, z), FreqTransO2S(NU_END, DOP_B, z),
-                    COM_PREC1, COM_PREC2);
+        kk = gg_abs(NU[i], I_rad_ext_Int, NU_DIM, 
+                    NU_STR_B*LOR_B, 
+                    NU_END_B*LOR_B, COM_PREC1, COM_PREC2);
 
 
         //dtmp = (R_blr - D_b) *kk;
@@ -2606,6 +2637,7 @@ double N_e_Jet(double gg) {
         //remove BLR absorbption just for tests
         //dtmp = 0.;
         //small code to check the opacity at a given energy in the observer frame
+        /*
         if (dtmp > 0.) {
           //fprintf(stderr, "BLR opacity: %6.3e  Eblob obs frame: %6.3e [TeV]\n", dtmp,  FreqTransS2O(NU[i], DOP_B, z)/LOR_B / (HZ_PER_EV*1e+12));
           dtmp1 = 0.266; //TeV
@@ -2619,70 +2651,22 @@ double N_e_Jet(double gg) {
             fprintf(stderr, "BLR opacity: %6.3e  Eblob obs frame: %6.3e [TeV]\n", dtmp4, dtmp1);
           }
         }
-
-        // thick
-        if (dtmp > 7.00e+2) {
-          I_rad_com[i] = 0.0;
-          I_rad2nd[i] = 0.0;
-        }
-        // transparent
-        //nothing change
-        // thin
-        if ((dtmp < 7.00e+2) && (dtmp > 1.0e-10)) {
-          I_rad_com[i] = I_rad_com[i] * exp(-dtmp);
-          I_rad2nd[i] = I_rad2nd[i] * exp(-dtmp);
-        }
-      }
-
-      // PREPARING FREQUENCY VECTOR
-      tmp_min = log10(FreqTransO2S(NU_STR, DOP_B, z));
-      tmp_max = log10(FreqTransO2S(NU_END, DOP_B, z));
-      tmp_stp = (tmp_max - tmp_min) / (NU_DIM);
-      tmp_val = tmp_min;
-      for (i = 1; i <= NU_DIM; i++) {
-        tmp_cur = pow(10.0, tmp_val);
-        NU[i] = tmp_cur;
-        tmp_val = tmp_val + tmp_stp;
-      }
-      //Warning:: NU[1] < FreqTransO2S(NU_STR, DOP_B, z) !!
-      NU[1] = FreqTransO2S(NU_STR, DOP_B, z);
-
-
-      //blob frame
-      //absorption of EIC
-      for (i = 1; i <= NU_DIM; i++) {
-        //fprintf(stderr, "%6.3e\n", NU[i]);
-
-        // absorption by pair production on BLR soft photons, use of the already integrated rad field: I_rad_ext_Int
-        kk = gg_abs(NU[i] * LOR_B, I_rad_ext_Int, NU_DIM, FreqTransO2S(NU_STR, DOP_B, z) * LOR_B,
-                    FreqTransO2S(NU_END, DOP_B, z) * LOR_B, COM_PREC1, COM_PREC2);
-
-        dtmp = kk; //(already integrated along the BLR extension)
-        //remove BLR absorbption just for tests
-        //dtmp = 0.;
-
-        /*
-        // absorption by pair production (on BLR soft photons)
-        kk = gg_abs(NU[i]*LOR_B, I_rad_ext, NU_DIM,
-                        FreqTransO2S(NU_STR, DOP_B, z)*LOR_B,
-                        FreqTransO2S(NU_END, DOP_B, z)*LOR_B, COM_PREC1, COM_PREC2);
-
-
-        dtmp = (R_blr - D_b) *kk;
         */
-
-
-        //fprintf(stderr, "%6.3e\n", dtmp);
         // thick
-        if (dtmp > 7.00e+2) {
-          I_com_ext[i] = 0.0;
-
+        if (dtmp > 7.00e+2){
+            I_rad_com[i] = 0.0;
+            I_rad2nd[i] = 0.0;
+            I_com_ext[i] = 0.0;
+            if(CASE_JET) I_eic_jet[i] = 0.0;
         }
         // transparent
         //nothing change
         // thin
-        if ((dtmp < 7.00e+2) && (dtmp > 1.0e-10)) {
-          I_com_ext[i] = I_com_ext[i] * exp(-dtmp);
+        if ((dtmp < 7.00e+2) && (dtmp > 1.0e-10)){
+            I_rad_com[i] = I_rad_com[i] * exp(-dtmp);
+            I_rad2nd[i] = I_rad2nd[i] * exp(-dtmp);
+            I_com_ext[i] = I_com_ext[i] * exp(-dtmp);
+            if(CASE_JET) I_eic_jet[i] = I_eic_jet[i] * exp(-dtmp);
         }
       }
 
@@ -2796,7 +2780,7 @@ double N_e_Jet(double gg) {
 
         for (i = 1; i <= NU_DIM; i++) {
           // frequency transformation to observer frame
-          nu_tmp = FreqTransS2O(NU[i] * LOR_B, DOP_B, z);
+          nu_tmp = FreqTransS2O(NU[i], DOP_B, z);
 
           // optical depth for absorption of VHE gamma rays by IIR
           //tt     = tau_IIR(nu_tmp, z, IIR_level-1); // low level of IIR
@@ -2841,11 +2825,11 @@ double N_e_Jet(double gg) {
         fprintf(stderr, "CALCULATING RADIATION ABSORPTION OF THE BLOB EMISSION THROUGH THE JET ... ");
 
         // PREPARING FREQUENCY VECTOR
-
-        tmp_min = log10(FreqTransO2S(NU_STR, DOP_B, z));
-        tmp_max = log10(FreqTransO2S(NU_END, DOP_B, z));
-        tmp_stp = (tmp_max - tmp_min) / (NU_DIM);
-        tmp_val = tmp_min;
+        
+        tmp_min   = log10(NU_STR_B);
+        tmp_max   = log10(NU_END_B);
+        tmp_stp   = (tmp_max - tmp_min) / (NU_DIM);
+        tmp_val   = tmp_min;
 
         for (i = 1; i <= NU_DIM; i++) {
           tmp_cur = pow(10.0, tmp_val);
@@ -3106,7 +3090,7 @@ double N_e_Jet(double gg) {
 
         // transformation to observer frame
         for (i = 1; i <= NU_DIM; i++) {
-          nu_tmp = FreqTransS2O(NU[i] * LOR_B * DOP_B_J, DOP_B / DOP_B_J, z);
+          nu_tmp = FreqTransS2O(NU[i] * DOP_B_J, DOP_B/DOP_B_J, z);
           I_com = I_com_ext[i];
           fx_tmp = Intens2Flux(I_com, R_src, DOP_B, z, H_0) / pow((DOP_B_J), 3.0);
 
@@ -3151,7 +3135,7 @@ double N_e_Jet(double gg) {
 
         // transformation to observer frame
         for (i = 1; i <= NU_DIM; i++) {
-          nu_tmp = FreqTransS2O(NU[i] * LOR_B * DOP_B_J, DOP_B / DOP_B_J, z);
+          nu_tmp = FreqTransS2O(NU[i] * DOP_B_J, DOP_B/DOP_B_J, z);
           I_com = I_com_ext1[i];
           fx_tmp = Intens2Flux(I_com, R_src, DOP_B, z, H_0) / pow((DOP_B_J), 3.0);
 
