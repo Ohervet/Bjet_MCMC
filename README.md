@@ -61,7 +61,6 @@ By default, results are written to a file in `local_results` entitled `run_yyyy-
 - Using pip: `pip install numpy`
 
 ### Necessary Contents:
-- Directory `Bjet_02` (do not modify except to edit Makefile if necessary)
 - Directory `sed_calculations` (do not modify or delete)
 - Directory `mcmc_results`, where data will go (do not delete directory)
 - Directory `parameter_files` (do not modify or delete)
