@@ -6,7 +6,7 @@ to use the absolute path."
 import pathlib
 import tempfile
 
-PROGRAM_NAME = "blazars-mcmc"
+PROGRAM_NAME = "Bjet_MCMC"
 TMP = False
 INITIALIZE = False
 DATA_FOLDER = "sed_calculations"
