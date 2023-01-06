@@ -17,6 +17,8 @@ This code is still private at the moment. Do not share any part of the code or a
 
 `console_data_processing.py` can be executed in an interactive Python console. It loads all information necessary for calling functions to create statistics and plots given a path relative to `BASE_PATH` for a results folder. 
 
+By default, configurations are read from `mcmc_config.txt` and results are written to a file in `local_results` entitled `run_yyyy-mm-dd-hh:mm:ss`. 
+
 ### Dependencies
 ###### **Recommended:** create conda env from `environment.yml` using `conda env create -f environment.yml`
 
@@ -65,7 +67,6 @@ This code is still private at the moment. Do not share any part of the code or a
 - `blazar_run_mcmc.py`, `blazar_model.py`, `blazar_plots.py`, `blazar_utils.py`, `blazar_properties.py`, `blazar_report.py`
 
 ## Formatting information
-By default, results are written to a file in `local_results` entitled `run_yyyy-mm-dd-hh:mm:ss` and configurations are read from `mcmc_config.txt`. 
 
 ### Listing parameters
 Parameters are always listed in the following order:
