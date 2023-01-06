@@ -16,7 +16,7 @@ import os
 import random
 from scipy import interpolate
 
-PROGRAM_NAME = "blazars-mcmc"
+PROGRAM_NAME = "Bjet_MCMC"
 RESULTS_FOLDER = "local_results"
 DATA_FOLDER = "sed_calculations"
 EXECUTABLE = "bjet_mcmc/bj_mcmc"
