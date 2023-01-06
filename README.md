@@ -9,7 +9,7 @@ This code is still private at the moment. Do not share any part of the code or a
 
 ## To Use:
 By default, results are written to a file in `local_results` entitled `run_yyyy-mm-dd-hh:mm:ss` and configurations are read from `mcmc_config.txt`. 
-1. Ensure all dependencies are installed, see [dependencies](#dependencies). Recommended: create conda env from `environment.yml` using `conda env create -f environment.yml`
+1. Ensure all dependencies are installed, see [dependencies](#dependencies). Recommended: create the conda env "bjet-mcmc" from `environment.yml` using `conda env create -f environment.yml`
 2. Create a copy of `mcmc_config_template.txt` called `mcmc_config.txt`. For information, see [configuration file](#mcmc-configuration-file). 
 3. Ensure the data file is formatted as described below and is at the relative path specified in `mcmc_config.txt`, see [data format](#data-format).
 4. Navigate inside folder `blazar_mcmc`. Currently, code **must** be run from inside this folder or the imports won't work.
