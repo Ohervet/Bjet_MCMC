@@ -6,7 +6,7 @@ file name: blazar_utils.py
 Program Purpose: Implement necessary functions for mcmc (reading in configs
     and data, probability functions, etc.)
 
-Note: All file paths are relative to blazars-mcmc
+Note: All file paths are relative to Bjet_MCMC
 
 Parameters are always listed in the following order:
 [delta, K, n1, n2, gamma_min, gamma_max, gamma_break, B, R]
