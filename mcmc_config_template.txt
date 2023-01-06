@@ -7,7 +7,7 @@ description=
 folder_label =
 
 # eic (True/False):
-eic=True
+eic=False
 
 # Data file:
 data_file=real_data/3C66A_sed_block1.dat
@@ -25,7 +25,7 @@ discard = 200
 parallel=True
 
 # If parallel processing, # of cores (will use # of cores - 1 if not specified)
-cores=9
+cores=7
 
 # use tau variability (boolean):
 use_variability=False
