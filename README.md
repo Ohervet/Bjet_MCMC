@@ -7,7 +7,7 @@ The main contributors of Bjet_MCMC are (in alphabetical order): Olivier Hervet, 
 ## Important note:
 This code is still private at the moment. Do not share any part of the code or any results from it without the explicit approbation of Olivier Hervet (ohervet@ucsc.edu).
 
-## To Use:
+## Installation:
 By default, results are written to a file in `local_results` entitled `run_yyyy-mm-dd-hh:mm:ss` and configurations are read from `mcmc_config.txt`. 
 1. Ensure all dependencies are installed, see [dependencies](#dependencies). Recommended: create the conda env "bjet-mcmc" from `environment.yml` using `conda env create -f environment.yml`
 2. Create a copy of `mcmc_config_template.txt` called `mcmc_config.txt`. For information, see [configuration file](#mcmc-configuration-file). 
@@ -18,7 +18,6 @@ By default, results are written to a file in `local_results` entitled `run_yyyy-
 
 `console_data_processing.py` can be executed in an interactive Python console. It loads all information necessary for calling functions to create statistics and plots given a path relative to `BASE_PATH` for a results folder. 
 
-## Setup
 ### Dependencies
 ###### **Recommended:** create conda env from `environment.yml` using `conda env create -f environment.yml`
 
