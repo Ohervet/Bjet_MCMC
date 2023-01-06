@@ -1,4 +1,4 @@
-name: blazars-mcmc
+name: bjet-mcmc
 channels:
   - astropy
   - conda-forge
@@ -24,14 +24,12 @@ dependencies:
   - libbrotlienc=1.0.9
   - libcxx=12.0.0
   - libffi=3.4.2
-  - libgfortran=5.0.0
   - libgfortran5=11.2.0
   - libopenblas=0.3.20
   - libpng=1.6.37
   - libtiff=4.2.0
   - libwebp=1.2.2
   - libwebp-base=1.2.2
-  - llvm-openmp=12.0.0
   - lz4-c=1.9.3
   - matplotlib=3.5.1
   - matplotlib-base=3.5.1
@@ -60,4 +58,4 @@ dependencies:
   - pip:
     - h5py==3.7.0
     - tqdm==4.64.0
-prefix: /opt/homebrew/Caskroom/miniconda/base/envs/blazars-mcmc
+prefix: /opt/homebrew/Caskroom/miniconda/base/envs/bjet-mcmc
