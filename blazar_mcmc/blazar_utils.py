@@ -116,7 +116,7 @@ import random
 
 import numpy as np
 from scipy import interpolate
-
+from astropy.io import ascii
 import blazar_model
 from blazar_properties import *
 
@@ -261,7 +261,7 @@ def read_configs(config_file="mcmc_config.txt", config_string=None, verbose=Fals
     return configurations
 
 
-def read_data(data_file, cols=(0, 1, 4), use_E=True, verbose=False):
+def read_data(data_file, cols=(0, 1, 4), use_E=True, verbose=False, instrument=False):
     """
     Read the data for the SED (energy data, vFv, flux). By default, the
     data file satisfies the following:
@@ -283,27 +283,38 @@ def read_data(data_file, cols=(0, 1, 4), use_E=True, verbose=False):
             is True
         verbose (optional): bool
             specifies if data are displayed; default is False
+        instrument (optional): bool
+            return the instrument use for each data point; default is False
 
     Returns:
         tuple of 3 1D np arrays of floats
         v_data, vFv_data, err_data
     """
 
-    raw_data = np.loadtxt(FOLDER_PATH + data_file, skiprows=1, usecols=(0, 1, 2, 3, 4, 5))
+    
+    table = ascii.read(FOLDER_PATH + data_file, format='csv',data_start = 1,delimiter='\s')
+
+                                             	 
 
     # get v data (may need to convert from E)
     if use_E:
-        E_data = raw_data[:, cols[0]]
+        #E_data = raw_data[:, cols[0]]
+        E_data = table['!E(eV)']
         h = 4.135667662E-15  # eV * s
         v_data = E_data / h
     else:
-        v_data = raw_data[:, cols[0]]
-    vFv_data = raw_data[:, cols[1]]
-    err_data = raw_data[:, cols[2]]  # uncertainty/error on vFv
+        #v_data = raw_data[:, cols[0]]
+        v_data = table['!E(eV)']
+    #vFv_data = raw_data[:, cols[1]]
+    vFv_data = table['F(ergcm-2s-1)']
+    #err_data = raw_data[:, cols[2]]  # uncertainty/error on vFv
+    err_data = table['delta_F(-)']
+    err_data_up = table['delta_F(+)']
 
     # remove values where the error is 0
     indices_to_remove = np.where(err_data == 0)[0]
     err_data_filtered = np.delete(err_data, indices_to_remove)
+    err_data_up_filtered = np.delete(err_data_up, indices_to_remove)
     v_data_filtered = np.delete(v_data, indices_to_remove)
     vFv_data_filtered = np.delete(vFv_data, indices_to_remove)
 
@@ -311,8 +322,15 @@ def read_data(data_file, cols=(0, 1, 4), use_E=True, verbose=False):
         print("Data from", data_file)
         print("v_data_filtered:", v_data_filtered)
         print("vFv_data_filtered:", vFv_data_filtered)
-        print("err_data_filtered:", err_data_filtered)
-    return v_data_filtered, vFv_data_filtered, err_data_filtered
+        print("err_data_down_filtered:", err_data_filtered)
+        print("err_data_up_filtered:", err_data_up_filtered)
+        
+    if instrument:
+        instrument_data = table['instrument']
+        return v_data_filtered, vFv_data_filtered, err_data_filtered, err_data_up_filtered, instrument_data
+    else:
+        return v_data_filtered, vFv_data_filtered, err_data_filtered
+
 
 
 def get_random_parameters(param_min_vals=None, param_max_vals=None, alpha2_limits=None, redshift=None, tau_var=None,
