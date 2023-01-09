@@ -96,7 +96,7 @@ All parameters are the logarithm of the true value except for delta, n1, and n2
 
 ### Data format
 Data by default is assumed to be in data files with the following columns as labels in the first row:
-`!E(eV)		F(ergcm-2s-1)	delta e(-)	delta e(+)	delta F(-)	delta F(+)	Observatory`.
+`!E(eV)		F(ergcm-2s-1)	delta_E(-)	delta_E(+)	delta_F(-)	delta_F(+)	instrument`.
 The first row is therefore skipped when reading data.
 
 `E`, `F`, and `delta F(-)` are the columns used by the program, which by default are in columns 0, 1, and 4.
