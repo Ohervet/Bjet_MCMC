@@ -210,8 +210,8 @@ plt.tight_layout()
 
 plt.savefig(BASE_PATH + folder + "/user_plot_SED.pdf")
 
-plt.show()
+#plt.show()
 
-blazar_report.save_plots_and_info(configs, (v_data, vFv_data, err_data_down), param_min_vals, param_max_vals, folder=folder, 
-                                  samples=(chain, flat_samples, log_probs, flat_log_probs), use_samples=True, redshift=redshift, 
-                                  eic=eic, verbose=True)
+#blazar_report.save_plots_and_info(configs, (v_data, vFv_data, err_data_down), param_min_vals, param_max_vals, folder=folder, 
+#                                  samples=(chain, flat_samples, log_probs, flat_log_probs), use_samples=True, redshift=redshift, 
+#                                  eic=eic, verbose=True)
