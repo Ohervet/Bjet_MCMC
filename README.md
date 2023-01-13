@@ -1,6 +1,6 @@
 # Bjet_MCMC
 
-Bjet_MCMC is MCMC python wrapper around the C++ code Bjet. It can be used to model multiwavelength spectral energy distributions of blazars, considering one-zone synchrotron-self-Compton (SSC) model with or without the addition of external inverse-Compton process from the thermal emission of the nucleus.
+Bjet_MCMC is a MCMC python wrapper around the C++ code Bjet. It can be used to model multiwavelength spectral energy distributions of blazars, considering one-zone synchrotron-self-Compton (SSC) model with or without the addition of external inverse-Compton process from the thermal emission of the nucleus.
 
 The main contributors of Bjet_MCMC are (in alphabetical order): Olivier Hervet, Caitlin Johnson, Sarah Youngquist
 
