@@ -19,7 +19,7 @@ from scipy import interpolate
 PROGRAM_NAME = "Bjet_MCMC"
 RESULTS_FOLDER = "local_results"
 DATA_FOLDER = "sed_calculations"
-EXECUTABLE = "bjet_mcmc/bj_mcmc"
+EXECUTABLE = "bjet_core/bj_core"
 BASE_PATH = blazar_properties.BASE_PATH
 
 configs = blazar_utils.read_configs()

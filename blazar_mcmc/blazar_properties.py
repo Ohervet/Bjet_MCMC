@@ -6,14 +6,14 @@ to use the absolute path."
 import pathlib
 import tempfile
 
-PROGRAM_NAME = "Bjet_MCMC"
+PROGRAM_NAME = "/Bjet_MCMC_root/Bjet_MCMC"
 TMP = False
 INITIALIZE = False
 DATA_FOLDER = "sed_calculations"
 RESULTS_FOLDER = "local_results"
 PARAMETER_FOLDER = "parameter_files"
-CPP_FOLDER = "bjet_mcmc"
-EXECUTABLE = "bj_mcmc"
+CPP_FOLDER = "bjet_core"
+EXECUTABLE = "bj_core"
 NAME_STEM = "run"
 
 
