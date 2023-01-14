@@ -83,7 +83,7 @@ def command_different(params, verbose=False):
     # command_params = command_line_params.format(*command_params)
     # command_params = command_params.split()
     blazar_model.make_SED(params, command_params_1=c_params1, command_params_2=c_params2, verbose=verbose,
-                          executable="bjet_mcmc/bj_mcmc2")
+                          executable="bjet_core/bj_core2")
 
 
 def test_original(parameters_list):
