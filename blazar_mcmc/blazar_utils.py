@@ -313,8 +313,7 @@ def read_data(data_file, cols=(0, 1, 4), use_E=True, verbose=False, instrument=F
 
     # remove values where the error is 0
     indices_to_remove = np.where(err_data == 0)[0]
-    err_data_filtered = np.delete(err_data, indices_to_remove)
-    err_data_up_filtered = np.delete(err_data_up, indices_to_remove)
+    err_data_filtered = np.array([np.delete(err_data, indices_to_remove), np.delete(err_data_up, indices_to_remove)])
     v_data_filtered = np.delete(v_data, indices_to_remove)
     vFv_data_filtered = np.delete(vFv_data, indices_to_remove)
 
@@ -322,12 +321,11 @@ def read_data(data_file, cols=(0, 1, 4), use_E=True, verbose=False, instrument=F
         print("Data from", data_file)
         print("v_data_filtered:", v_data_filtered)
         print("vFv_data_filtered:", vFv_data_filtered)
-        print("err_data_down_filtered:", err_data_filtered)
-        print("err_data_up_filtered:", err_data_up_filtered)
+        print("err_data_filtered:", err_data_filtered)
         
     if instrument:
         instrument_data = table['instrument']
-        return v_data_filtered, vFv_data_filtered, err_data_filtered, err_data_up_filtered, instrument_data
+        return v_data_filtered, vFv_data_filtered, err_data_filtered, instrument_data
     else:
         return v_data_filtered, vFv_data_filtered, err_data_filtered
 
@@ -562,6 +560,7 @@ def log_prior(params, param_min_vals=None, param_max_vals=None, redshift=None, t
 def chi_squared_from_model(model_results, v_data, vFv_data, err_data):
     """
     Take the results of a model and computes the chi squared value.
+    Consider asymmetric error bars in the datast
 
     Args:
         model_results: tuple of 4 numpy 1D arrays of floats
@@ -570,7 +569,7 @@ def chi_squared_from_model(model_results, v_data, vFv_data, err_data):
             Data values (NOT LOG)
         vFv_data: 1D numpy arrays of floats
             Data values (NOT LOG)
-        err_data: 1D numpy arrays of floats
+        err_data: 2D numpy arrays of floats [err_data_down, err_data_up]
             Data values (NOT LOG)
 
     Returns:
@@ -579,11 +578,18 @@ def chi_squared_from_model(model_results, v_data, vFv_data, err_data):
 
     logv_all = model_results[0]
     logvFv_all = model_results[1]
-
+    
     # calculate chi-squared by plugging in the v_data_values into the interpolation
     # from v_all to vFv_all
     func = interpolate.interp1d(logv_all, logvFv_all, fill_value='extrapolate')
-    return np.sum(((vFv_data - np.power(10, func(np.log10(v_data)))) / err_data) ** 2.)
+    func_nu_data = np.power(10, func(np.log10(v_data)))
+    
+    diff = func_nu_data - vFv_data
+    #check if model is above or below data flux points, True if above
+    sign = diff > 0
+    return np.sum((diff / (sign*err_data[1] + ~sign*err_data[0]))**2.)
+
+
 
 
 def chi_squared(params, v_data, vFv_data, err_data, name_stem=None, theta=None, redshift=None, min_freq=None,
@@ -610,7 +616,7 @@ def chi_squared(params, v_data, vFv_data, err_data, name_stem=None, theta=None, 
             Data values for v (NOT LOG)
         vFv_data: 1D np array of floats
             Data values for vFv (NOT LOG)
-        err_data: 1D np array of floats
+        err_data: 2D np array of floats
             Data values for error
         name_stem (optional): str
             Name stem for make_model. Default is none; will be then set to default.
@@ -694,7 +700,7 @@ def log_prob_from_model(model_results, v_data, vFv_data, err_data):
             Data for frequency
         vFv_data: 1D numpy arrays of floats
             Data for energy flux
-        err_data: 1D numpy arrays of floats
+        err_data: 2D numpy arrays of floats
             Data for vFv error
 
     Returns:
