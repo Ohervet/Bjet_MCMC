@@ -213,7 +213,7 @@ def plot_data(v_data, vFv_data, err_data, title=None, no_title=False, adjust_sca
                                            upper_adjust_multiplier=upper_adjust_multiplier)
         plt.ylim(new_min, new_max)
 
-    plt.errorbar(v_data, vFv_data, yerr=(err_data, err_data), fmt='.', color='b', ecolor='k',
+    plt.errorbar(v_data, vFv_data, yerr=(err_data), fmt='.', color='b', ecolor='k',
                  label="Data")
 
     if save:
@@ -263,13 +263,13 @@ def corner_plot(values, param_min_vals, param_max_vals, best_params, sigma_below
         min_maxes.append([param_min_vals[i], param_max_vals[i]])
     fig = corner.corner(values, labels=param_names,
                         range=min_maxes, use_math_text=True, plot_datapoints=False,
-                        fill_contours=True, label_kwargs={"fontsize": 20})
+                        fill_contours=True, label_kwargs={"fontsize": 15},labelpad=0.28,max_n_ticks=4)
     # fig.set_size_inches(10, 10)
-    if title is None and not no_title:
-        title = "MCMC Corner Plot"
-    if title is not None:
-        plt.title(title)
-    fig.subplots_adjust(top=.95)
+    # if title is None and not no_title:
+    #     title = "MCMC Corner Plot"
+    # if title is not None:
+    #     plt.title(title)
+    fig.subplots_adjust(top=.97,bottom=.08,left=.07,right=0.88)
 
     # extract axes
     dims = modelProperties(eic).NUM_DIM
@@ -296,7 +296,7 @@ def corner_plot(values, param_min_vals, param_max_vals, best_params, sigma_below
             ax.axvline(best_params[j], color='red', ls='dotted')
             ax.plot(best_params[j], best_params[i], '.', color='red', markersize=2)
     if not eic:
-        fig.set_size_inches(10, 10)
+        fig.set_size_inches(11, 10)
     else:
         fig.set_size_inches(10, 12)
     if save:
@@ -438,8 +438,7 @@ def plot_1sigma(v_data, vFv_data, err_data, indices_within_1sigma, flat_samples,
 
     plt.plot(best_model[0], best_model[1], '-', color='g', linewidth=2, label="Best model")
 
-    plt.errorbar(v_data, vFv_data, yerr=(err_data, err_data), fmt='.', color='b', ecolor='k',
-                 label="Data")
+    plt.errorbar(v_data, vFv_data, yerr=(err_data), fmt='.', color='b', ecolor='k', label="Data")
 
     plt.xlabel(r"log $\nu$")
     plt.ylabel(r"log $\nu F_{\nu}$")
