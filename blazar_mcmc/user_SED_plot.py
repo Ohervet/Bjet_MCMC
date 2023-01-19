@@ -38,7 +38,7 @@ if os.path.exists(FOLDER_PATH + folder + "/info.txt"):
 else:
     configs = blazar_utils.read_configs()
 data = blazar_utils.read_data(configs["data_file"], instrument=True)
-v_data, vFv_data, err_data_down, err_data_up, instrument_data = data
+v_data, vFv_data, err_data, instrument_data = data
 redshift = configs["redshift"]
 discard = configs["discard"]
 eic = configs["eic"]
@@ -63,15 +63,17 @@ command_params_2[3] = "300"  # number of points used to make SED
 #command_params_1 = None
 #command_params_2 = None
 
+
+
 best_model = blazar_model.make_model(best_params, name_stem=name_stem, redshift=redshift, command_params_1=command_params_1,
-                                     command_params_2=command_params_2, eic=eic)
+                                      command_params_2=command_params_2, eic=eic)
 min_per_param, max_per_param = blazar_plots.get_params_1sigma_ranges(flat_samples, indices_within_1sigma,eic=eic)
 to_plot = np.concatenate((np.array(min_per_param), np.array(max_per_param)))
 logv = best_model[0].copy()
 lowest_per_point, highest_per_point = blazar_plots.get_min_max_per_point(logv, to_plot, name_stem=name_stem,
-                                                                         redshift=redshift,
-                                                                         command_params_1=command_params_1,
-                                                                         command_params_2=command_params_2, eic=eic)
+                                                                          redshift=redshift,
+                                                                          command_params_1=command_params_1,
+                                                                          command_params_2=command_params_2, eic=eic)
 
 if residual:
     fig, (ax, ax1) = plt.subplots(2, sharex='all', gridspec_kw={'height_ratios': [6, 1.5]})
@@ -107,34 +109,34 @@ ax.plot(v_synchrotron, vFv_synchrotron, 'k--', label="Synchrotron", alpha=.5)
 ax.plot(v_compton, vFv_compton, 'k-', label="Self Compton", alpha=.5)
 
 if eic:
-   cs2 = np.loadtxt(FOLDER_PATH + "sed_calculations/" + name_stem + "_cs2.dat", delimiter=' ')
-   logv_cs2 = cs2[:, 0]
-   logvFv_cs2 = cs2[:, 2]
-   v_cs2 = np.power(10, logv_cs2)
-   vFv_cs2 = np.power(10, logvFv_cs2)
+    cs2 = np.loadtxt(FOLDER_PATH + "sed_calculations/" + name_stem + "_cs2.dat", delimiter=' ')
+    logv_cs2 = cs2[:, 0]
+    logvFv_cs2 = cs2[:, 2]
+    v_cs2 = np.power(10, logv_cs2)
+    vFv_cs2 = np.power(10, logvFv_cs2)
 
-   ecs = np.loadtxt(FOLDER_PATH + "sed_calculations/" + name_stem + "_ecs.dat", delimiter=' ')
-   logv_ecs = ecs[:, 0]
-   logvFv_ecs = ecs[:, 2]
-   v_ecs = np.power(10, logv_ecs)
-   vFv_ecs = np.power(10, logvFv_ecs)
+    ecs = np.loadtxt(FOLDER_PATH + "sed_calculations/" + name_stem + "_ecs.dat", delimiter=' ')
+    logv_ecs = ecs[:, 0]
+    logvFv_ecs = ecs[:, 2]
+    v_ecs = np.power(10, logv_ecs)
+    vFv_ecs = np.power(10, logvFv_ecs)
 
-   nuc = np.loadtxt(FOLDER_PATH + "sed_calculations/" + name_stem + "_nuc.dat", delimiter=' ')
-   logv_nuc = nuc[:, 0]
-   logvFv_nuc = nuc[:, 2]
-   v_nuc = np.power(10, logv_nuc)
-   vFv_nuc = np.power(10, logvFv_nuc)
+    nuc = np.loadtxt(FOLDER_PATH + "sed_calculations/" + name_stem + "_nuc.dat", delimiter=' ')
+    logv_nuc = nuc[:, 0]
+    logvFv_nuc = nuc[:, 2]
+    v_nuc = np.power(10, logv_nuc)
+    vFv_nuc = np.power(10, logvFv_nuc)
 
-   ax.plot(v_cs2, vFv_cs2, '-', label="2nd Order SC")
-   ax.plot(v_ecs, vFv_ecs, '-', label="EIC")
-   ax.plot(v_nuc, vFv_nuc, '-', label="nucleus")
+    ax.plot(v_cs2, vFv_cs2, '-', label="2nd Order SC")
+    ax.plot(v_ecs, vFv_ecs, '-', label="EIC")
+    ax.plot(v_nuc, vFv_nuc, '-', label="nucleus")
    
    
 list_intruments=[instrument_data[0]]
 v_data_inst = [v_data[0]]
 vFv_data_inst = [vFv_data[0]]
-err_data_inst_down = [err_data_down[0]]
-err_data_inst_up = [err_data_up[0]]
+err_data_inst_down = [err_data[0][0]]
+err_data_inst_up = [err_data[1][0]]
 for i in range(1,len(instrument_data)):
     if instrument_data[i] != list_intruments[-1]:
         ax.errorbar(v_data_inst, vFv_data_inst, yerr=(err_data_inst_down, err_data_inst_up), fmt='o', label=str(list_intruments[-1]), 
@@ -142,13 +144,13 @@ for i in range(1,len(instrument_data)):
         list_intruments.append(instrument_data[i])
         v_data_inst = [v_data[i]]
         vFv_data_inst = [vFv_data[i]]
-        err_data_inst_down = [err_data_down[i]]
-        err_data_inst_up = [err_data_up[i]]
+        err_data_inst_down = [err_data[0][i]]
+        err_data_inst_up = [err_data[1][i]]
     else:   
         v_data_inst.append(v_data[i])
         vFv_data_inst.append(vFv_data[i])
-        err_data_inst_down.append(err_data_down[i])
-        err_data_inst_up.append(err_data_up[i])
+        err_data_inst_down.append(err_data[0][i])
+        err_data_inst_up.append(err_data[1][i])
     if i == len(instrument_data)-1:
         ax.errorbar(v_data_inst, vFv_data_inst, yerr=(err_data_inst_down, err_data_inst_up), fmt='o', label=str(list_intruments[-1]), 
                     markersize=3, elinewidth=1, color = cmap(len(list_intruments)))
@@ -179,8 +181,8 @@ if residual:
     list_intruments=[instrument_data[0]]
     v_data_inst = [v_data[0]]
     vFv_data_inst = [vFv_data[0]]
-    err_data_inst_down = [err_data_down[0]]
-    err_data_inst_up = [err_data_up[0]]
+    err_data_inst_down = [err_data[0][0]]
+    err_data_inst_up = [err_data[1][0]]
     for i in range(1,len(instrument_data)):
         if instrument_data[i] != list_intruments[-1]:
             ax1.errorbar(v_data_inst, vFv_data_inst/f_best(v_data_inst)-1, yerr=(err_data_inst_down/f_best(v_data_inst), err_data_inst_up/f_best(v_data_inst)), fmt='o', 
@@ -188,13 +190,13 @@ if residual:
             list_intruments.append(instrument_data[i])
             v_data_inst = [v_data[i]]
             vFv_data_inst = [vFv_data[i]]
-            err_data_inst_down = [err_data_down[i]]
-            err_data_inst_up = [err_data_up[i]]
+            err_data_inst_down = [err_data[0][i]]
+            err_data_inst_up = [err_data[1][i]]
         else:   
             v_data_inst.append(v_data[i])
             vFv_data_inst.append(vFv_data[i])
-            err_data_inst_down.append(err_data_down[i])
-            err_data_inst_up.append(err_data_up[i])
+            err_data_inst_down.append(err_data[0][i])
+            err_data_inst_up.append(err_data[1][i])
         if i == len(instrument_data)-1:
             ax1.errorbar(v_data_inst, vFv_data_inst/f_best(v_data_inst)-1, yerr=(err_data_inst_down/f_best(v_data_inst), err_data_inst_up/f_best(v_data_inst)), fmt='o', 
                         markersize=3, elinewidth=1, color = cmap(len(list_intruments)))
@@ -210,8 +212,8 @@ plt.tight_layout()
 
 plt.savefig(BASE_PATH + folder + "/user_plot_SED.pdf")
 
-#plt.show()
 
-#blazar_report.save_plots_and_info(configs, (v_data, vFv_data, err_data_down), param_min_vals, param_max_vals, folder=folder, 
-#                                  samples=(chain, flat_samples, log_probs, flat_log_probs), use_samples=True, redshift=redshift, 
-#                                  eic=eic, verbose=True)
+
+# blazar_report.save_plots_and_info(configs, (v_data, vFv_data, err_data), param_min_vals, param_max_vals, folder=folder, 
+#                                   samples=(chain, flat_samples, log_probs, flat_log_probs), use_samples=True, redshift=redshift, 
+#                                   eic=eic, verbose=True)
