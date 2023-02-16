@@ -9,6 +9,7 @@ import tempfile
 PROGRAM_NAME = "/Bjet_MCMC"
 TMP = False
 INITIALIZE = False
+MAIN_FOLDER = "blazars-mcmc"
 DATA_FOLDER = "sed_calculations"
 RESULTS_FOLDER = "local_results"
 PARAMETER_FOLDER = "parameter_files"
@@ -63,7 +64,7 @@ def _get_path():
     stop = base_path.find(PROGRAM_NAME)
     if stop == -1:
         raise Exception(PROGRAM_NAME + " is not in file path")
-    return base_path[:stop + len(PROGRAM_NAME)] + "/"
+    return base_path[:-len(MAIN_FOLDER)] + "/"
 
 
 if TMP:
