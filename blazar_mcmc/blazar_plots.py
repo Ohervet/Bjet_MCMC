@@ -35,14 +35,15 @@ from scipy import interpolate
 
 import blazar_model
 from blazar_properties import *
-
+import blazar_utils
+cmap = plt.get_cmap("tab10")
 image_type = 'svg'
 
 
 # plots of SED ---------------------------------------------------------------------------------------------------------
 def plot_model(model, title=None, no_title=False, line=True, points=True, point_style='.', line_style='-',
-               line_alpha=1.0, file_name=RESULTS_FOLDER + "/model." + image_type, clear_plot=True, save=False,
-               show=True, log=True):
+                line_alpha=1.0, file_name=RESULTS_FOLDER + "/model." + image_type, clear_plot=True, save=False,
+                show=True, log=True):
     """
     Plots frequency against energy flux using matplotlib
     Args:
@@ -95,73 +96,10 @@ def plot_model(model, title=None, no_title=False, line=True, points=True, point_
         plt.savefig(file_name)
     if show:
         plt.show()
+        
+        
 
-
-def plot_model_and_data(model, v_data, vFv_data, err_data, title=None, no_title=False, adjust_scale=True, line=True,
-                        points=True, point_style='.', line_style='-', lower_adjust_multiplier=None,
-                        upper_adjust_multiplier=None, file_name=RESULTS_FOLDER + "/model_and_data." + image_type,
-                        clear_plot=True, save=False, show=True, log=True):
-    """
-    Create a plot with data and model data
-    Args:
-        model: tuple of 1D np arrays of floats
-            The data for the model; only the first 2 elems are used, which are
-            logv and logvFv
-        v_data: 1D np array of floats
-            Data
-        vFv_data: 1D np array of floats
-            Data
-        title: str
-            Title for plot
-        file_name (optional): str
-            Relative path to where the image should be saved; default is
-            "<RESULTS_FOLDER>/model_and_data.<image_type>"
-        save (optional): bool
-            If the plot should be saved; default is False
-        show (optional): bool
-            Specifies if plot is shown; default is True
-        adjust_scale (optional): bool
-            True = the plot should use the scale of the data
-            False = scaled to the model
-            default is True
-        lower_adjust_multiplier (optional): float
-            How far below the data the plot should be scaled; default is 1.1
-        upper_adjust_multiplier (optional): float
-            How far above the data the plot should be scaled; default is 1.1
-        clear_plot (optional): bool
-            Whether the plot should be cleared before new data is plotted; default
-            is True
-
-    After function call:
-        If show is true, the plot is shown.
-        If save is true, the plot is saved as file.
-    """
-
-    if clear_plot:
-        plt.figure("Model and Data")
-    plot_data(v_data, vFv_data, err_data, title=title, no_title=no_title, adjust_scale=adjust_scale,
-              lower_adjust_multiplier=lower_adjust_multiplier, upper_adjust_multiplier=upper_adjust_multiplier,
-              clear_plot=False, save=False, show=False)
-    plt.xscale('log')
-    plt.yscale('log')
-    if log:
-        x = np.power(10, model[0])
-        y = np.power(10, model[1])
-    else:
-        x = model[0]
-        y = model[1]
-    if points:
-        plt.plot(x, y, point_style)
-    if line:
-        plt.plot(x, y, line_style)
-
-    if save:
-        plt.savefig(BASE_PATH + file_name)
-    if show:
-        plt.show()
-
-
-def plot_data(v_data, vFv_data, err_data, title=None, no_title=False, adjust_scale=True, lower_adjust_multiplier=None,
+def plot_data(title=None, no_title=False, adjust_scale=True, lower_adjust_multiplier=None,
               upper_adjust_multiplier=None, file_name=RESULTS_FOLDER + "/data." + image_type, clear_plot=True,
               save=False, show=True):
     """
@@ -198,28 +136,127 @@ def plot_data(v_data, vFv_data, err_data, title=None, no_title=False, adjust_sca
     """
     if clear_plot:
         plt.figure("Plot of data")
+    fig, ax = plt.subplots()
     plt.xscale("log")
-    plt.yscale("log")
-    plt.xlabel(r"$\nu$")
-    plt.ylabel(r"$\nu F_{\nu}$")
+    plt.xlabel(r"Frequency $\nu$ (Hz)")
+    ax.set_ylabel(r"Energy Flux $\nu F_{\nu}$ (erg cm$^{-2}$ s$^{-1})$")
+    ax.set_yscale("log")
     if title is None and not no_title:
         title = "Data"
     if title is not None:
         plt.title(title)
-    plt.plot(v_data, vFv_data, '.')
-
+    configs = blazar_utils.read_configs()
+    data = blazar_utils.read_data(configs["data_file"], instrument=True)
+    v_data, vFv_data, err_data, instrument_data = data
+    list_intruments=[instrument_data[0]]
+    v_data_inst = [v_data[0]]
+    vFv_data_inst = [vFv_data[0]]
+    err_data_inst_down = [err_data[0][0]]
+    err_data_inst_up = [err_data[1][0]]
+    for i in range(1,len(instrument_data)):
+        if instrument_data[i] != list_intruments[-1]:
+            ax.errorbar(v_data_inst, vFv_data_inst, yerr=(err_data_inst_down, err_data_inst_up), fmt='o', label=str(list_intruments[-1]), 
+                        markersize=3, elinewidth=1, color = cmap(len(list_intruments)))
+            list_intruments.append(instrument_data[i])
+            v_data_inst = [v_data[i]]
+            vFv_data_inst = [vFv_data[i]]
+            err_data_inst_down = [err_data[0][i]]
+            err_data_inst_up = [err_data[1][i]]
+        else:   
+            v_data_inst.append(v_data[i])
+            vFv_data_inst.append(vFv_data[i])
+            err_data_inst_down.append(err_data[0][i])
+            err_data_inst_up.append(err_data[1][i])
+        if i == len(instrument_data)-1:
+            ax.errorbar(v_data_inst, vFv_data_inst, yerr=(err_data_inst_down, err_data_inst_up), fmt='o', label=str(list_intruments[-1]), 
+                        markersize=3, elinewidth=1, color = cmap(len(list_intruments)))
+    ax.legend(loc='best',ncol=2)
+    
     if adjust_scale:
         new_min, new_max = scale_to_values(vFv_data, lower_adjust_multiplier=lower_adjust_multiplier,
                                            upper_adjust_multiplier=upper_adjust_multiplier)
         plt.ylim(new_min, new_max)
 
-    plt.errorbar(v_data, vFv_data, yerr=(err_data), fmt='.', color='b', ecolor='k',
-                 label="Data")
+    if save:
+        plt.savefig(BASE_PATH + file_name)
+    if show:
+        plt.show()    
+        
+        
+        
 
+def plot_model_and_data(model, v_data, vFv_data, err_data, flat_samples, indices_within_1sigma, 
+                        title=None, no_title=False, adjust_scale=True, lower_adjust_multiplier=None,
+                        upper_adjust_multiplier=None, file_name=RESULTS_FOLDER + "/model_and_data." + image_type,
+                        clear_plot=True, save=False, show=True, log=True):
+    """
+    Create a plot with data and model data
+    Args:
+        model: tuple of 1D np arrays of floats
+            The data for the model; only the first 2 elems are used, which are
+            logv and logvFv
+        v_data: 1D np array of floats
+            Data
+        vFv_data: 1D np array of floats
+            Data
+        err_data: 2D np array of floats
+            Data
+        title: str
+            Title for plot
+        file_name (optional): str
+            Relative path to where the image should be saved; default is
+            "<RESULTS_FOLDER>/model_and_data.<image_type>"
+        save (optional): bool
+            If the plot should be saved; default is False
+        show (optional): bool
+            Specifies if plot is shown; default is True
+        adjust_scale (optional): bool
+            True = the plot should use the scale of the data
+            False = scaled to the model
+            default is True
+        lower_adjust_multiplier (optional): float
+            How far below the data the plot should be scaled; default is 1.1
+        upper_adjust_multiplier (optional): float
+            How far above the data the plot should be scaled; default is 1.1
+        clear_plot (optional): bool
+            Whether the plot should be cleared before new data is plotted; default
+            is True
+
+    After function call:
+        If show is true, the plot is shown.
+        If save is true, the plot is saved as file.
+    """
+
+    if clear_plot:
+        plt.figure("Model and Data")
+
+    plot_data(title=title, no_title=no_title, adjust_scale=adjust_scale,
+              lower_adjust_multiplier=lower_adjust_multiplier, upper_adjust_multiplier=upper_adjust_multiplier,
+              clear_plot=False, save=False, show=False)
+
+    configs = blazar_utils.read_configs()
+    eic = configs["eic"]
+    redshift = configs["redshift"]
+    name_stem = "plot"
+    min_per_param, max_per_param = get_params_1sigma_ranges(flat_samples, indices_within_1sigma,eic=eic)
+    to_plot = np.concatenate((np.array(min_per_param), np.array(max_per_param)))
+    
+    command_params_1, command_params_2 = blazar_model.command_line_sub_strings(name_stem=name_stem, redshift=redshift, 
+                                                                               prev_files=False, eic=eic)
+    command_params_2[3] = "300" # number of points for the SED
+    lowest_per_point, highest_per_point = get_min_max_per_point(model[0], to_plot, name_stem=name_stem,redshift=redshift,
+                                                                command_params_1=command_params_1,
+                                                                command_params_2=command_params_2, eic=eic)
+    x,y = (model[2], model[3])
+    plt.plot(x, y, label="Best model")
+    plt.fill_between(x, np.power(10, lowest_per_point), np.power(10, highest_per_point), 
+                     alpha=.5, label=r"Within 1$\sigma$")
+    plt.legend(loc='best',ncol=2)
     if save:
         plt.savefig(BASE_PATH + file_name)
     if show:
         plt.show()
+        
 
 
 # MCMC Plots -----------------------------------------------------------------------------------------------------------
