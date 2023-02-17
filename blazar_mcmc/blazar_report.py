@@ -240,27 +240,33 @@ def save_plots_and_info(configs, data, param_min_vals, param_max_vals, folder=No
 
     best_log_prob, best_params = get_best_log_prob_and_params(
         log_probs=flat_log_probs, flat_chain=flat_chain)
-
     min_1sigma_params, max_1sigma_params = min_max_params_1sigma(flat_chain, flat_log_probs, eic=eic)
     indices_within_1sigma = get_indices_within_1sigma(flat_log_probs, eic=eic)
     name_stem = NAME_STEM + str(random.getrandbits(20))
+    
+    #not super optimum tu add it here but it doesn't work well oustide the function, need some investigation
+    command_params_1, command_params_2 = blazar_model.command_line_sub_strings(name_stem=name_stem, redshift=redshift, prev_files=False, eic=eic)
+    command_params_2[3] = "300"  # number of points used to make SED
+    
     model = blazar_model.make_model(best_params, name_stem=name_stem, theta=theta, redshift=redshift, min_freq=min_freq,
                                     max_freq=max_freq, torus_temp=torus_temp, torus_luminosity=torus_luminosity,
                                     torus_frac=torus_frac, data_folder=data_folder, executable=executable,
                                     command_params_full=command_params_full, command_params_1=command_params_1,
                                     command_params_2=command_params_2, prev_files=False, use_param_file=False,
                                     verbose=verbose, eic=eic)
+
     for f in glob.glob(BASE_PATH + DATA_FOLDER + "/" + name_stem + "_*"):
         os.remove(f)
     make_text_file(folder + "/info.txt", configs, len(data[0]), backend_file=backend_file, reader=reader,
                    sampler=sampler, use_sampler=use_sampler, samples=samples, use_samples=use_samples,
                    description=description, time=time, p0_source=p0_source, acceptance_frac=acceptance_frac, eic=eic)
 
-    blazar_plots.plot_model_and_data(model, data[0], data[1], data[2], lower_adjust_multiplier=1.3,
+    blazar_plots.plot_model_and_data(model, data[0], data[1], data[2], flat_chain, indices_within_1sigma,
+                                     lower_adjust_multiplier=20,
                                      file_name=folder + "/model_and_data.svg", title=r"MCMC $\chi^2$ = " + str(
                                          round(best_log_prob * -2, 2)), save=True, show=False)
     blazar_plots.corner_plot(flat_chain, param_min_vals, param_max_vals, best_params, min_1sigma_params,
-                             max_1sigma_params, file_name=folder + "/corner_plot.svg", save=True, show=False, eic=eic)
+                              max_1sigma_params, file_name=folder + "/corner_plot.svg", save=True, show=False, eic=eic)
     blazar_plots.plot_chain(chain, file_name=(folder + "/plot_of_chain.jpeg"), save=True, show=False,
                             eic=eic)  # too much stuff for svg
     blazar_plots.plot_chi_squared(log_probs, configs["discard"], plot_type='avg',
@@ -271,13 +277,13 @@ def save_plots_and_info(configs, data, param_min_vals, param_max_vals, folder=No
                                   file_name=(folder + "/chi_squared_plot_all.jpeg"), save=True,
                                   show=False)  # svg is big
 
-    blazar_plots.plot_1sigma(data[0], data[1], data[2], indices_within_1sigma, flat_chain,
-                             np.argmax(flat_log_probs), folder=folder, save=True, show=False, serialize=True,
-                             lower_adjust_multiplier=1.3, eic=eic, theta=theta, redshift=redshift, min_freq=min_freq,
-                             max_freq=max_freq, executable=executable, data_folder=data_folder, name_stem=name_stem,
-                             command_params_full=command_params_full, command_params_1=command_params_1,
-                             command_params_2=command_params_2, torus_temp=torus_temp,
-                             torus_luminosity=torus_luminosity, torus_frac=torus_frac, verbose=False)
+    # blazar_plots.plot_1sigma(data[0], data[1], data[2], indices_within_1sigma, flat_chain,
+    #                          np.argmax(flat_log_probs), folder=folder, save=True, show=False, serialize=True,
+    #                          lower_adjust_multiplier=1.3, eic=eic, theta=theta, redshift=redshift, min_freq=min_freq,
+    #                          max_freq=max_freq, executable=executable, data_folder=data_folder, name_stem=name_stem,
+    #                          command_params_full=command_params_full, command_params_1=command_params_1,
+    #                          command_params_2=command_params_2, torus_temp=torus_temp,
+    #                          torus_luminosity=torus_luminosity, torus_frac=torus_frac, verbose=False)
     #blazar_plots.plot_1sigma(data[0], data[1], data[2], indices_within_1sigma, flat_chain,
     #                         np.argmax(flat_log_probs), folder=folder, save=True, show=False, serialize=True,
     #                         lower_adjust_multiplier=1.3, extreme=False, eic=eic)
