@@ -325,7 +325,10 @@ def read_data(data_file, cols=(0, 1, 4), use_E=True, verbose=False, instrument=F
         
     if instrument:
         instrument_data = table['instrument']
-        return v_data_filtered, vFv_data_filtered, err_data_filtered, instrument_data
+        instrument_data_filtered = np.delete(instrument_data, indices_to_remove)
+        if verbose:
+            print("instrument_data_filtered:", instrument_data_filtered)
+        return v_data_filtered, vFv_data_filtered, err_data_filtered, instrument_data_filtered
     else:
         return v_data_filtered, vFv_data_filtered, err_data_filtered
 
