@@ -482,13 +482,16 @@ def min_max_parameters(alpha2_limits=None, eic=False):
 
         both are in the standard order:
             [delta, K, n1, n2, gamma_min, gamma_max, gamma_break, B, R]
+        with eic:
+            ["delta", "K", "alpha_1", "alpha_2", "gamma_min", "gamma_max", "gamma_break", "B", "R",
+             "bb_temp", "l_nuc", "tau", "blob_dist"]
     """
     if alpha2_limits is None or len(alpha2_limits) != 2:
         alpha2_limits = (1.5, 7.5)
     param_min_vals = [1., 0., 1., float(alpha2_limits[0]), 0., 3., 2., -4., 14.]
     param_max_vals = [100., 8., 5., float(alpha2_limits[1]), 5., 8., 6.699, 0., 19.]
     if eic:
-        extra_min = [1.0, 20.0, -10.0, 10.0]
+        extra_min = [1.0, 20.0, -10.0, 15]
         extra_max = [6.0, 50.0, 0.0, 21.0]
         param_min_vals = param_min_vals + extra_min
         param_max_vals = param_max_vals + extra_max
@@ -502,7 +505,8 @@ def log_prior(params, param_min_vals=None, param_max_vals=None, redshift=None, t
               alpha2_limits=None, eic=False):
     """
     Using a uniform prior distribution. Return whether input params are valid.
-
+    list parameters with eic: ["delta", "K", "alpha_1", "alpha_2", "gamma_min", "gamma_max", "gamma_break", "B", "R",
+     "bb_temp", "l_nuc", "tau", "blob_dist"]
     Args:
         params: 1D np array of NUM_DIM floats
             Current position
@@ -556,6 +560,12 @@ def log_prior(params, param_min_vals=None, param_max_vals=None, redshift=None, t
         c = 2.997924 * 1.0e+10
         R = np.power(10, R)
         if tau_var < (1 + redshift) / c * R / delta:
+            return -np.inf
+
+    if eic:
+        #the intrinsic jet half opening angle cannot be more than 5deg. (e.g. Hervet 2016)
+        opening_angle = np.arctan(np.power(10, params[8])/np.power(10, params[12])) *180/pi
+        if opening_angle > 5:
             return -np.inf
     return 0.0
 
