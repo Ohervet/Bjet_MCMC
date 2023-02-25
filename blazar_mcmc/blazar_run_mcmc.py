@@ -43,7 +43,7 @@ import multiprocessing
 import os
 import platform
 import shutil
-
+import numpy as np
 import emcee
 
 import blazar_model
@@ -111,10 +111,12 @@ def run_mcmc(configs, param_min_vals=None, param_max_vals=None, backend_file=RES
     else:
         pool = None
     backend = emcee.backends.HDFBackend(BASE_PATH + backend_file)
-    backend.reset(configs["n_walkers"], modelProperties(eic).NUM_DIM)
-
+    backend.reset(configs["n_walkers"], modelProperties(eic, fixed_params=configs["fixed_params"]).NUM_DIM)
     # set minima and maxima for the parameter values
-    default_min_max = blazar_utils.min_max_parameters(alpha2_limits=configs["alpha2_limits"], eic=eic)
+    
+    if param_min_vals is None or param_max_vals is None:
+        default_min_max = blazar_utils.min_max_parameters(alpha2_limits=configs["alpha2_limits"], eic=eic, 
+                                                          fixed_params=configs["fixed_params"])
     if param_min_vals is None:
         param_min_vals = default_min_max[0]
     if param_max_vals is None:
@@ -124,7 +126,7 @@ def run_mcmc(configs, param_min_vals=None, param_max_vals=None, backend_file=RES
                                                                            prev_files=prev_files, redshift=configs["redshift"], eic=eic)
     # read data
     v_data, vFv_data, err_data = blazar_utils.read_data(configs["data_file"])
-
+    
     # starting position, a numpy array with # of walkers rows and # of parameters columns
     if eic_p0_from_std:
         if p0_file is None and p0 is None:
@@ -162,12 +164,16 @@ def run_mcmc(configs, param_min_vals=None, param_max_vals=None, backend_file=RES
         print("p0 from values")
     else:
         p0 = blazar_utils.random_defaults(configs["n_walkers"], param_min_vals, param_max_vals, redshift=configs["redshift"],
-                                          tau_var=configs["tau_variability"],
-                                          use_variability=configs["use_variability"])
+                                          tau_var=configs["tau_variability"], use_variability=configs["use_variability"], 
+                                          eic=eic, fixed_params=configs["fixed_params"])
         print("p0 from random")
-
+        for i in range(len(configs["fixed_params"])):
+            if configs["fixed_params"][i] != -np.inf and configs["eic"]:
+                print(EIC_PARAM_NAMES[i], "is fixed at", configs["fixed_params"][i])
+            elif configs["fixed_params"][i] != -np.inf:
+                print(SSC_PARAM_NAMES[i], "is fixed at", configs["fixed_params"][i])
     # create sampler
-    sampler = emcee.EnsembleSampler(configs["n_walkers"], modelProperties(eic).NUM_DIM,
+    sampler = emcee.EnsembleSampler(configs["n_walkers"], modelProperties(eic, fixed_params=configs["fixed_params"]).NUM_DIM,
                                     blazar_utils.log_probability,
                                     args=[v_data, vFv_data, err_data],
                                     kwargs={'param_min_vals': param_min_vals,
@@ -179,10 +185,14 @@ def run_mcmc(configs, param_min_vals=None, param_max_vals=None, backend_file=RES
                                             'prev_files': prev_files, 'use_param_file': use_param_file,
                                             'command_params_1': bjet_command_1, 'command_params_2': bjet_command_2,
                                             'torus_temp': None, 'torus_luminosity': None, 'torus_frac': None,
-                                            'eic': eic},
+                                            'eic': eic, 'fixed_params': configs["fixed_params"]},
                                     backend=backend,
-                                    moves=[(emcee.moves.StretchMove(live_dangerously=True), 1.)],
+                                    moves=[(emcee.moves.StretchMove(a=2, live_dangerously=True), 1.)],
                                     pool=pool)
+    
+    #moves set up by default moves=[(emcee.moves.StretchMove(live_dangerously=True), 1.)]
+    #can try different moves to better probe the parameter space, but no real improvement so far after several tries
+    #https://emcee.readthedocs.io/en/stable/user/moves/#moves-user
 
     # make pre-run txt file with basic info
     print("starting mcmc")
@@ -195,8 +205,8 @@ def run_mcmc(configs, param_min_vals=None, param_max_vals=None, backend_file=RES
     return sampler, str(end - start)
 
 
-def mcmc(config_file=None, directory=None, folder_label=None, p0=None, p0_label=None, p0_file=None, eic_p0_from_std=False, description=None, prev_files=False,
-         use_param_file=False):
+def mcmc(config_file=None, directory=None, folder_label=None, p0=None, p0_label=None, p0_file=None, eic_p0_from_std=False, 
+         description=None, prev_files=False, use_param_file=False):
     """
     The MCMC function that will run just given a configuration file--this is the
     function called by the main method.
@@ -224,7 +234,7 @@ def mcmc(config_file=None, directory=None, folder_label=None, p0=None, p0_label=
     if config_file is None:
         config_file = "mcmc_config.txt"
     configs = blazar_utils.read_configs(config_file=config_file)
-
+    
     if description is None and "description" in configs:
         description = configs["description"]
 
@@ -233,10 +243,10 @@ def mcmc(config_file=None, directory=None, folder_label=None, p0=None, p0_label=
 
     if folder_label is None and "folder_label" in configs:
         folder_label = configs["folder_label"]
-
     data = blazar_utils.read_data(configs["data_file"])
-    param_min_vals, param_max_vals = blazar_utils.min_max_parameters(alpha2_limits=configs["alpha2_limits"], eic=configs["eic"])
-
+    param_min_vals, param_max_vals = blazar_utils.min_max_parameters(alpha2_limits=configs["alpha2_limits"], eic=configs["eic"],
+                                                                     fixed_params=configs["fixed_params"])
+    
     # file is a folder with the data
     if directory is None:
         now = datetime.datetime.now()
@@ -312,12 +322,10 @@ if __name__ == "__main__":
     label_p0 = None
     p0_values = None
 
-    #file_p0 = "local_results/3C66A_b5_no_eic_2022-07-20-19:42:07/backend.h5"
+    #file_p0 = "local_results/TON_599_no_eic/backend.h5"
     file_p0 = None
     p0_eic_from_std = False
-
     sampler_result, results_directory = mcmc(use_param_file=False, p0_label=label_p0, p0=p0_values, p0_file=file_p0, eic_p0_from_std=p0_eic_from_std)
-
     if TMP:
         shutil.move(BASE_PATH + results_directory, FOLDER_PATH + results_directory)
         shutil.rmtree(TEMP_DIR)
