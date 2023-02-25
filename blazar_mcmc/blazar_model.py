@@ -139,6 +139,7 @@ def make_SED(params, name_stem=None, theta=None, redshift=None, min_freq=None, m
             # add eic parameter values
             command_params_full = command_params_full + [str(params[9]), torus_temp, str(params[10]), str(params[11]),
                                                          torus_luminosity, torus_frac]
+            
             # add numerical params (min/max freq, number of pts)
             command_params_full = command_params_full + command_params_2[3:]
 
@@ -327,7 +328,7 @@ def process_model(name_stem=None, data_folder=None, verbose=False, eic=False, ad
 def make_model(params, name_stem=None, theta=None, redshift=None, min_freq=None, max_freq=None, torus_temp=None,
                torus_luminosity=None, torus_frac=None, data_folder=None, executable=None, command_params_full=None,
                command_params_1=None, command_params_2=None, parameter_file=None, prev_files=False,
-               use_param_file=False, verbose=False, eic=False):
+               use_param_file=False, verbose=False, eic=False, fixed_params=None):
     """
     Given parameters, returns v and vFv for the corresponding model.
 
@@ -370,6 +371,11 @@ def make_model(params, name_stem=None, theta=None, redshift=None, min_freq=None,
             raise ValueError("EIC mode cannot be used with parameter file")
         create_params_file(params, name_stem, parameter_file, theta=theta, redshift=redshift, min_freq=min_freq,
                            max_freq=max_freq, verbose=verbose)
+    #reimplement fixed parameters for the model computation
+    if fixed_params:
+        for i in range(len(fixed_params)):
+            if fixed_params[i]!= -np.inf:
+                params = np.insert(params, i, fixed_params[i])
     make_SED(params, name_stem=name_stem, theta=theta, redshift=redshift, min_freq=min_freq, max_freq=max_freq,
              torus_temp=torus_temp, torus_luminosity=torus_luminosity, torus_frac=torus_frac, data_folder=data_folder,
              executable=executable, command_params_full=command_params_full, command_params_1=command_params_1,
@@ -388,9 +394,9 @@ def command_line_sub_strings(name_stem=None, theta=None, redshift=None, min_freq
         # redshift = 0.143
         pass
     if min_freq is None:
-        min_freq = 5.0e+7
+        min_freq = 2.0e+09
     if max_freq is None:
-        max_freq = 1e+29
+        max_freq = 5.0e+29
     if data_folder is None:
         data_folder = DATA_FOLDER
     if prev_files:
