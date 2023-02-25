@@ -5,6 +5,7 @@ to use the absolute path."
 
 import pathlib
 import tempfile
+import numpy as np
 
 PROGRAM_NAME = "/Bjet_MCMC"
 TMP = False
@@ -31,33 +32,47 @@ class BlazarProperties(object):
             raise Exception("Dimensions of arrays conflict in blazar_properties.")
 
 
-sscProperties = BlazarProperties(9, ["delta", "K", "alpha_1", "alpha_2", "gamma_min", "gamma_max", "gamma_break", "B",
-                                     "R"],
-                                 [r"$\delta$", r"log $K$", r"$\alpha_1$", r"$\alpha_2$", r"log $\gamma_{min}$",
-                                  r"log $\gamma_{max}$", r"log $\gamma_{break}$", r"log $B$", r"log $R$"],
-                                 ["doppler factor (delta)", "log K [cm^-3]", "alpha 1", "alpha 2", "log gamma_min",
-                                  "log gamma_max", "log gamma_break", "log B", "log R [cm]"],
-                                 [False, True, False, False, True, True, True, True, True])
-
-eicProperties = BlazarProperties(13,
-                                 ["delta", "K", "alpha_1", "alpha_2", "gamma_min", "gamma_max", "gamma_break", "B", "R",
-                                  "bb_temp", "l_nuc", "tau", "blob_dist"],
-                                 [r"$\delta$", r"log $K$", r"$\alpha_1$", r"$\alpha_2$", r"log $\gamma_{min}$",
-                                  r"log $\gamma_{max}$", r"log $\gamma_{break}$", r"log $B$", r"log $R$", r"log $T_{BB}$",
-                                  r"log $L_{nuc}$", r"log $\tau$", r"log $D_{b}$"],
-                                 ["doppler factor (delta)", "log K [cm^-3]", "alpha 1", "alpha 2", "log gamma_min",
-                                  "log gamma_max", "log gamma_break", "log B", "log R [cm]", "log bb_temp", "log l_nuc",
-                                  "log tau", "log blob_dist"],
-                                 [False, True, False, False, True, True, True, True, True, True, True, True, True]
-                                 )
-
-
-def modelProperties(is_eic=False):
+def modelProperties(is_eic=False, fixed_params=None):
+    sscProperties = BlazarProperties(9, ["delta", "K", "alpha_1", "alpha_2", "gamma_min", "gamma_max", "gamma_break", "B",
+                                         "R"],
+                                     [r"$\delta$", r"log $K$", r"$\alpha_1$", r"$\alpha_2$", r"log $\gamma_{min}$",
+                                      r"log $\gamma_{max}$", r"log $\gamma_{break}$", r"log $B$", r"log $R$"],
+                                     ["doppler factor (delta)", "log K [cm^-3]", "alpha 1", "alpha 2", "log gamma_min",
+                                      "log gamma_max", "log gamma_break", "log B", "log R [cm]"],
+                                     [False, True, False, False, True, True, True, True, True])
+    
+    eicProperties = BlazarProperties(13,
+                                     ["delta", "K", "alpha_1", "alpha_2", "gamma_min", "gamma_max", "gamma_break", "B", "R",
+                                      "bb_temp", "l_nuc", "tau", "blob_dist"],
+                                     [r"$\delta$", r"log $K$", r"$\alpha_1$", r"$\alpha_2$", r"log $\gamma_{min}$",
+                                      r"log $\gamma_{max}$", r"log $\gamma_{break}$", r"log $B$", r"log $R$", r"log $T_{BB}$",
+                                      r"log $L_{nuc}$", r"log $\tau$", r"log $D_{b}$"],
+                                     ["doppler factor (delta)", "log K [cm^-3]", "alpha 1", "alpha 2", "log gamma_min",
+                                      "log gamma_max", "log gamma_break", "log B", "log R [cm]", "log bb_temp", "log l_nuc",
+                                      "log tau", "log blob_dist"],
+                                     [False, True, False, False, True, True, True, True, True, True, True, True, True]
+                                     )    
+    
     if is_eic:
-        return eicProperties
+        parameters =  eicProperties
     else:
-        return sscProperties
-
+        parameters =  sscProperties
+    #remove any frozen parameter from the parameter list
+    if fixed_params:
+        fixed_params2 = fixed_params.copy()
+        i = 0
+        while i < len(fixed_params2):
+          if fixed_params2[i] != -np.inf:       
+              parameters.NUM_DIM -= 1
+              del parameters.PARAM_NAMES[i]
+              del parameters.FORMATTED_PARAM_NAMES[i]
+              del parameters.DETAILED_PARAM_NAMES[i]
+              del parameters.PARAM_IS_LOG[i]
+              del fixed_params2[i]
+          else:
+              i+=1
+    return parameters
+    
 
 def _get_path():
     base_path = str(pathlib.Path().resolve())
