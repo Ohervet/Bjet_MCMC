@@ -83,7 +83,7 @@ def min_max_params_1sigma(flat_data, flat_log_probs, eic=False):
     return mins, maxes
 
 
-def get_best_log_prob_and_params(configs=None, sampler=None, log_probs=None, flat_chain=None, discard=None):
+def get_best_log_prob_and_params(configs=None, sampler=None, log_probs=None, flat_chain=None, discard=None, fixed_params=None):
     if (sampler is None) and (log_probs is None or flat_chain is None):
         raise ValueError("sampler or log_probs+chain not provided")
     if sampler is not None:
@@ -96,13 +96,17 @@ def get_best_log_prob_and_params(configs=None, sampler=None, log_probs=None, fla
     maximum_index = np.argmax(log_probs)
     maximum_log_prob = log_probs[maximum_index]
     best_params = flat_chain[maximum_index]
+    if fixed_params:
+        for i in range(len(fixed_params)):
+            if fixed_params[i] != -np.inf:
+                best_params[i] = fixed_params[i]
     return maximum_log_prob, best_params
 
 
 # report displays ------------------------------------------------------------------------------------------------------
 def make_text_file(output_file, configs, data_points, backend_file=None, reader=None, sampler=None, use_sampler=False,
                    samples=None, use_samples=False, description=None, time=None, p0_source=None, acceptance_frac=None,
-                   eic=False):
+                   eic=False, fixed_params=None):
     if use_samples and (samples is not None):
         samples, flat_chain, _, log_probs = samples
     # note that samplers and readers both have the functions needed
@@ -123,7 +127,7 @@ def make_text_file(output_file, configs, data_points, backend_file=None, reader=
     with open(BASE_PATH + output_file, 'w') as f:
         tau = emcee.autocorr.integrated_time(samples, quiet=True)
         maximum_log_prob, best_params = get_best_log_prob_and_params(log_probs=log_probs, flat_chain=flat_chain)
-        print(best_params)
+        print("best parameters:", best_params)
         min_1sigma_params, max_1sigma_params = min_max_params_1sigma(flat_chain, log_probs, eic=eic)
         if description is not None:
             f.write("report description: ")
@@ -143,7 +147,8 @@ def make_text_file(output_file, configs, data_points, backend_file=None, reader=
         f.write("\n\n")
 
         f.write(
-            text_report(best_params, min_1sigma_params, max_1sigma_params, -2 * maximum_log_prob, data_points, eic=eic))
+            text_report(best_params, min_1sigma_params, max_1sigma_params, -2 * maximum_log_prob, data_points, eic=eic,
+                        fixed_params=fixed_params))
         f.write("\n\n")
 
         f.write("best params: ")
@@ -163,14 +168,14 @@ def make_text_file(output_file, configs, data_points, backend_file=None, reader=
             f.write(str(np.average(acceptance_frac)))
             f.write("\n\n")
 
-        f.write("tau: avg = ")
-        f.write(str(np.mean(tau)))
+        f.write("autocorrelation time: avg = ")
+        f.write(str(np.mean(tau))+" steps")
         f.write("\n\n")
 
 
-def text_report(best, min_1sigma, max_1sigma, best_chi_sq, data_points, param_names=None, eic=False):
+def text_report(best, min_1sigma, max_1sigma, best_chi_sq, data_points, param_names=None, eic=False, fixed_params=None):
     if param_names is None:
-        param_names = modelProperties(eic).PARAM_NAMES
+        param_names = modelProperties(eic, fixed_params=fixed_params).PARAM_NAMES
     log = modelProperties(eic).PARAM_IS_LOG
     format_string = "{:^13}{:^15}{:^20}\n"
     num_format = "{:.2e}"
@@ -244,31 +249,36 @@ def save_plots_and_info(configs, data, param_min_vals, param_max_vals, folder=No
     indices_within_1sigma = get_indices_within_1sigma(flat_log_probs, eic=eic)
     name_stem = NAME_STEM + str(random.getrandbits(20))
     
-    #not super optimum tu add it here but it doesn't work well oustide the function, need some investigation
-    command_params_1, command_params_2 = blazar_model.command_line_sub_strings(name_stem=name_stem, redshift=redshift, prev_files=False, eic=eic)
+    command_params_1, command_params_2 = blazar_model.command_line_sub_strings(name_stem=name_stem, redshift=redshift, 
+                                                                               prev_files=False, eic=eic)
     command_params_2[3] = "300"  # number of points used to make SED
+    
+    
     
     model = blazar_model.make_model(best_params, name_stem=name_stem, theta=theta, redshift=redshift, min_freq=min_freq,
                                     max_freq=max_freq, torus_temp=torus_temp, torus_luminosity=torus_luminosity,
                                     torus_frac=torus_frac, data_folder=data_folder, executable=executable,
                                     command_params_full=command_params_full, command_params_1=command_params_1,
                                     command_params_2=command_params_2, prev_files=False, use_param_file=False,
-                                    verbose=verbose, eic=eic)
+                                    verbose=verbose, eic=eic, fixed_params=configs["fixed_params"])
 
     for f in glob.glob(BASE_PATH + DATA_FOLDER + "/" + name_stem + "_*"):
         os.remove(f)
     make_text_file(folder + "/info.txt", configs, len(data[0]), backend_file=backend_file, reader=reader,
                    sampler=sampler, use_sampler=use_sampler, samples=samples, use_samples=use_samples,
-                   description=description, time=time, p0_source=p0_source, acceptance_frac=acceptance_frac, eic=eic)
+                   description=description, time=time, p0_source=p0_source, acceptance_frac=acceptance_frac, eic=eic,
+                   fixed_params=configs["fixed_params"])
 
     blazar_plots.plot_model_and_data(model, data[0], data[1], data[2], flat_chain, indices_within_1sigma,
-                                     lower_adjust_multiplier=20,
-                                     file_name=folder + "/model_and_data.svg", title=r"MCMC $\chi^2$ = " + str(
-                                         round(best_log_prob * -2, 2)), save=True, show=False)
+                                     lower_adjust_multiplier=20, file_name=folder + "/model_and_data.svg", 
+                                     title=r"MCMC $\chi^2$ = " + str(round(best_log_prob * -2, 2)), save=True, show=False, 
+                                     fixed_params=configs["fixed_params"])
     blazar_plots.corner_plot(flat_chain, param_min_vals, param_max_vals, best_params, min_1sigma_params,
-                              max_1sigma_params, file_name=folder + "/corner_plot.svg", save=True, show=False, eic=eic)
-    blazar_plots.plot_chain(chain, file_name=(folder + "/plot_of_chain.jpeg"), save=True, show=False,
-                            eic=eic)  # too much stuff for svg
+                              max_1sigma_params, file_name=folder + "/corner_plot.svg", save=True, show=False, eic=eic,
+                              fixed_params=configs["fixed_params"])
+    #This output is not easy to read, so not fully relevant. removed for now
+    # blazar_plots.plot_chain(chain, file_name=(folder + "/plot_of_chain.jpeg"), save=True, show=False,
+    #                         eic=eic)  # too much stuff for svg
     blazar_plots.plot_chi_squared(log_probs, configs["discard"], plot_type='avg',
                                   file_name=(folder + "/chi_squared_plot_avg.svg"), save=True, show=False)
     blazar_plots.plot_chi_squared(log_probs, configs["discard"], plot_type='best',
@@ -320,8 +330,8 @@ def parse_info_doc(info_doc, info=None):
             elif matched == "p0 ":
                 info["p0_label"] = line.strip()[8:]
             elif matched == "configurations:":
-                line = f.readline()
-                info["configs"] = blazar_utils.read_configs(config_string=line)
+                line2 = f.readline()
+                info["configs"] = blazar_utils.read_configs(config_string=line2)
             elif matched == "Reduced chi squared:":
                 info["reduced_chi_sq"] = float(line.strip().split()[-1].strip())
             elif matched == "best params:":
@@ -361,7 +371,7 @@ def parse_info_doc(info_doc, info=None):
 def save(folder, description=None, time=None, p0_source=None, acceptance_frac=None, data_file=None, configs=None,
          text_file_name="info.txt", text_only=False, theta=None, redshift=None, min_freq=None, max_freq=None,
          torus_temp=None, torus_luminosity=None, torus_frac=None, data_folder=None, executable=None,
-         command_params_full=None, command_params_1=None, command_params_2=None, verbose=False, eic=False):
+         command_params_full=None, command_params_1=None, command_params_2=None, verbose=False, eic=False, fixed_params=None):
     # WILL USE CURRENT CONFIGURATIONS IF NONE FOUND
     info = {}
     if os.path.exists(BASE_PATH + folder + "/info.txt"):
@@ -395,7 +405,7 @@ def save(folder, description=None, time=None, p0_source=None, acceptance_frac=No
     if text_only:
         make_text_file(folder + "/" + text_file_name, configs, len(data[0]), backend_file=folder + "/backend.h5",
                        description=description, time=time, p0_source=p0_source, acceptance_frac=acceptance_frac,
-                       eic=eic)
+                       eic=eic, fixed_params=fixed_params)
     else:
         save_plots_and_info(configs, data, param_min_vals, param_max_vals, folder=folder,
                             backend_file=folder + "/backend.h5", description=description, time=time,
