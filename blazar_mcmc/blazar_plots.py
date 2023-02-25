@@ -188,7 +188,7 @@ def plot_data(title=None, no_title=False, adjust_scale=True, lower_adjust_multip
 def plot_model_and_data(model, v_data, vFv_data, err_data, flat_samples, indices_within_1sigma, 
                         title=None, no_title=False, adjust_scale=True, lower_adjust_multiplier=None,
                         upper_adjust_multiplier=None, file_name=RESULTS_FOLDER + "/model_and_data." + image_type,
-                        clear_plot=True, save=False, show=True, log=True):
+                        clear_plot=True, save=False, show=True, log=True, fixed_params=None):
     """
     Create a plot with data and model data
     Args:
@@ -238,7 +238,8 @@ def plot_model_and_data(model, v_data, vFv_data, err_data, flat_samples, indices
     eic = configs["eic"]
     redshift = configs["redshift"]
     name_stem = "plot"
-    min_per_param, max_per_param = get_params_1sigma_ranges(flat_samples, indices_within_1sigma,eic=eic)
+    min_per_param, max_per_param = get_params_1sigma_ranges(flat_samples, indices_within_1sigma,eic=eic,
+                                                            fixed_params=fixed_params)
     to_plot = np.concatenate((np.array(min_per_param), np.array(max_per_param)))
     
     command_params_1, command_params_2 = blazar_model.command_line_sub_strings(name_stem=name_stem, redshift=redshift, 
@@ -246,12 +247,14 @@ def plot_model_and_data(model, v_data, vFv_data, err_data, flat_samples, indices
     command_params_2[3] = "300" # number of points for the SED
     lowest_per_point, highest_per_point = get_min_max_per_point(model[0], to_plot, name_stem=name_stem,redshift=redshift,
                                                                 command_params_1=command_params_1,
-                                                                command_params_2=command_params_2, eic=eic)
+                                                                command_params_2=command_params_2, eic=eic,
+                                                                fixed_params = fixed_params)
     x,y = (model[2], model[3])
     plt.plot(x, y, label="Best model")
     plt.fill_between(x, np.power(10, lowest_per_point), np.power(10, highest_per_point), 
                      alpha=.5, label=r"Within 1$\sigma$")
     plt.legend(loc='best',ncol=2)
+    plt.xlim(1e8,1e28)
     if save:
         plt.savefig(BASE_PATH + file_name)
     if show:
@@ -262,7 +265,7 @@ def plot_model_and_data(model, v_data, vFv_data, err_data, flat_samples, indices
 # MCMC Plots -----------------------------------------------------------------------------------------------------------
 def corner_plot(values, param_min_vals, param_max_vals, best_params, sigma_below_params, sigma_above_params, title=None,
                 no_title=False, param_names=None, file_name=RESULTS_FOLDER + "/corner." + image_type, save=False,
-                show=True, dpi=300, eic=False):
+                show=True, dpi=300, eic=False, fixed_params=None):
     """
     Create a corner plot:
     Args:
@@ -293,23 +296,19 @@ def corner_plot(values, param_min_vals, param_max_vals, best_params, sigma_below
         mpl plot is shown, if save is true, plot is saved to a file
     """
     if param_names is None:
-        param_names = modelProperties(eic).FORMATTED_PARAM_NAMES
+        param_names = modelProperties(eic, fixed_params=fixed_params).FORMATTED_PARAM_NAMES
 
     min_maxes = []
-    for i in range(modelProperties(eic).NUM_DIM):
+    for i in range(modelProperties(eic,fixed_params=fixed_params).NUM_DIM):
         min_maxes.append([param_min_vals[i], param_max_vals[i]])
     fig = corner.corner(values, labels=param_names,
                         range=min_maxes, use_math_text=True, plot_datapoints=False,
                         fill_contours=True, label_kwargs={"fontsize": 15},labelpad=0.28,max_n_ticks=4)
-    # fig.set_size_inches(10, 10)
-    # if title is None and not no_title:
-    #     title = "MCMC Corner Plot"
-    # if title is not None:
-    #     plt.title(title)
+
     fig.subplots_adjust(top=.97,bottom=.08,left=.07,right=0.88)
 
     # extract axes
-    dims = modelProperties(eic).NUM_DIM
+    dims = modelProperties(eic,fixed_params=fixed_params).NUM_DIM
     axes = np.array(fig.axes).reshape((dims, dims))
     # loop over the diagonal, add lines on histogram
     for i in range(dims):
@@ -335,7 +334,7 @@ def corner_plot(values, param_min_vals, param_max_vals, best_params, sigma_below
     if not eic:
         fig.set_size_inches(11, 10)
     else:
-        fig.set_size_inches(10, 12)
+        fig.set_size_inches(17, 17)
     if save:
         plt.savefig(BASE_PATH + file_name, dpi=dpi)
     if show:
@@ -364,7 +363,7 @@ def plot_chi_squared(values, discard_number, use_log_probs=True, plot_type='avg'
         raise ValueError(plot_type + " is not a valid plot type")
 
     if clear_plot:
-        plt.figure("Plot of chi^2")
+        plt.figure("Plot_of_chi^2")
     if use_log_probs:
         chi_sq = -2. * values
     else:
@@ -374,10 +373,12 @@ def plot_chi_squared(values, discard_number, use_log_probs=True, plot_type='avg'
         chi_sq = np.mean(chi_sq, axis=1)
         if title is None and not no_title:
             title = r"Average $\chi^2$ by Step"
+        plt.plot(np.arange(discard_number, discard_number + len(chi_sq)), chi_sq[:], fmt)
     elif plot_type == 'best':
         chi_sq = np.min(chi_sq, axis=1)
         if title is None and not no_title:
             title = r"Best $\chi^2$ by Step"
+        plt.plot(np.arange(discard_number, discard_number + len(chi_sq)), chi_sq[:], fmt)
     else:
         if title is None and not no_title:
             title = r"$\chi^2$ by Step"
@@ -385,8 +386,8 @@ def plot_chi_squared(values, discard_number, use_log_probs=True, plot_type='avg'
         plt.title(title)
     if plot_type == 'all':
         plt.plot(np.arange(discard_number, discard_number + len(chi_sq)), chi_sq[:, :], fmt, alpha=0.3)
-    else:
-        plt.plot(np.arange(discard_number, discard_number + len(chi_sq)), chi_sq[:], fmt, alpha=0.3)
+        plt.semilogy()
+
     plt.xlim(discard_number, discard_number + len(chi_sq))
 
     plt.xlabel("step")
@@ -396,6 +397,8 @@ def plot_chi_squared(values, discard_number, use_log_probs=True, plot_type='avg'
         plt.savefig(FOLDER_PATH + file_name)
     if show:
         plt.show()
+    if clear_plot and show==False:
+        plt.close("Plot_of_chi^2")
 
 
 def plot_1sigma(v_data, vFv_data, err_data, indices_within_1sigma, flat_samples, min_chi_squared_index, both=False,
@@ -659,7 +662,7 @@ def scale_to_values(values, upper_adjust_multiplier=None, lower_adjust_multiplie
     return new_min, new_max
 
 
-def get_params_1sigma_ranges(flat_samples, indices_within_1sigma, eic=False):
+def get_params_1sigma_ranges(flat_samples, indices_within_1sigma, eic=False, fixed_params=None):
     """
     Finds the array of parameters that has the minimum and maximum value for
     each of the parameters.
@@ -674,9 +677,9 @@ def get_params_1sigma_ranges(flat_samples, indices_within_1sigma, eic=False):
     Returns:
     """
     # set the minima and maxima to the first set of params for all vals
-    dims = modelProperties(eic).NUM_DIM
-    print(np.shape(indices_within_1sigma))
-    print(dims)
+    dims = modelProperties(eic, fixed_params=fixed_params).NUM_DIM
+    #print(np.shape(indices_within_1sigma))
+    #print(dims)
     minima = [flat_samples[indices_within_1sigma[0]].copy() for _ in range(dims)]
     maxima = [flat_samples[indices_within_1sigma[0]].copy() for _ in range(dims)]
     for index in indices_within_1sigma:
@@ -686,15 +689,15 @@ def get_params_1sigma_ranges(flat_samples, indices_within_1sigma, eic=False):
                 minima[i] = params.copy()
             if params[i] > maxima[i][i]:
                 maxima[i] = params.copy()
-    print(minima, maxima)
-    print(len(minima))
+    #print(minima, maxima)
+    #print(len(minima))
     return minima, maxima
 
 
 def get_min_max_per_point(v_vals, model_params_list, name_stem=None, theta=None, redshift=None, min_freq=None,
                           max_freq=None, torus_temp=None, torus_luminosity=None, torus_frac=None, data_folder=None,
                           executable=None, command_params_full=None, command_params_1=None, command_params_2=None,
-                          verbose=False, eic=False):
+                          verbose=False, eic=False, fixed_params=None):
     num_points = len(v_vals)
     lowest_per_point = np.array([np.inf for _ in range(num_points)])
     highest_per_point = np.array([-np.inf for _ in range(num_points)])
@@ -704,8 +707,16 @@ def get_min_max_per_point(v_vals, model_params_list, name_stem=None, theta=None,
         name_stem = "for_plotting" + str(random.getrandbits(20))
     else:
         delete_after = False
+        
+
     for i in tqdm.trange(0, len(model_params_list)):
         params = model_params_list[i]
+        #all frozen parameters need to be reimplemented for the model computation
+        if fixed_params:
+            for i in range(len(fixed_params)):
+                if fixed_params[i]!= -np.inf:
+                    params = np.insert(params, i, fixed_params[i])
+                    
         model = blazar_model.make_model(params, name_stem, theta=theta, redshift=redshift, min_freq=min_freq,
                                         max_freq=max_freq, torus_temp=torus_temp, torus_luminosity=torus_luminosity,
                                         torus_frac=torus_frac, data_folder=data_folder, executable=executable,
