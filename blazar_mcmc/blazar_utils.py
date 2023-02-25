@@ -113,6 +113,7 @@ log_probability(params, v_data, vFv_data, err_data, name_stem=None, param_min_va
 import glob
 import os
 import random
+import re
 
 import numpy as np
 from scipy import interpolate
@@ -165,12 +166,15 @@ def read_configs(config_file="mcmc_config.txt", config_string=None, verbose=Fals
     "redshift"              (float) value for the redshift
     "custom_alpha2_limits"  (bool) whether custom alpha2 limits are used
     "alpha2_limits"         ([float, float]) alpha2 limits (set to default if none given)
+    All model parameters to be frozen (float)
     """
 
     default_alpha2_limits = [1.5, 7.5]
     attributes = ["eic", "data_file", "n_steps", "n_walkers", "discard",
                   "parallel", "use_variability", "redshift", "custom_alpha2_limits"]
     optional_attributes = ["cores", "tau_variability", "description", "folder_label"]
+    ssc_parameters = ["delta", "K","n1","n2", "gamma_min","gamma_max", "gamma_break","B","R"]
+    eic_parameters = ["bb_temp", "l_nuc", "tau", "blob_dist"]
     configurations = {}  # dictionary of parameters
     if config_string is None:
         # read configurations
@@ -178,76 +182,70 @@ def read_configs(config_file="mcmc_config.txt", config_string=None, verbose=Fals
             if verbose:
                 print("Reading configuration options from:", config_file)
             for line in file:
-                elements = line.split('=')
-                if elements[0].strip() in attributes or elements[0].strip() in \
-                        optional_attributes:  # determine if line with an attribute
+                elements = re.split('=|# ', line)
+                if elements[0].strip() in attributes or elements[0].strip() in optional_attributes \
+                    or elements[0].strip() in ssc_parameters or elements[0].strip() in eic_parameters:  # determine if line with an attribute
                     configurations[elements[0].strip()] = elements[1].strip()
     else:
-        print(config_string)
-        config_string = config_string.strip()
-        # this allows "description" to have commas in it
-        if config_string[:len("{'description': ")] == "{'description': ":
-            print("here")
-            end = config_string.find("',")
-            configurations["description"] = config_string[len("{'description': '"):end]
-            print(configurations["description"])
-            config_string = config_string[end + 2:]
-            print(config_string)
-        config_string = config_string.strip().replace('{', '').replace('}', '').replace("'", '').replace('"', '').split(
-            ',')
-        print(config_string)
-        if config_string[-2].strip()[:len("alpha2_limits:")] == "alpha2_limits:":
-            config_string[-2] = ",".join((config_string[-2], config_string[-1]))
-            del config_string[-1]
-        for elem in config_string:
-            print(elem)
-            elem = elem.split(':')
-            configurations[elem[0].strip()] = elem[1].strip()
+        inf = np.inf
+        configurations = eval(config_string)
 
     # check if all configs present
     for att in attributes:
         if att not in configurations:
             raise Exception("No " + att + " provided!")
+            
+    if config_string is None:       
+        # change int params to ints, bools to bools
+        configurations["n_steps"] = int(configurations["n_steps"])
+        configurations["n_walkers"] = int(configurations["n_walkers"])
+        configurations["discard"] = int(configurations["discard"])
+        configurations["parallel"] = (configurations["parallel"] == "True" or configurations["parallel"] == "true")
+        configurations["use_variability"] = (
+                configurations["use_variability"] == "True" or configurations["use_variability"] == "true")
+        configurations["redshift"] = float(configurations["redshift"])
+    
+        if "eic" in configurations:  # will default to false
+            configurations["eic"] = (configurations["eic"] == "True" or configurations["eic"] == "true")
+        else:
+            configurations["eic"] = False
+    
+        if configurations["use_variability"]:
+            configurations["tau_variability"] = float(configurations["tau_variability"])
+            if "tau_variability" not in configurations:
+                raise Exception("No tau_variability provided!")
+        else:
+            configurations["tau_variability"] = None
+    
+        if "cores" in configurations:
+            configurations["cores"] = int(configurations["cores"])
 
-    # change int params to ints, bools to bools
-    configurations["n_steps"] = int(configurations["n_steps"])
-    configurations["n_walkers"] = int(configurations["n_walkers"])
-    configurations["discard"] = int(configurations["discard"])
-    configurations["parallel"] = (configurations["parallel"] == "True" or configurations["parallel"] == "true")
-    configurations["use_variability"] = (
-            configurations["use_variability"] == "True" or configurations["use_variability"] == "true")
-    configurations["redshift"] = float(configurations["redshift"])
-
-    if "eic" in configurations:  # will default to false
-        configurations["eic"] = (configurations["eic"] == "True" or configurations["eic"] == "true")
-    else:
-        configurations["eic"] = False
-
-    if configurations["use_variability"]:
-        configurations["tau_variability"] = float(configurations["tau_variability"])
-        if "tau_variability" not in configurations:
-            raise Exception("No tau_variability provided!")
-    else:
-        configurations["tau_variability"] = None
-
-    if "cores" in configurations:
-        configurations["cores"] = int(configurations["cores"])
-
-    # set alpha2 limits
-    configurations["custom_alpha2_limits"] = configurations["custom_alpha2_limits"].split('=')
-    configurations["custom_alpha2_limits"] = configurations["custom_alpha2_limits"][-1].split(',')
-    if configurations["custom_alpha2_limits"][0] == "True" or configurations["custom_alpha2_limits"] == "true":
-        if len(configurations["custom_alpha2_limits"]) < 3:
-            raise Exception("custom_alpha2_limits True but insufficient alpha2 limits provided!")
-        alpha2_limits = [float(configurations["custom_alpha2_limits"][1]),
-                         float(configurations["custom_alpha2_limits"][2])]
-        alpha2_limits.sort()
-        configurations["custom_alpha2_limits"] = True
-    else:
-        configurations["custom_alpha2_limits"] = False
-        alpha2_limits = default_alpha2_limits
-
-    configurations["alpha2_limits"] = alpha2_limits
+   # set alpha2 limits
+        configurations["custom_alpha2_limits"] = configurations["custom_alpha2_limits"].split('=')
+        configurations["custom_alpha2_limits"] = configurations["custom_alpha2_limits"][-1].split(',')
+        if configurations["custom_alpha2_limits"][0] == "True" or configurations["custom_alpha2_limits"] == "true":
+            if len(configurations["custom_alpha2_limits"]) < 3:
+                raise Exception("custom_alpha2_limits True but insufficient alpha2 limits provided!")
+            alpha2_limits = [float(configurations["custom_alpha2_limits"][1]),
+                             float(configurations["custom_alpha2_limits"][2])]
+            alpha2_limits.sort()
+            configurations["custom_alpha2_limits"] = True
+            print("alpha2 limits sets at",alpha2_limits)
+        else:
+            configurations["custom_alpha2_limits"] = False
+            alpha2_limits = default_alpha2_limits
+        configurations["alpha2_limits"] = alpha2_limits
+        
+        #set up  fixed parameters
+        if configurations["eic"]:
+            all_parameters = ssc_parameters+eic_parameters
+        else:
+            all_parameters = ssc_parameters
+        configurations["fixed_params"] = [-np.inf]*len(all_parameters)
+        for i in range(len(all_parameters)):
+            if configurations[all_parameters[i]] != 'null':
+                configurations["fixed_params"][i] = float(configurations[all_parameters[i]])
+            configurations.pop(all_parameters[i])
 
     if verbose:
         # show parameters
@@ -335,7 +333,7 @@ def read_data(data_file, cols=(0, 1, 4), use_E=True, verbose=False, instrument=F
 
 
 def get_random_parameters(param_min_vals=None, param_max_vals=None, alpha2_limits=None, redshift=None, tau_var=None,
-                          use_variability=True, eic=False):
+                          use_variability=True, eic=False, fixed_params=None):
     """
     Get a random array of parameters in the parameter space.
     Args:
@@ -365,7 +363,8 @@ def get_random_parameters(param_min_vals=None, param_max_vals=None, alpha2_limit
             (gamma min < gamma break < gamma max, etc.)
     """
     dim = len(param_min_vals)
-    default_min_max = min_max_parameters(alpha2_limits=alpha2_limits, eic=eic)
+    if param_min_vals is None or param_max_vals is None:
+        default_min_max = min_max_parameters(alpha2_limits=alpha2_limits, eic=eic, fixed_params = fixed_params)
     if param_min_vals is None:
         param_min_vals = default_min_max[0]
     if param_max_vals is None:
@@ -374,6 +373,7 @@ def get_random_parameters(param_min_vals=None, param_max_vals=None, alpha2_limit
     # ensures valid parameters
     parameter_size = param_max_vals - param_min_vals
     parameters = param_min_vals + parameter_size * np.random.rand(dim)
+            
     while not np.isfinite(log_prior(parameters, param_min_vals, param_max_vals, redshift=redshift, tau_var=tau_var,
                                     use_variability=use_variability)):
         parameters = param_min_vals + parameter_size * np.random.rand(dim)
@@ -381,7 +381,7 @@ def get_random_parameters(param_min_vals=None, param_max_vals=None, alpha2_limit
 
 
 def random_defaults(walkers, param_min_vals=None, param_max_vals=None, alpha2_limits=None, redshift=None, tau_var=None,
-                    use_variability=True, eic=False):
+                    use_variability=True, eic=False, fixed_params=None):
     """
     Get the values used for the initial values for the MCMC. The defaults are
     random values in the acceptable range that satisfy the log_prior criteria.
@@ -415,7 +415,7 @@ def random_defaults(walkers, param_min_vals=None, param_max_vals=None, alpha2_li
         [get_random_parameters(param_min_vals=param_min_vals, param_max_vals=param_max_vals,
                                alpha2_limits=alpha2_limits, redshift=redshift,
                                tau_var=tau_var,
-                               use_variability=use_variability, eic=eic) for _ in range(walkers)])
+                               use_variability=use_variability, eic=eic, fixed_params=fixed_params) for _ in range(walkers)])
 
 
 def random_eic_from_std(std_values, walkers, param_min_vals=None, param_max_vals=None, redshift=None,
@@ -463,11 +463,11 @@ def random_eic_from_std(std_values, walkers, param_min_vals=None, param_max_vals
         defaults.append(np.array(list(params) + list(
             get_random_parameters(param_min_vals=param_min_vals, param_max_vals=param_max_vals, redshift=redshift,
                                   tau_var=tau_var,
-                                  use_variability=use_variability, eic=True))[9:]))
+                                  use_variability=use_variability, eic=True, fixed_params=fixed_params))[9:]))
     return np.array(defaults)
 
 
-def min_max_parameters(alpha2_limits=None, eic=False):
+def min_max_parameters(alpha2_limits=None, eic=False, fixed_params=None):
     """
     Get the default minimum and maximum values for all the  parameters.
     Arguments:
@@ -491,11 +491,22 @@ def min_max_parameters(alpha2_limits=None, eic=False):
     param_min_vals = [1., 0., 1., float(alpha2_limits[0]), 0., 3., 2., -4., 14.]
     param_max_vals = [100., 8., 5., float(alpha2_limits[1]), 5., 8., 6.699, 0., 19.]
     if eic:
-        extra_min = [1.0, 20.0, -10.0, 15]
+        extra_min = [3.5, 40.0, -5.0, 15]
         extra_max = [6.0, 50.0, 0.0, 21.0]
         param_min_vals = param_min_vals + extra_min
         param_max_vals = param_max_vals + extra_max
-
+        
+    #remove any frozen parameter from the parameter list
+    if fixed_params:
+        fixed_params2 = fixed_params.copy()
+        i = 0
+        while i < len(fixed_params2):
+          if fixed_params2[i] != -np.inf:       
+            del param_min_vals[i]
+            del param_max_vals[i]
+            del fixed_params2[i]
+          else:
+            i+=1
     return np.array(param_min_vals), np.array(param_max_vals)
 
 
@@ -548,7 +559,7 @@ def log_prior(params, param_min_vals=None, param_max_vals=None, redshift=None, t
         if i != 6 and (param_min_vals[i] > params[i] or param_max_vals[i] < params[i]):
             return -np.inf
     if tau_var is None:
-        tau_var = 24
+        tau_var = 1e10
 
     # tau variability constraint
     if redshift is None:
@@ -729,7 +740,7 @@ def log_probability(params, v_data, vFv_data, err_data, name_stem=None, param_mi
                     torus_temp=None, torus_luminosity=None, torus_frac=None, data_folder=None, executable=None,
                     command_params_full=None, command_params_1=None, command_params_2=None, unique_name=False,
                     parameter_file=None,
-                    prev_files=False, use_param_file=True, verbose=False, eic=False):
+                    prev_files=False, use_param_file=True, verbose=False, eic=False, fixed_params=None):
     """
     This is the log_prob for the modeling (bigger = better fit).
     It returns -0.5 * the chi squared value for the v and vFv values from
@@ -824,6 +835,15 @@ def log_probability(params, v_data, vFv_data, err_data, name_stem=None, param_mi
         float
         -0.5 * chi squared value
     """
+    #all frozen parameters need to be reimplemented for the likelihood computation
+    if fixed_params:
+        for i in range(len(fixed_params)):
+            if fixed_params[i]!= -np.inf:
+                params = np.insert(params, i, fixed_params[i])
+                param_min_vals = np.insert(param_min_vals, i, fixed_params[i])
+                param_max_vals = np.insert(param_max_vals, i, fixed_params[i])
+        
+    
     if not np.isfinite(log_prior(params, param_min_vals, param_max_vals, redshift=redshift, tau_var=tau_var,
                                  use_variability=use_variability)):
         return -np.inf
