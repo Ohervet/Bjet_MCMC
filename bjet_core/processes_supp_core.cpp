@@ -2520,6 +2520,74 @@ double LuminDist(const double z){
 }
 
 
+
+/*
+********************************************************************************
+*
+* DISTANCE LUMINOSITY CALCULATOR
+*
+* adapted from a script by Ned Wright
+* https://www.astro.ucla.edu/~wright/CosmoCalc.html
+*
+* z           - redshift
+* H0          - Hubble constant
+* WM          - Omega matter
+*
+* return distance luminosity in cm
+********************************************************************************
+*/
+
+double Distance_Luminosity(double z, double H0, double WM) {
+
+    // initialize constants
+    
+      double WV = 1.-WM;    		// consider flat universe
+      double h = H0/100.;
+      double WR = 4.165E-5/(h*h);	// Omega(radiation), includes 3 massless neutrino species, T0 = 2.72528
+      double WK = 1-WM-WR-WV;		// Omega curvaturve = 1-Omega(total)
+      double c = 299792.458;		// velocity of light in km/sec
+      double DCMR = 0.0;     		// comoving radial distance in units of c/H0
+      double DA = 0.0;       		// angular size distance
+      double DL = 0.0;      		// luminosity distance
+      double DL_Mpc = 0.0;		// luminosity distance in Mpc
+      double a = 1.0;			// 1/(1+z), the scale factor of the Universe
+      double az = 1.0/(1+1.0*z);
+      double ratio = 1.0;
+      double adot = 0.;
+      int n = 1000;        		// number of points in integrals
+      int i = 0;
+      double x,y,DCMT;
+
+
+    // do integral over a=1/(1+z) from az to 1 in n steps, midpoint rule
+      for(i = 1; i <= n; i++){
+        a = az+(1-az)*(i+0.5)/n;
+        adot = sqrt(WK+(WM/a)+(WR/(a*a))+(WV*a*a));
+        DCMR = DCMR + 1./(a*adot);
+      }
+      DCMR = (1.-az)*DCMR/n;
+    
+    // tangential comoving distance
+      x = sqrt(abs(WK))*DCMR;
+      if(x > 0.1){
+        if(WK > 0){
+          ratio =  0.5*(exp(x)-exp(-x))/x;
+        }
+        else ratio = sin(x)/x;
+      }
+      else {
+        y = x*x;
+        if (WK < 0) y = -y;
+        ratio = 1. + y/6. + y*y/120.;
+       }
+      DCMT = ratio*DCMR;
+      DA = az*DCMT;
+      DL = DA/(az*az);
+      DL_Mpc = (c/H0)*DL;
+
+      return DL_Mpc * 1.0e6 * pc;
+}
+
 /*
 ********************************************************************************
 *

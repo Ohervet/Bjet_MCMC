@@ -107,7 +107,7 @@ namespace bj_core02 {
     int INPUT_MODE = 0; // Sarah Youngquist added;
     // 0 = normal
     // 1 = no prev files
-    char DATA_DIRECTORY[512] = "data";
+    char DATA_DIRECTORY[254] = "data";
     int CASE_JET;
     int CASE_X;
     int CASE_EIC;
@@ -1037,20 +1037,25 @@ double N_e_Jet(double gg) {
       double elec_spec[G_DIM + 1];
 
 
-      D_L = (2.0 * c * (z + 1.0 - sqrt(z + 1.0))) / ((H_0 * 1.0e-19) / 3.086);
+      //D_L = (2.0 * c * (z + 1.0 - sqrt(z + 1.0))) / ((H_0 * 1.0e-19) / 3.086); old, not super accurate
+
+      D_L = Distance_Luminosity(z, H_0, 0.286); //omega matter set at 0.286 by default
 
 
       V_B = c * (DOP_B * DOP_B * cos(THETA * M_PI / 180.0) -
                  sqrt(1.0 - DOP_B * DOP_B * sin(THETA * M_PI / 180.0) * sin(THETA * M_PI / 180.0))) /
             (1.0 + DOP_B * DOP_B * cos(THETA * M_PI / 180.0) * cos(THETA * M_PI / 180.0));
 
-      LOR_B = 1.0 / sqrt(1.0 - pow(V_B / c, 2.0));
 
-      //only for NGC1275
-      /*
-      LOR_B   = 9.86; //Doppler unbeamed case (too large angle)
-      V_B = sqrt(1. - 1./(LOR_B*LOR_B)) *c;
+
+      //Maximum Lorentz factor case, for NGC 1275
+            /*
+      V_B = c * (DOP_B * DOP_B * cos(THETA * M_PI / 180.0) +
+            sqrt(1.0 - DOP_B * DOP_B * sin(THETA * M_PI / 180.0) * sin(THETA * M_PI / 180.0))) /
+      (1.0 + DOP_B * DOP_B * cos(THETA * M_PI / 180.0) * cos(THETA * M_PI / 180.0));
+      fprintf(stderr, "Be careful, the code is set up in minimum Doppler boosting mode!\n");
       */
+      LOR_B = 1.0 / sqrt(1.0 - pow(V_B / c, 2.0));
 
 
 
@@ -1969,15 +1974,13 @@ double N_e_Jet(double gg) {
 
         // CALCULATE PARAMETERS
         //ref comoving
-
         X_MIN = Y_MIN / tan(PHI_src * M_PI / 180.0);
-        fprintf(stream_dat, "%e XMIN: \n", X_MIN);
+        //fprintf(stream_dat, "%e XMIN: \n", X_MIN);
         X_MAX = X_MIN + J_LEN_src * pc;
         A = Y_MIN / X_MIN;
         Y_MAX = A * X_MAX;
 
         // PREPARING FREQUENCY VECTOR
-
         tmp_min = log10(FreqTransO2S(NU_STR, DOP_JET, z));
         tmp_max = log10(FreqTransO2S(NU_END, DOP_JET, z));
         tmp_stp = (tmp_max - tmp_min) / (NU_DIM);

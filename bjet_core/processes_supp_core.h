@@ -31,7 +31,8 @@ extern double sigma_gg(double nu_s, double nu_c);
 extern double intgl(double (*func)(double), double a, double b, int n, int m);
 extern double Planck(double nu_BB, double T_BB);
 
-extern double LuminDist(const double redshift);
+//extern double LuminDist(const double redshift);
+extern double Distance_Luminosity(double z, double H0, double WM);
 extern double piondecay(double energy);// E^2 dN/dE  eV/(cm^2.s)
 extern double piondecaytest(double energy);// E^2 dN/dE  eV/(cm^2.s)
 
