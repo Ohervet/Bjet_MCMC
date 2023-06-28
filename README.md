@@ -7,8 +7,8 @@ The main contributors of Bjet_MCMC are (in alphabetical order): Olivier Hervet, 
 ## Important note:
 This code is still private at the moment. Do not share any part of the code or any results from it without the explicit approbation of Olivier Hervet (ohervet@ucsc.edu).
 
-## Installation:
-1. Ensure all dependencies are installed, see [dependencies](#dependencies). Recommended: create the conda env "bjet-mcmc" from `environment.yml` using `conda env create -f environment.yml`
+## Installation and running Bjet_MCMC:
+1. Ensure all dependencies are installed, see [dependencies](#dependencies). Recommended: create the conda env "bjet-mcmc" from `environment.yml` using `conda env create -f environment.yml`. Then load your environment with `conda activate bjet-mcmc`.
 2. Create a copy of `mcmc_config_template.txt` called `mcmc_config.txt`. For information, see [configuration file](#mcmc-configuration-file). 
 3. Ensure the data file is formatted as described below and is at the relative path specified in `mcmc_config.txt`, see [data format](#data-format).
 4. Navigate inside folder `blazar_mcmc`. Currently, code **must** be run from inside this folder or the imports won't work.
