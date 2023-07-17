@@ -11,7 +11,7 @@ The code is licensed under a [BSD-3-Clause License](LICENSE).
 
 Acknowledgments
 -------
-If you use this code in a scientific publication or communication, please cite the paper [Hervet at al. 2015](https://ui.adsabs.harvard.edu/abs/2015A%26A...578A..69H/abstract)
+If you use this code in a scientific publication or communication, please cite the paper [Hervet at al. 2015](https://ui.adsabs.harvard.edu/abs/2015A%26A...578A..69H/abstract).
 Another paper in prep. should be available soon.
 
 
