@@ -2,10 +2,11 @@
 
 Bjet_MCMC is a MCMC python wrapper around the C++ code Bjet. It can be used to model multiwavelength spectral energy distributions of blazars, considering one-zone synchrotron-self-Compton (SSC) model with or without the addition of external inverse-Compton process from the thermal emission of the nucleus.
 
-The main contributors of Bjet_MCMC are (in alphabetical order): Olivier Hervet, Caitlin Johnson, Adrian Youngquist
+The main contributors of Bjet_MCMC are: Olivier Hervet, Caitlin Johnson, Adrian Youngquist
 
-## Important note:
-This code is still private at the moment. Do not share any part of the code or any results from it without the explicit approbation of Olivier Hervet (ohervet@ucsc.edu).
+License
+-------
+The code is licensed under a [BSD-3-Clause License](LICENSE).
 
 ## Installation and running Bjet_MCMC:
 1. Ensure all dependencies are installed, see [dependencies](#dependencies). Recommended: create the conda env "bjet-mcmc" from `environment.yml` using `conda env create -f environment.yml`. Then load your environment with `conda activate bjet-mcmc`.
