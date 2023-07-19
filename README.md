@@ -9,10 +9,10 @@ License
 The code is licensed under a [BSD-3-Clause License](LICENSE).
 
 
-Acknowledgments
+Acknowledgments and citation
 -------
-If you use this code in a scientific publication or communication, please cite the paper [Hervet at al. 2015](https://ui.adsabs.harvard.edu/abs/2015A%26A...578A..69H/abstract).
-Another paper in prep. should be available soon.
+If you use this code in a scientific publication or communication, please cite the paper [Hervet at al. 2023](https://arxiv.org/abs/2307.08804) (Submitted to ApJ). For any use of the multi-zones SSC option, please also cite [Hervet at al. 2015](https://ui.adsabs.harvard.edu/abs/2015A%26A...578A..69H/abstract).
+
 
 
 
