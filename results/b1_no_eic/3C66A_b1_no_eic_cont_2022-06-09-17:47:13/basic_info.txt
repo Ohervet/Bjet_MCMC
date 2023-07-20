@@ -1,8 +1,0 @@
-folder name: local_results/3C66A_b1_no_eic_cont_2022-06-09-17:47:13
-report description: Finishing 3C66A b1 without EIC POST FIX (correct redshift)
-
-configurations:
-{'description': 'Finishing 3C66A b1 without EIC POST FIX (correct redshift)', 'folder_label': '3C66A_b1_no_eic_cont', 'eic': False, 'data_file': 'real_data/3C66A_sed_block1.dat', 'n_steps': 60, 'n_walkers': 300, 'discard': 0, 'parallel': True, 'use_variability': True, 'tau_variability': 1392.0, 'redshift': 0.34, 'custom_alpha2_limits': False, 'alpha2_limits': [1.5, 7.5]}
-p0 given
-
-time: 0:42:07.560091

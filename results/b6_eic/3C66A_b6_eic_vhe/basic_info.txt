@@ -1,5 +1,0 @@
-folder name: local_results/vhe7_3C66A_b6_eic_2022-06-05-21:25:16
-report description: 3C66A Block 6 with EIC (POST REDSHIFT FIX) on vhe7
-
-configurations:
-{'description': '3C66A Block 6 with EIC (POST REDSHIFT FIX) on vhe7', 'folder_label': 'vhe7_3C66A_b6_eic', 'eic': True, 'data_file': 'real_data/3C66A_sed_block6.dat', 'n_steps': 4000, 'n_walkers': 300, 'discard': 500, 'parallel': True, 'use_variability': True, 'tau_variability': 47472.0, 'redshift': 0.34, 'custom_alpha2_limits': False, 'alpha2_limits': [1.5, 7.5]}
