@@ -1,16 +1,16 @@
 # Configuration file for running mcmc
 
 # description:
-description=3C66A_sed_block1_SSC
+description=J1010
 
 # folder label:
-folder_label=3C66A_sed_block1_SSC
+folder_label=J1010
 
 # eic (True/False):
 eic=False
 
 # Data file:
-data_file=real_data/3C66A_sed_block1.dat
+data_file=real_data/J1010_SED_reduced.dat
 
 # Number of steps:
 n_steps=1000
@@ -31,10 +31,10 @@ cores=15
 use_variability=False
 
 # tau variability (in hours):
-tau_variability = 240
+tau_variability = 24
 
 # redshift
-redshift = 0.340
+redshift = 0.143
 
 # Custom alpha2 limits (True/False, <val1>, <val2>) val1 and val2 optional
 custom_alpha2_limits=False
