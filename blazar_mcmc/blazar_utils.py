@@ -282,7 +282,7 @@ def read_data(data_file, cols=(0, 1, 4), use_E=True, verbose=False, instrument=F
         verbose (optional): bool
             specifies if data are displayed; default is False
         instrument (optional): bool
-            return the instrument use for each data point; default is False
+            return the instrument use for each data point in addidion to a better data format for plotting the SED; default is False
 
     Returns:
         tuple of 3 1D np arrays of floats
@@ -296,37 +296,46 @@ def read_data(data_file, cols=(0, 1, 4), use_E=True, verbose=False, instrument=F
 
     # get v data (may need to convert from E)
     if use_E:
-        #E_data = raw_data[:, cols[0]]
-        E_data = table['!E(eV)']
         h = 4.135667662E-15  # eV * s
-        v_data = E_data / h
+        v_data = table['!E(eV)']/h
+        v_low = table['delta_E(-)']/h
+        v_high = table['delta_E(+)']/h
     else:
-        #v_data = raw_data[:, cols[0]]
         v_data = table['!E(eV)']
-    #vFv_data = raw_data[:, cols[1]]
+        v_low = table['delta_E(-)']
+        v_high = table['delta_E(+)']
     vFv_data = table['F(ergcm-2s-1)']
-    #err_data = raw_data[:, cols[2]]  # uncertainty/error on vFv
     err_data = table['delta_F(-)']
     err_data_up = table['delta_F(+)']
 
-    # remove values where the error is 0
-    indices_to_remove = np.where(err_data == 0)[0]
-    err_data_filtered = np.array([np.delete(err_data, indices_to_remove), np.delete(err_data_up, indices_to_remove)])
-    v_data_filtered = np.delete(v_data, indices_to_remove)
-    vFv_data_filtered = np.delete(vFv_data, indices_to_remove)
 
-    if verbose:
-        print("Data from", data_file)
-        print("v_data_filtered:", v_data_filtered)
-        print("vFv_data_filtered:", vFv_data_filtered)
-        print("err_data_filtered:", err_data_filtered)
+    # remove values where the error is 0
+    if instrument == False:
+        indices_to_remove = np.where(err_data == 0)[0]
+        err_data_filtered = np.array([np.delete(err_data, indices_to_remove), np.delete(err_data_up, indices_to_remove)])
+        v_data_filtered = np.delete(v_data, indices_to_remove)
+        #nubin_data_filtered = np.array([np.delete(v_low, indices_to_remove), np.delete(v_high, indices_to_remove)])
+        vFv_data_filtered = np.delete(vFv_data, indices_to_remove)
+
+        if verbose:
+            print("Data from", data_file)
+            print("v_data_filtered:", v_data_filtered)
+            print("vFv_data_filtered:", vFv_data_filtered)
+            print("err_data_filtered:", err_data_filtered)
         
     if instrument:
         instrument_data = table['instrument']
-        instrument_data_filtered = np.delete(instrument_data, indices_to_remove)
+        err_data = np.array([err_data, err_data_up])
+        nubin_data = np.array([v_low,v_high])
+        #instrument_data_filtered = np.delete(instrument_data, indices_to_remove)
         if verbose:
-            print("instrument_data_filtered:", instrument_data_filtered)
-        return v_data_filtered, vFv_data_filtered, err_data_filtered, instrument_data_filtered
+            print("Data from", data_file)
+            print("v_data:", v_data)
+            print("vFv_data:", vFv_data)
+            print("err_data:", err_data)
+            print("instrument_data:", instrument_data)
+            print("nubin_data:", nubin_data)
+        return v_data, vFv_data, err_data, instrument_data, nubin_data
     else:
         return v_data_filtered, vFv_data_filtered, err_data_filtered
 
@@ -378,6 +387,10 @@ def get_random_parameters(param_min_vals=None, param_max_vals=None, alpha2_limit
                                     use_variability=use_variability)):
         parameters = param_min_vals + parameter_size * np.random.rand(dim)
     return parameters
+
+ #need to implement gaussian ball of random parameters around "standard blazar values"
+ # mu gauss = best params for J1010 for example
+ #sig gauss = parameter space /10 (100?)
 
 
 def random_defaults(walkers, param_min_vals=None, param_max_vals=None, alpha2_limits=None, redshift=None, tau_var=None,
@@ -489,7 +502,7 @@ def min_max_parameters(alpha2_limits=None, eic=False, fixed_params=None):
     if alpha2_limits is None or len(alpha2_limits) != 2:
         alpha2_limits = (1.5, 7.5)
     param_min_vals = [1., 0., 1., float(alpha2_limits[0]), 0., 3., 2., -4., 14.]
-    param_max_vals = [100., 8., 5., float(alpha2_limits[1]), 5., 8., 6.699, 0., 19.]
+    param_max_vals = [100., 8., 5., float(alpha2_limits[1]), 5., 8., 7.0, 0., 19.]
     if eic:
         extra_min = [3.5, 40.0, -5.0, 15]
         extra_max = [6.0, 50.0, 0.0, 21.0]
@@ -553,7 +566,7 @@ def log_prior(params, param_min_vals=None, param_max_vals=None, redshift=None, t
     delta, K, n1, n2, gamma_min, gamma_max, gamma_break, B, R, *other_params = params
     if n1 > n2 or gamma_min > gamma_max or gamma_break < gamma_min or gamma_break > gamma_max:
         return -np.inf
-    # testing if between min and max
+    # check if between min and max
     for i in range(len(params)):
         # gamma break is solely constrained by gamma_min and gamma_max
         if i != 6 and (param_min_vals[i] > params[i] or param_max_vals[i] < params[i]):
@@ -707,7 +720,7 @@ def chi_squared(params, v_data, vFv_data, err_data, name_stem=None, theta=None, 
                                             command_params_2=command_params_2, parameter_file=parameter_file,
                                             prev_files=prev_files, use_param_file=use_param_file, verbose=verbose,
                                             eic=eic)
-
+    
     return chi_squared_from_model(model_results, v_data, vFv_data, err_data)
 
 
@@ -864,8 +877,6 @@ def log_probability(params, v_data, vFv_data, err_data, name_stem=None, param_mi
                                 command_params_1=command_params_1, command_params_2=command_params_2,
                                 parameter_file=parameter_file, prev_files=prev_files, use_param_file=use_param_file,
                                 verbose=verbose, eic=eic)
-
-    # delete the files created
     if use_param_file:
         os.remove(parameter_file)
 
