@@ -27,18 +27,11 @@ residual = "sigma"
 backend_file = input("Enter relative path to backend file: ")
 #example: local_results/J1010/J1010_2023-07-04-23:03:45/backend.h5
 
-#local_results/NGC_1275/Low_state_Anjana/backend.h5
-#local_results/NGC1275_SSC_2023-10-08-21:43:20/backend.h5
-#local_results/PKS_1222_eic_2023-02-24-12:55:28/backend.h5
-#local_results/PKS_1222_eic_2023-07-08-23:21:45/backend.h5
-#local_results/PKS_1222_eic_TauLnuc_fixed_2023-07-10-20:21:30/backend.h5
-#local_results/PKS_1222_eic_TauLnuc_fixed_2023-07-15-01:43:32/backend.h5
-
 
 #user defined SED plot boundaries
 boundaries = "default"
 #if you want to set boundaries (nu in Hz, nuFnu in erg.cm-2.s-1):
-#boudaries = [nu_min,nu_max, nuFnu_min, nuFnu_max]
+#boundaries = [nu_min,nu_max, nuFnu_min, nuFnu_max]
 
 #frequency/energy conversion
 h = 4.135667662E-15
