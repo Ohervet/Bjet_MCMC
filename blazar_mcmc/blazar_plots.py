@@ -147,7 +147,7 @@ def plot_data(title=None, no_title=False, adjust_scale=True, lower_adjust_multip
         plt.title(title)
     configs = blazar_utils.read_configs()
     data = blazar_utils.read_data(configs["data_file"], instrument=True)
-    v_data, vFv_data, err_data, instrument_data = data
+    v_data, vFv_data, err_data, instrument_data, nubin_data = data
     list_intruments=[instrument_data[0]]
     v_data_inst = [v_data[0]]
     vFv_data_inst = [vFv_data[0]]
@@ -244,7 +244,7 @@ def plot_model_and_data(model, v_data, vFv_data, err_data, flat_samples, indices
     
     command_params_1, command_params_2 = blazar_model.command_line_sub_strings(name_stem=name_stem, redshift=redshift, 
                                                                                prev_files=False, eic=eic)
-    command_params_2[3] = "300" # number of points for the SED
+    command_params_2[3] = "99" # number of points for the SED
     lowest_per_point, highest_per_point = get_min_max_per_point(model[0], to_plot, name_stem=name_stem,redshift=redshift,
                                                                 command_params_1=command_params_1,
                                                                 command_params_2=command_params_2, eic=eic,
@@ -357,9 +357,9 @@ def plot_chain(chain, param_names=None, file_name="chain." + image_type, save=Fa
         plt.show()
 
 
-def plot_chi_squared(values, discard_number, use_log_probs=True, plot_type='avg', title=None, no_title=False, fmt='',
-                     file_name="avg_chi_squared_plot." + image_type, save=False, show=True, clear_plot=True):
-    if plot_type not in ['avg', 'best', 'all']:
+def plot_chi_squared(values, discard_number, use_log_probs=True, plot_type='med', title=None, no_title=False, fmt='',
+                     file_name="med_chi_squared_plot." + image_type, save=False, show=True, clear_plot=True):
+    if plot_type not in ['med', 'best', 'all']:
         raise ValueError(plot_type + " is not a valid plot type")
 
     if clear_plot:
@@ -369,10 +369,10 @@ def plot_chi_squared(values, discard_number, use_log_probs=True, plot_type='avg'
     else:
         chi_sq = 1. * values
 
-    if plot_type == 'avg':
-        chi_sq = np.mean(chi_sq, axis=1)
+    if plot_type == 'med':
+        chi_sq = np.median(chi_sq, axis=1)
         if title is None and not no_title:
-            title = r"Average $\chi^2$ by Step"
+            title = r"Median $\chi^2$ by Step"
         plt.plot(np.arange(discard_number, discard_number + len(chi_sq)), chi_sq[:], fmt)
     elif plot_type == 'best':
         chi_sq = np.min(chi_sq, axis=1)
