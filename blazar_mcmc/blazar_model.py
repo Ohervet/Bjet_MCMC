@@ -214,9 +214,14 @@ def add_data(current_data, new_data=None, file_suffix=None, name_stem=None, data
             raise IOError(
                 "add_data: " + BASE_PATH + data_folder + "/" + name_stem + "_" + file_suffix + ".dat cannot be read")
 
-        model_logv = model_data[:, cols[0]]
-        model_logvFv = model_data[:, cols[1]]
-        model_vFv = np.power(10, model_logvFv)
+        if name_stem == "F_jet":
+            model_logv = model_data[:, 3]
+            model_logvFv = model_data[:, 5]
+            model_vFv = model_data[:, 2]
+        else:
+            model_logv = model_data[:, cols[0]]
+            model_logvFv = model_data[:, cols[1]]
+            model_vFv = np.power(10, model_logvFv)
     else:
         raise ValueError("In add_data, data or file suffix not provided")
 
@@ -308,12 +313,14 @@ def process_model(name_stem=None, data_folder=None, verbose=False, eic=False, ad
 
     logv, logvFv, v, vFv = add_data((logv_synchrotron, logvFv_synchrotron, v_synchrotron, vFv_synchrotron),
                                     file_suffix='cs', name_stem=name_stem, data_folder=data_folder)
+    logv, logvFv, v, vFv = add_data((logv, logvFv, v, vFv), file_suffix='cs2', name_stem=name_stem,
+                                    data_folder=data_folder)
     # Total energy flux is determined by summing the flux from the compton and
     # synchrotron models.
 
     if eic:
         if additional_suffixes is None:
-            additional_suffixes = ['ecs', 'cs2', 'nuc']
+            additional_suffixes = ['ecs', 'nuc']
         if verbose:
             print("process_model EIC mode: ss cs", *additional_suffixes, "read")
         for s in additional_suffixes:
@@ -391,12 +398,11 @@ def command_line_sub_strings(name_stem=None, theta=None, redshift=None, min_freq
         theta = 0.57
     if redshift is None:
         print("here in command_line_sub_strings")
-        # redshift = 0.143
         pass
     if min_freq is None:
-        min_freq = 2.0e+09
+        min_freq = 1.0e+08
     if max_freq is None:
-        max_freq = 5.0e+29
+        max_freq = 1.0e+28
     if data_folder is None:
         data_folder = DATA_FOLDER
     if prev_files:
