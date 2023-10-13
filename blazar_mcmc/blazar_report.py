@@ -12,7 +12,7 @@ Function save_plots_and_info (given the configurations, the data, and
 the minima/maxima for the parameters, and a source of MCMC data) creates a folder
 with an info.txt file and plots:
     - Corner plot
-    - Plots of chi squared (avg, best, all by step)
+    - Plots of chi squared (med, best, all by step)
     - Plots of the best model with data and models within 1 sigma (random
       models, extreme models, and a combination of both)
     - Plot of the chain
@@ -251,7 +251,7 @@ def save_plots_and_info(configs, data, param_min_vals, param_max_vals, folder=No
     
     command_params_1, command_params_2 = blazar_model.command_line_sub_strings(name_stem=name_stem, redshift=redshift, 
                                                                                prev_files=False, eic=eic)
-    command_params_2[3] = "300"  # number of points used to make SED
+    command_params_2[3] = "99"  # number of points used to make SED
     
     
     
@@ -261,6 +261,7 @@ def save_plots_and_info(configs, data, param_min_vals, param_max_vals, folder=No
                                     command_params_full=command_params_full, command_params_1=command_params_1,
                                     command_params_2=command_params_2, prev_files=False, use_param_file=False,
                                     verbose=verbose, eic=eic, fixed_params=configs["fixed_params"])
+    
 
     for f in glob.glob(BASE_PATH + DATA_FOLDER + "/" + name_stem + "_*"):
         os.remove(f)
@@ -279,8 +280,8 @@ def save_plots_and_info(configs, data, param_min_vals, param_max_vals, folder=No
     #This output is not easy to read, so not fully relevant. removed for now
     # blazar_plots.plot_chain(chain, file_name=(folder + "/plot_of_chain.jpeg"), save=True, show=False,
     #                         eic=eic)  # too much stuff for svg
-    blazar_plots.plot_chi_squared(log_probs, configs["discard"], plot_type='avg',
-                                  file_name=(folder + "/chi_squared_plot_avg.svg"), save=True, show=False)
+    blazar_plots.plot_chi_squared(log_probs, configs["discard"], plot_type='med',
+                                  file_name=(folder + "/chi_squared_plot_med.svg"), save=True, show=False)
     blazar_plots.plot_chi_squared(log_probs, configs["discard"], plot_type='best',
                                   file_name=(folder + "/chi_squared_plot_best.svg"), save=True, show=False)
     blazar_plots.plot_chi_squared(log_probs, configs["discard"], plot_type='all',
