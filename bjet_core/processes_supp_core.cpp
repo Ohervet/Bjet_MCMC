@@ -667,7 +667,7 @@ double j_com(double (*elec_spec)(double),
       
       tmp_min = log10(nu_rad_min);
       tmp_max = log10(nu_rad_max);
-      tmp_stp = (tmp_max - tmp_min) / (nu_rad_dim - 1);
+      tmp_stp = (tmp_max - tmp_min) / (nu_rad_dim); // changed (nu_rad_dim - 1) in (nu_rad_dim) for consistency with the main method
       tmp_val = tmp_min;        
    
       for (k = 1; k <= nu_rad_dim; k++) {
@@ -688,7 +688,7 @@ double j_com(double (*elec_spec)(double),
       
       sum = 0.0;
          
-      for (k = 1; k <= nu_rad_dim - 1; k++) {
+      for (k = 1; k <= nu_rad_dim-1; k++) {
          if (epss[k] <= epsc_cur) {
       
    	   xf       = epss[k];
@@ -697,13 +697,14 @@ double j_com(double (*elec_spec)(double),
 	 	   	 
 	   epss_cur = epss[k];	 	   	   
 	   
+     //discretization of e- lorentz factors
 	   stp = (log10(gamma_max) - log10(gamma_min)) / (prec1 - 1);
            val = log10(gamma_min);
            yf  = 0.0;
       
-           for (j = 1; j <= prec1 - 1; j++) {
-              x1  = pow(10.0, val);
-              x2  = pow(10.0, val + stp);	      	      
+     for (j = 1; j <= prec1 - 1; j++) {
+        x1  = pow(10.0, val);
+        x2  = pow(10.0, val + stp);	      	      
 	      	      
 	      gauleg(x1, x2, x, w, x_dim);
 	 
@@ -717,8 +718,8 @@ double j_com(double (*elec_spec)(double),
 	      }	      
 	      yf  += prt;	 
               val += stp;
-           }	   
-   	   yf       = yf * n_p[k];		 	 
+      }	   
+   	   yf  = yf * n_p[k];		 	 
 	 
 	   epss_cur = epss[k+1];   	
 	   
@@ -732,7 +733,7 @@ double j_com(double (*elec_spec)(double),
 	      
 	      gauleg(x1, x2, x, w, x_dim);
 	 
-	      for (prt = 0.0, i = 1; i <= x_dim; i++) {
+	  for (prt = 0.0, i = 1; i <= x_dim; i++) {
 		if (epsc_cur <= ((x[i] * 4.0 * x[i] * epss_cur) / (1.0 + 4.0 * epss_cur * x[i]))) {
 		  ff = elec_spec(x[i]) * Compton_kernel(epsc_cur, x[i], epss_cur);
 		} else {

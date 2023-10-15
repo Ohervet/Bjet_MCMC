@@ -39,7 +39,7 @@ Modes:
 - 2: _prev files are made, save in specified data folder
 - 3: no _prev files are made, save in specified data folder
 
-(default data directory is in the same directory as the executable, named "data")
+(default data directory is in the same directory as the executable, named "output")
 
 Valid values for model type:
 - 0: model with just blob
@@ -107,7 +107,7 @@ namespace bj_core02 {
     int INPUT_MODE = 0; // Sarah Youngquist added;
     // 0 = normal
     // 1 = no prev files
-    char DATA_DIRECTORY[254] = "data";
+    char DATA_DIRECTORY[254] = "output";
     int CASE_JET;
     int CASE_X;
     int CASE_EIC;
@@ -1049,11 +1049,11 @@ double N_e_Jet(double gg) {
 
 
       //Maximum Lorentz factor case, for NGC 1275
-            /*
+         /*
       V_B = c * (DOP_B * DOP_B * cos(THETA * M_PI / 180.0) +
             sqrt(1.0 - DOP_B * DOP_B * sin(THETA * M_PI / 180.0) * sin(THETA * M_PI / 180.0))) /
       (1.0 + DOP_B * DOP_B * cos(THETA * M_PI / 180.0) * cos(THETA * M_PI / 180.0));
-      fprintf(stderr, "Be careful, the code is set up in minimum Doppler boosting mode!\n");
+      fprintf(stderr, "Be careful, the code is set up in Maximum Lorentz factor mode! This is a radiogalaxy setup\n");
       */
       LOR_B = 1.0 / sqrt(1.0 - pow(V_B / c, 2.0));
 
@@ -1172,7 +1172,7 @@ double N_e_Jet(double gg) {
       }
 
       // SAVING ELECTRONS ENERGY SPECTRUM
-
+	
       sprintf(stmp, "%s/%s_es.dat", DATA_DIRECTORY, prefix);
       if (INPUT_MODE == 0) {
 
@@ -1196,8 +1196,8 @@ double N_e_Jet(double gg) {
         }
         tmp_val = tmp_val + tmp_stp;
       }
-
-
+     
+      
       fclose(stream_dat);
 
       elec_spec_tot_b = int_spec_b(2);
@@ -1208,7 +1208,7 @@ double N_e_Jet(double gg) {
       Lb_p = M_PI * R_src * R_src * LOR_B * LOR_B * c * m_p * c * c * int_spec_b(1);
 
 
-
+	
       // PREPARING FREQUENCY VECTOR
 
       NU_STR_B = FreqTransO2S(NU_STR, DOP_B, z);
@@ -1230,7 +1230,7 @@ double N_e_Jet(double gg) {
 
       fprintf(stderr, "CALCULATING SYNCHROTRON SPECTRUM ... ");
 
-
+      
       // CALCULATING SYNCHROTRON SPECTRUM
       if (CASE_JET == 0) {
         sprintf(stmp, "%s/%s_ss.dat", DATA_DIRECTORY, prefix);
@@ -1321,9 +1321,17 @@ double N_e_Jet(double gg) {
 
         // emission & absorption coefficients
         jj = j_com(N_e, GAMMA_MIN, GAMMA_MAX, I_rad, 
-                  NU_STR_B, 
-		  NU_END_B, 
+                  NU_STR_B,NU_END_B, 
                   NU_DIM, NU[i], COM_PREC1, COM_PREC2); 
+        //test
+        /*
+        if (i == 0){
+          dtmp4 = jj;
+        }
+        if (jj >= dtmp4){
+          dtmp4 = jj;
+        }
+        */
 
         kk = gg_abs(NU[i], I_rad, NU_DIM, 
                     NU_STR_B, 
@@ -1389,6 +1397,9 @@ double N_e_Jet(double gg) {
         if (PRINT) fprintf(stderr, "\b\b\b");
       }
 
+      //test
+      //fprintf(stderr, "Max compton emission coeff = %e \n",dtmp4);
+
       if (CASE_JET == 0 && CASE_EIC == 0) {
         fclose(stream_dat);
         fclose(stream_tau);
@@ -1402,7 +1413,7 @@ double N_e_Jet(double gg) {
       fprintf(stderr, "CALCULATING 2nd ORDER SSC SPECTRUM ... ");
 
 
-      // CALCULATING 2nd ORDER INVERSE-COMPTON SPECTRUM
+      // CALCULATING 2nd ORDER INVERSE-COMPTON SPECTRUM/
 
       if (CASE_JET == 0) {
         sprintf(stmp, "%s/%s_cs2.dat", DATA_DIRECTORY, prefix);
@@ -2608,6 +2619,7 @@ double N_e_Jet(double gg) {
       }
 
 
+      if (CASE_EIC == 1) {
       fprintf(stderr, "CALCULATING RADIATION ABSORPTION OF THE BLOB EMISSION THROUGH THE BLR ... ");
 
       // PREPARING FREQUENCY VECTOR
@@ -2821,6 +2833,7 @@ double N_e_Jet(double gg) {
         Ub_eicd = 4 * M_PI / c * Simpson(I_com_ext, NU, NU_DIM, 1, NU_DIM);
 
       }
+    }
 
 
       if (CASE_JET) {
