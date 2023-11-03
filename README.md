@@ -24,8 +24,6 @@ If you use this code in a scientific publication or communication, please cite t
 5. First time use: execute `blazar_initialize.py` with `python blazar_initialize.py` or `python3 blazar_initialize.py` depending on your Python setup. This creates all necessary folders and compiles the C++ code (see [bjet](#using-bjet_02)).
 6. Execute `blazar_run_mcmc.py` with `python blazar_run_mcmc.py` or `python3 blazar_run_mcmc.py` depending on your Python setup. 
 
-`console_data_processing.py` can be executed in an interactive Python console. It loads all information necessary for calling functions to create statistics and plots given a path relative to `BASE_PATH` for a results folder. 
-
 By default, configurations are read from `mcmc_config.txt` and results are written to a file in `local_results` entitled `run_yyyy-mm-dd-hh:mm:ss`. 
 
 ### Dependencies
