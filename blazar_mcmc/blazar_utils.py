@@ -122,7 +122,7 @@ import blazar_model
 from blazar_properties import *
 
 
-def read_configs(config_file="mcmc_config.txt", config_string=None, verbose=False):
+def read_configs(config_file=None, config_string=None, verbose=False):
     """
     Given a relative path to a file, read the mcmc configs.
     If custom alpha 2 limits are not specified, the defaults of 1.5 and 7.5 will
@@ -134,7 +134,8 @@ def read_configs(config_file="mcmc_config.txt", config_string=None, verbose=Fals
 
     Args:
         config_file (optional): str
-            Relative path to file with configurations; default is "mcmc_config.txt"
+            Absolute path to file with configurations; default is None, using the 
+            relative path to "mcmc_config.txt"
         config_string (optional): str
             This is a string of the form {'key': value, ...}. If a config_string
             is given, it will be parsed instead of reading from the file. This is
@@ -176,9 +177,13 @@ def read_configs(config_file="mcmc_config.txt", config_string=None, verbose=Fals
     ssc_parameters = ["delta", "K","n1","n2", "gamma_min","gamma_max", "gamma_break","B","R"]
     eic_parameters = ["bb_temp", "l_nuc", "tau", "blob_dist"]
     configurations = {}  # dictionary of parameters
+    if config_file is None:
+        CONFIG_PATH = FOLDER_PATH+"mcmc_config.txt"
+    else:
+        CONFIG_PATH = config_file
     if config_string is None:
         # read configurations
-        with open(FOLDER_PATH + config_file, 'r') as file:
+        with open(CONFIG_PATH, 'r') as file:
             if verbose:
                 print("Reading configuration options from:", config_file)
             for line in file:
@@ -502,7 +507,7 @@ def min_max_parameters(alpha2_limits=None, eic=False, fixed_params=None):
     if alpha2_limits is None or len(alpha2_limits) != 2:
         alpha2_limits = (1.5, 7.5)
     param_min_vals = [1., 0., 1., float(alpha2_limits[0]), 0., 3., 2., -4., 14.]
-    param_max_vals = [100., 8., 5., float(alpha2_limits[1]), 5., 8., 7.0, 0., 19.]
+    param_max_vals = [100, 8., 5., float(alpha2_limits[1]), 5., 8., 7.0, 0., 19.]
     if eic:
         extra_min = [3.5, 40.0, -5.0, 15]
         extra_max = [6.0, 50.0, 0.0, 21.0]
