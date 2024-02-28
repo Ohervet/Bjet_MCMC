@@ -18,13 +18,13 @@ If you use this code in a scientific publication or communication, please cite t
 
 ## Installation and running Bjet_MCMC:
 1. Ensure all dependencies are installed, see [dependencies](#dependencies). Recommended: create the conda env "bjet-mcmc" from `environment.yml` using `conda env create -f environment.yml`. Then load your environment with `conda activate bjet-mcmc`.
-2. Create a copy of `mcmc_config_template.txt` called `mcmc_config.txt`. For information, see [configuration file](#mcmc-configuration-file). 
+2. Create a copy of `mcmc_config_template.txt` called `mcmc_config.txt`. For information and customized configuration files, see [configuration file](#mcmc-configuration-file). 
 3. Ensure the data file is formatted as described below and is at the relative path specified in `mcmc_config.txt`, see [data format](#data-format).
 4. Navigate inside folder `blazar_mcmc`. Currently, code **must** be run from inside this folder or the imports won't work.
 5. First time use: execute `blazar_initialize.py` with `python blazar_initialize.py` or `python3 blazar_initialize.py` depending on your Python setup. This creates all necessary folders and compiles the C++ code (see [bjet](#using-bjet_02)).
 6. Execute `blazar_run_mcmc.py` with `python blazar_run_mcmc.py` or `python3 blazar_run_mcmc.py` depending on your Python setup. 
 
-By default, configurations are read from `mcmc_config.txt` and results are written to a file in `local_results` entitled `run_yyyy-mm-dd-hh:mm:ss`. You can customize path and name for your configuration file by entering the absolute path of you configuration file as an argument of `blazar_run_mcmc.py`, such as `python blazar_run_mcmc.py /home/myconfigfile.txt`
+By default, configurations are read from `mcmc_config.txt` and results are written to a file in `local_results` entitled `run_yyyy-mm-dd-hh:mm:ss`.
 
 ### Dependencies
 ###### **Recommended:** create conda env from `environment.yml` using `conda env create -f environment.yml`
@@ -112,7 +112,7 @@ As an optional parameter, these can be changed. The data must be space-delimited
 All rows of data **must have the same number of rows**.
 
 ### MCMC configuration file
-The default configuration file is `mcmc_config.txt` in the main directory. If you would like to use a different file, in `blazar_run_mcmc.py` in main, replace `config_file=None` and/or `directory=None` with the location of the config file and/or the desired directory for results. (If the defaults are OK, no code should need editing.)
+The default configuration file is `mcmc_config.txt` in the main directory. If you would like to use a different file, you can enter the absolute path of your configuration file as an argument when running `blazar_run_mcmc.py`, such as `python blazar_run_mcmc.py /home/myconfigfile.txt`
 
 There is a file named `mcmc_config_template.txt` as an example. Make a copy of this file named `mcmc_config.txt`. 
 This file is automatically in `.gitignore` since it changes locally.
