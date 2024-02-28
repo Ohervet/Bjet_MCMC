@@ -41,6 +41,7 @@ mcmc(config_file=None, directory=None, p0=None, p0_label=None)
 import datetime
 import multiprocessing
 import os
+import sys
 import platform
 import shutil
 import numpy as np
@@ -57,9 +58,6 @@ from blazar_properties import *
 
 def run_mcmc(configs, param_min_vals=None, param_max_vals=None, backend_file=RESULTS_FOLDER + "/backend.h5", p0=None, p0_file=None, eic_p0_from_std=False, min_freq=None, max_freq=None, prev_files=False, use_param_file=True, eic=False):
     """
-    TODO: check which params actually need to be np arrays and which can be any iterable
-    Does the heavy lifting for the MCMC. Given a parameter file, it runs the MCMC.
-
     Arguments:
         configs: dictionary; keys are strings, value types are mixed
             Configurations usually obtained with read_configs. See below for
@@ -102,7 +100,7 @@ def run_mcmc(configs, param_min_vals=None, param_max_vals=None, backend_file=RES
                                 if absent and parallel TRUE,
                                 (# cores on machine - 1) used
     "tau_variability"       (float) time in hours for variability constraint
-    """
+    """   
     if configs["parallel"]:
         if "cores" not in configs:
             pool = multiprocessing.Pool()
@@ -214,7 +212,7 @@ def mcmc(config_file=None, directory=None, folder_label=None, p0=None, p0_label=
     Arguments:
         all arguments are optional
         config_file (optional): str
-            Relative path to configuration file; default is None; if none,
+            Absolute path to configuration file; default is None; if none,
             it will be set to "mcmc_config.txt"
         directory (optional): str
             Location for results; default is none; if none, it will
@@ -231,8 +229,6 @@ def mcmc(config_file=None, directory=None, folder_label=None, p0=None, p0_label=
             Label describing where the p0 values came from; default
             is none; if none, the label will be "random"
     """
-    if config_file is None:
-        config_file = "mcmc_config.txt"
     configs = blazar_utils.read_configs(config_file=config_file)
     
     if description is None and "description" in configs:
@@ -311,12 +307,19 @@ def mcmc(config_file=None, directory=None, folder_label=None, p0=None, p0_label=
 
 if __name__ == "__main__":
     """
-    Calling blazar_mcmc will run mcmc using the configurations in mcmc_config.txt
+    Calling blazar_run_mcmc.py without argument will run mcmc using the configurations in mcmc_config.txt
+    To run it with a specific configuration file, the absolute path can be given as first argument
+    e.g. $ python blazar_run_mcmc.py /home/my_configfile.txt
     and save data to RESULTS_FOLDER/run_yyyy-mm-dd-hh:mm:ss.
     """
     if INITIALIZE:
         blazar_clean.clean()
         blazar_initialize.initialize()
+        
+    if len(sys.argv) > 1:
+        config_file = sys.argv[1]
+    else:
+        config_file = None
 
     #label_p0 = "From local_results/3C66A_b5_no_eic_2022-07-20-19:42:07/backend.h5"
     label_p0 = None
@@ -325,7 +328,7 @@ if __name__ == "__main__":
     #file_p0 = "local_results/TON_599_no_eic/backend.h5"
     file_p0 = None
     p0_eic_from_std = False
-    sampler_result, results_directory = mcmc(use_param_file=False, p0_label=label_p0, p0=p0_values, p0_file=file_p0, eic_p0_from_std=p0_eic_from_std)
+    sampler_result, results_directory = mcmc(config_file=config_file, use_param_file=False, p0_label=label_p0, p0=p0_values, p0_file=file_p0, eic_p0_from_std=p0_eic_from_std)
     if TMP:
         shutil.move(BASE_PATH + results_directory, FOLDER_PATH + results_directory)
         shutil.rmtree(TEMP_DIR)
