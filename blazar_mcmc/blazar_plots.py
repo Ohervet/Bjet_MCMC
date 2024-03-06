@@ -829,11 +829,13 @@ def plot_particle_spectrum(best_params, min_1sigma_params, max_1sigma_params, fi
     parameter_samples = []
     for i in range(len(parameter_samples_down)):
         diff = params - parameter_samples_down[i]
-        #if diff >0, then True, means we keep parameter_sample
-        #else we replace parameters with the ones from up errors
         sign = diff > 0
-        #remove non-acceptet parameter sets from bjet
+        #be sure that parameter_samples_up are aways more than the mean
+        #by default from our method parameter_samples_down will always be below the mean
+        parameter_samples_up[i] =  params + np.abs(parameter_samples_up[i] - params)
+        #when a projection is below the mean, use parameter_samples_down, when above use parameter_samples_up
         parameter_samples_temp = parameter_samples_down[i]*sign + parameter_samples_up[i]*~sign
+        #remove non-acceptet parameter sets from bjet
         if parameter_samples_temp[1] <= parameter_samples_temp[2] and parameter_samples_temp[3] <= parameter_samples_temp[5] <= parameter_samples_temp[4]:    
             parameter_samples.append(parameter_samples_temp)
     realizations = np.array([N_e_BknPowLaw(gamma, pars[0], pars[1], pars[2], pars[5]) for pars in parameter_samples])
