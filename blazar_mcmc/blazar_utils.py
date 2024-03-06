@@ -121,6 +121,14 @@ from astropy.io import ascii
 import blazar_model
 from blazar_properties import *
 
+#ev Hz conversion
+h = 4.135667662E-15
+def v_to_e(val):
+    return val * h
+
+def e_to_v(val):
+    return val / h
+
 
 def read_configs(config_file=None, config_string=None, verbose=False):
     """

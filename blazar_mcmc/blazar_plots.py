@@ -32,6 +32,7 @@ import numpy as np
 import tqdm
 from matplotlib import pyplot as plt
 from scipy import interpolate
+from scipy import stats
 
 import blazar_model
 from blazar_properties import *
@@ -99,7 +100,7 @@ def plot_model(model, title=None, no_title=False, line=True, points=True, point_
         
         
 
-def plot_data(title=None, no_title=False, adjust_scale=True, lower_adjust_multiplier=None,
+def plot_data(data_file, title=None, no_title=False, adjust_scale=True, lower_adjust_multiplier=None,
               upper_adjust_multiplier=None, file_name=RESULTS_FOLDER + "/data." + image_type, clear_plot=True,
               save=False, show=True):
     """
@@ -134,6 +135,9 @@ def plot_data(title=None, no_title=False, adjust_scale=True, lower_adjust_multip
         If show is true, the plot is shown.
         If save is true, the plot is saved as file.
     """
+    filled_markers = ('o', 'v', '^', '<', '>', '8', 's', 'p', '*', 'h', 'H', 'D', 'd', 'P', 'X')
+    marker_size = 3
+    
     if clear_plot:
         plt.figure("Plot of data")
     fig, ax = plt.subplots()
@@ -145,32 +149,57 @@ def plot_data(title=None, no_title=False, adjust_scale=True, lower_adjust_multip
         title = "Data"
     if title is not None:
         plt.title(title)
-    configs = blazar_utils.read_configs()
-    data = blazar_utils.read_data(configs["data_file"], instrument=True)
+        
+
+    data = blazar_utils.read_data(data_file, instrument=True)
     v_data, vFv_data, err_data, instrument_data, nubin_data = data
+    #setting upper limits
+    uplims = [False]*len(v_data)
+    for i in range(len(err_data[1])):
+        if err_data[0][i] == 0:
+            uplims[i] = True
+            err_data[0][i] = vFv_data[i]/4
+    
     list_intruments=[instrument_data[0]]
     v_data_inst = [v_data[0]]
     vFv_data_inst = [vFv_data[0]]
     err_data_inst_down = [err_data[0][0]]
     err_data_inst_up = [err_data[1][0]]
+    nubin_data_inst_low = [nubin_data[0][0]]
+    nubin_data_inst_high = [nubin_data[1][0]]
+    uplims_inst = [uplims[0]]
     for i in range(1,len(instrument_data)):
         if instrument_data[i] != list_intruments[-1]:
-            ax.errorbar(v_data_inst, vFv_data_inst, yerr=(err_data_inst_down, err_data_inst_up), fmt='o', label=str(list_intruments[-1]), 
-                        markersize=3, elinewidth=1, color = cmap(len(list_intruments)))
+            ax.errorbar(v_data_inst, vFv_data_inst, xerr=(nubin_data_inst_low, nubin_data_inst_high), 
+                        yerr=(err_data_inst_down, err_data_inst_up), uplims = uplims_inst, 
+                        fmt=filled_markers[len(list_intruments)-1], label=str(list_intruments[-1]), 
+                        elinewidth=1, markersize=marker_size, color = cmap(len(list_intruments)))
             list_intruments.append(instrument_data[i])
             v_data_inst = [v_data[i]]
             vFv_data_inst = [vFv_data[i]]
             err_data_inst_down = [err_data[0][i]]
             err_data_inst_up = [err_data[1][i]]
+            nubin_data_inst_low = [nubin_data[0][0]]
+            nubin_data_inst_high = [nubin_data[1][0]]
+            uplims_inst = [uplims[i]]
         else:   
             v_data_inst.append(v_data[i])
             vFv_data_inst.append(vFv_data[i])
             err_data_inst_down.append(err_data[0][i])
             err_data_inst_up.append(err_data[1][i])
+            nubin_data_inst_low.append(nubin_data[0][i])
+            nubin_data_inst_high.append(nubin_data[1][i])
+            uplims_inst.append(uplims[i])
         if i == len(instrument_data)-1:
-            ax.errorbar(v_data_inst, vFv_data_inst, yerr=(err_data_inst_down, err_data_inst_up), fmt='o', label=str(list_intruments[-1]), 
-                        markersize=3, elinewidth=1, color = cmap(len(list_intruments)))
+            ax.errorbar(v_data_inst, vFv_data_inst, xerr=(nubin_data_inst_low, nubin_data_inst_high), 
+                        yerr=(err_data_inst_down, err_data_inst_up), uplims = uplims_inst, 
+                        fmt=filled_markers[len(list_intruments)-1], label=str(list_intruments[-1]), 
+                        elinewidth=1, markersize=marker_size, color = cmap(len(list_intruments)))
     ax.legend(loc='best',ncol=2)
+    
+    secax = ax.secondary_xaxis('top', functions=(blazar_utils.v_to_e, blazar_utils.e_to_v))
+    secax.set_xlabel("Energy (eV)")
+
     
     if adjust_scale:
         new_min, new_max = scale_to_values(vFv_data, lower_adjust_multiplier=lower_adjust_multiplier,
@@ -185,9 +214,9 @@ def plot_data(title=None, no_title=False, adjust_scale=True, lower_adjust_multip
         
         
 
-def plot_model_and_data(model, v_data, vFv_data, err_data, flat_samples, indices_within_1sigma, 
-                        title=None, no_title=False, adjust_scale=True, lower_adjust_multiplier=None,
-                        upper_adjust_multiplier=None, file_name=RESULTS_FOLDER + "/model_and_data." + image_type,
+def plot_model_and_data(model, data_file, flat_samples, indices_within_1sigma, 
+                        redshift, eic, title=None, no_title=False, adjust_scale=True, 
+                        lower_adjust_multiplier=None, upper_adjust_multiplier=None, file_name=RESULTS_FOLDER + "/model_and_data." + image_type,
                         clear_plot=True, save=False, show=True, log=True, fixed_params=None):
     """
     Create a plot with data and model data
@@ -195,12 +224,6 @@ def plot_model_and_data(model, v_data, vFv_data, err_data, flat_samples, indices
         model: tuple of 1D np arrays of floats
             The data for the model; only the first 2 elems are used, which are
             logv and logvFv
-        v_data: 1D np array of floats
-            Data
-        vFv_data: 1D np array of floats
-            Data
-        err_data: 2D np array of floats
-            Data
         title: str
             Title for plot
         file_name (optional): str
@@ -227,16 +250,27 @@ def plot_model_and_data(model, v_data, vFv_data, err_data, flat_samples, indices
         If save is true, the plot is saved as file.
     """
 
+    params = {#'backend': 'ps',
+          'axes.labelsize': 12,
+          'xtick.labelsize': 10,
+          'ytick.labelsize': 10,
+          'legend.fontsize': 10}
+    plt.rcParams.update(params)
+
+
     if clear_plot:
         plt.figure("Model and Data")
 
-    plot_data(title=title, no_title=no_title, adjust_scale=adjust_scale,
+    plot_data(data_file, title=title, no_title=no_title, adjust_scale=adjust_scale,
               lower_adjust_multiplier=lower_adjust_multiplier, upper_adjust_multiplier=upper_adjust_multiplier,
               clear_plot=False, save=False, show=False)
 
-    configs = blazar_utils.read_configs()
-    eic = configs["eic"]
-    redshift = configs["redshift"]
+    #I would rather not having this to read the configs
+    #what if not standard config. It should only read from the output
+    # configs = blazar_utils.read_configs()
+    # eic = configs["eic"]
+    # redshift = configs["redshift"]
+    
     name_stem = "plot"
     min_per_param, max_per_param = get_params_1sigma_ranges(flat_samples, indices_within_1sigma,eic=eic,
                                                             fixed_params=fixed_params)
@@ -253,8 +287,9 @@ def plot_model_and_data(model, v_data, vFv_data, err_data, flat_samples, indices
     plt.plot(x, y, label="Best model")
     plt.fill_between(x, np.power(10, lowest_per_point), np.power(10, highest_per_point), 
                      alpha=.5, label=r"Within 1$\sigma$")
-    plt.legend(loc='best',ncol=2)
+    plt.legend(loc='best',ncol=3)
     plt.xlim(1e8,1e28)
+    plt.tight_layout()
     if save:
         plt.savefig(BASE_PATH + file_name)
     if show:
@@ -679,11 +714,12 @@ def get_params_1sigma_ranges(flat_samples, indices_within_1sigma, eic=False, fix
     # set the minima and maxima to the first set of params for all vals
     dims = modelProperties(eic, fixed_params=fixed_params).NUM_DIM
     #print(np.shape(indices_within_1sigma))
-    #print(dims)
+    #print(eic)
     minima = [flat_samples[indices_within_1sigma[0]].copy() for _ in range(dims)]
     maxima = [flat_samples[indices_within_1sigma[0]].copy() for _ in range(dims)]
     for index in indices_within_1sigma:
         params = flat_samples[index]
+        #print(len(params), len(minima))
         for i in range(dims):
             if params[i] < minima[i][i]:
                 minima[i] = params.copy()
@@ -749,3 +785,65 @@ def residual_plot(data, best_model, lowest_per_point, highest_per_point):
     plt.xlabel(r"Frequency $\nu$ (Hz)")
     plt.ylabel(r"Residual Energy Flux $\nu F_{\nu}$ (erg cm$^{-2}$ s$^{-1})$")
     plt.xscale("log")
+
+
+def N_e_BknPowLaw(gamma, K, alpha_1, alpha_2, gamma_break):
+    K = 10**K
+    gamma_break = 10**gamma_break
+    K2 = K * gamma_break**(alpha_2 - alpha_1)
+    diff = gamma_break - gamma
+    sign = diff > 0
+    return K * gamma**(-alpha_1)*sign + K2 * gamma**(-alpha_2)*~sign
+
+def plot_particle_spectrum(best_params, min_1sigma_params, max_1sigma_params, fixed_params, file_name=RESULTS_FOLDER + "/particle_spectrum.svg"):
+    
+    #crate a list of particle spectrum parameters (free and fixed)
+    params = np.zeros(6)
+    min_params = np.zeros(6)
+    max_params = np.zeros(6)
+    count = 0
+    for i in range(6):
+        if fixed_params[i+1]!= -np.inf:
+            params[i] = fixed_params[i+1]
+            min_params[i] = fixed_params[i+1]
+            max_params[i] = fixed_params[i+1]
+            count += 1
+        else:
+            params[i] = best_params[i+1-count]
+            min_params[i] = min_1sigma_params[i+1-count]
+            max_params[i] = max_1sigma_params[i+1-count]
+    K, alpha_1, alpha_2, gamma_min, gamma_max, gamma_break= params
+    params_error_down = params - min_params
+    params_error_up = max_params - params
+    
+    gamma = np.logspace(gamma_min, gamma_max, 500)
+    plt.figure('Particle Spectrum')
+    plt.plot(gamma, N_e_BknPowLaw(gamma, K, alpha_1, alpha_2, gamma_break),label='Particle Spectrum')
+    plt.loglog()
+    #consider asymmetric errors in parameters (two-sided multivariate normal method)
+    cov_matrix_down = np.diag(params_error_down)**2
+    cov_matrix_up = np.diag(params_error_up)**2
+    rng = np.random.RandomState(seed=30)
+    parameter_samples_down= rng.multivariate_normal(params, cov_matrix_down, 5000)
+    parameter_samples_up = rng.multivariate_normal(params, cov_matrix_up, 5000)
+    parameter_samples = []
+    for i in range(len(parameter_samples_down)):
+        diff = params - parameter_samples_down[i]
+        #if diff >0, then True, means we keep parameter_sample
+        #else we replace parameters with the ones from up errors
+        sign = diff > 0
+        #remove non-acceptet parameter sets from bjet
+        parameter_samples_temp = parameter_samples_down[i]*sign + parameter_samples_up[i]*~sign
+        if parameter_samples_temp[1] <= parameter_samples_temp[2] and parameter_samples_temp[3] <= parameter_samples_temp[5] <= parameter_samples_temp[4]:    
+            parameter_samples.append(parameter_samples_temp)
+    realizations = np.array([N_e_BknPowLaw(gamma, pars[0], pars[1], pars[2], pars[5]) for pars in parameter_samples])
+    q = 100 * stats.norm.cdf(-1)    #1 is the 1 sigma
+    y_low = np.percentile(realizations, q, axis=0)
+    q = 100 * stats.norm.cdf(1)     #1 is the 1 sigma
+    y_high = np.percentile(realizations, q, axis=0)
+
+    plt.fill_between(gamma, y_low, y_high,facecolor=cmap(0),edgecolor='None', alpha = 0.5,label=r'Within 1$\sigma$')
+    plt.xlabel(r'$\gamma$',fontsize=13)
+    plt.ylabel(r'Density [cm$^{-3}$]',fontsize=13)
+    plt.legend()
+    plt.savefig(BASE_PATH + file_name)

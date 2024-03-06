@@ -269,11 +269,15 @@ def save_plots_and_info(configs, data, param_min_vals, param_max_vals, folder=No
                    sampler=sampler, use_sampler=use_sampler, samples=samples, use_samples=use_samples,
                    description=description, time=time, p0_source=p0_source, acceptance_frac=acceptance_frac, eic=eic,
                    fixed_params=configs["fixed_params"])
-
-    blazar_plots.plot_model_and_data(model, data[0], data[1], data[2], flat_chain, indices_within_1sigma,
-                                     lower_adjust_multiplier=20, file_name=folder + "/model_and_data.svg", 
-                                     title=r"MCMC $\chi^2$ = " + str(round(best_log_prob * -2, 2)), save=True, show=False, 
+    blazar_plots.plot_model_and_data(model, configs["data_file"], flat_chain, indices_within_1sigma,
+                                     redshift=redshift,eic=eic,lower_adjust_multiplier=20, file_name=folder + "/model_and_data.svg", 
+                                     title=None, no_title=True, save=True, show=False, 
                                      fixed_params=configs["fixed_params"])
+    
+    #need to run tests with fixed params before releasing it
+    blazar_plots.plot_particle_spectrum(best_params, min_1sigma_params, max_1sigma_params, configs["fixed_params"],
+                                        file_name= folder+"/particle_spectrum.svg")
+    
     blazar_plots.corner_plot(flat_chain, param_min_vals, param_max_vals, best_params, min_1sigma_params,
                               max_1sigma_params, file_name=folder + "/corner_plot.svg", save=True, show=False, eic=eic,
                               fixed_params=configs["fixed_params"])
@@ -287,21 +291,6 @@ def save_plots_and_info(configs, data, param_min_vals, param_max_vals, folder=No
     blazar_plots.plot_chi_squared(log_probs, configs["discard"], plot_type='all',
                                   file_name=(folder + "/chi_squared_plot_all.jpeg"), save=True,
                                   show=False)  # svg is big
-
-    # blazar_plots.plot_1sigma(data[0], data[1], data[2], indices_within_1sigma, flat_chain,
-    #                          np.argmax(flat_log_probs), folder=folder, save=True, show=False, serialize=True,
-    #                          lower_adjust_multiplier=1.3, eic=eic, theta=theta, redshift=redshift, min_freq=min_freq,
-    #                          max_freq=max_freq, executable=executable, data_folder=data_folder, name_stem=name_stem,
-    #                          command_params_full=command_params_full, command_params_1=command_params_1,
-    #                          command_params_2=command_params_2, torus_temp=torus_temp,
-    #                          torus_luminosity=torus_luminosity, torus_frac=torus_frac, verbose=False)
-    #blazar_plots.plot_1sigma(data[0], data[1], data[2], indices_within_1sigma, flat_chain,
-    #                         np.argmax(flat_log_probs), folder=folder, save=True, show=False, serialize=True,
-    #                         lower_adjust_multiplier=1.3, extreme=False, eic=eic)
-    #blazar_plots.plot_1sigma(data[0], data[1], data[2], indices_within_1sigma, flat_chain,
-    #                         np.argmax(flat_log_probs), folder=folder, save=True, show=False, serialize=True,
-    #                         lower_adjust_multiplier=1.3, both=True, eic=eic)
-
 
 def parse_info_doc(info_doc, info=None):
     if info is None:

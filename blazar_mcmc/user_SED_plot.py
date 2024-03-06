@@ -22,8 +22,16 @@ from blazar_properties import *
 cmap = plt.get_cmap("tab10")
 filled_markers = ('o', 'v', '^', '<', '>', '8', 's', 'p', '*', 'h', 'H', 'D', 'd', 'P', 'X')
 marker_size = 4
+params = {#'backend': 'ps',
+      'axes.labelsize': 14,
+      'xtick.labelsize': 12,
+      'ytick.labelsize': 12,
+      'legend.fontsize': 12}
+plt.rcParams.update(params)
 
 residual = "sigma"
+
+
 backend_file = input("Enter relative path to backend file: ")
 #example: local_results/J1010/J1010_2023-07-04-23:03:45/backend.h5
 
@@ -208,7 +216,7 @@ for i in range(1,len(instrument_data)):
                     label=str(list_intruments[-1]), markersize=marker_size, elinewidth=1, color = cmap(len(list_intruments)), fmt=filled_markers[len(list_intruments)-1])
 
 
-ax.legend(loc='upper center',ncol=4,fontsize=10)
+ax.legend(loc='upper center',ncol=4)
 
 
 secax = ax.secondary_xaxis('top', functions=(v_to_e, e_to_v))

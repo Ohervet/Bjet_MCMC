@@ -329,6 +329,13 @@ if __name__ == "__main__":
     file_p0 = None
     p0_eic_from_std = False
     sampler_result, results_directory = mcmc(config_file=config_file, use_param_file=False, p0_label=label_p0, p0=p0_values, p0_file=file_p0, eic_p0_from_std=p0_eic_from_std)
+    
+    #in case of interrupted process, there may be leftovers in DATA_FOLDER, remove them
+    os.chdir(FOLDER_PATH + DATA_FOLDER)
+    files = [f for f in os.listdir() if f.startswith("run")]
+    for f in files:
+        os.remove(f)
+    
     if TMP:
         shutil.move(BASE_PATH + results_directory, FOLDER_PATH + results_directory)
         shutil.rmtree(TEMP_DIR)
