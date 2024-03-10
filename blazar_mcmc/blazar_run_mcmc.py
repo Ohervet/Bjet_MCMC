@@ -274,7 +274,10 @@ def mcmc(config_file=None, directory=None, folder_label=None, p0=None, p0_label=
             f.write("\n")
 
         f.write("\nconfig file: ")
-        f.write(config_file)
+        if config_file == None:
+            f.write('mcmc_config.txt')
+        else:
+            f.write(config_file)
         f.write("\nprev_files: ")
         f.write(str(prev_files))
         f.write(", use_param_file: ")
