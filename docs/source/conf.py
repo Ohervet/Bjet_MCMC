@@ -2,12 +2,12 @@
 
 # -- Project information
 
-project = 'Lumache'
-copyright = '2021, Graziella'
-author = 'Graziella'
+project = 'Bjet_MCMC'
+copyright = '2023, Olivier Hervet'
+author = 'Olivier Hervet'
 
-release = '0.1'
-version = '0.1.0'
+release = '0.2'
+version = '0.2.1'
 
 # -- General configuration
 
