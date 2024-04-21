@@ -2,6 +2,8 @@
 Dependencies
 ============
 
+.. _dependencies:
+
 **Recommended:** create conda env from ``environment.yml`` using ``conda env create -f environment.yml``
 
 
