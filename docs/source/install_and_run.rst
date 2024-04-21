@@ -21,7 +21,7 @@ Then load your environment with
 
 
 Running Bjet_MCMC for the first time
-----------------
+------------------------------------
 
 1. Create a copy of `mcmc_config_template.txt` called `mcmc_config.txt`. For information and customized configuration files, see [configuration file](#mcmc-configuration-file). 
 2. Ensure the data file is formatted as described below and is at the relative path specified in `mcmc_config.txt`, see [data format](#data-format).
