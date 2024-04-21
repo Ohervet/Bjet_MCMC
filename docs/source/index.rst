@@ -14,3 +14,4 @@ Contents
 .. toctree::
 
    install_and_run
+   dependencies
