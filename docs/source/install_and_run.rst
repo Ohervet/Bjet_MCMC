@@ -1,5 +1,5 @@
 Installation and running Bjet_MCMC
-=====
+==================================
 
 .. _installation:
 
