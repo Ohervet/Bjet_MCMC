@@ -11,7 +11,7 @@ You first need to clone the Bjet_MCMC Github repo in your local computer with
 
    $ git clone https://github.com/Ohervet/Bjet_MCMC
 
-Ensure all dependencies are installed, see :doc:`dependencies`. Recommended: create the conda env "bjet-mcmc" from `environment.yml` using `conda env create -f environment.yml`. 
+Ensure all dependencies are installed, see :doc:`dependencies`. Recommended: create the conda env "bjet-mcmc" from `environment.yml` using
 
 .. code-block:: console 
 
