@@ -60,15 +60,15 @@ Dependencies
 --------------
 - conda: 
 
-.. code-block:: console
-
-  $ conda install matplotlib
+  .. code-block:: console
+  
+    $ conda install matplotlib
 
 - pip: 
 
-.. code-block:: console
-
-  $ python -m pip install -U matplotlib
+  .. code-block:: console
+  
+    $ python -m pip install -U matplotlib
 
 - `matplotlib` installation `documentation <https://matplotlib.org/stable/users/installing/index.html>`_
 
@@ -76,29 +76,29 @@ Dependencies
 ----------
 - conda:
 
-.. code-block:: console
-
-  $ conda install -c astropy corner
+  .. code-block:: console
+  
+    $ conda install -c astropy corner
 
 - pip: 
 
-.. code-block:: console
-
-  $ python -m pip install corner
+  .. code-block:: console
+  
+    $ python -m pip install corner
 - `corner` installation `documentation <https://corner.readthedocs.io/en/latest/install.html>`_
 
 ``tqdm``
 --------
 - pip: 
 
-.. code-block:: console
-
-  $ python -m pip install tqdm
+  .. code-block:: console
+  
+    $ python -m pip install tqdm
 
 ``h5py``
 --------
 - pip: 
 
-.. code-block:: console
-
-  $ python -m pip install h5py
+  .. code-block:: console
+  
+    $ python -m pip install h5py
