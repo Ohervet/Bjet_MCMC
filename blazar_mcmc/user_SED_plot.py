@@ -35,7 +35,6 @@ residual = "sigma"
 backend_file = input("Enter relative path to backend file: ")
 #example: local_results/J1010/J1010_2023-07-04-23:03:45/backend.h5
 
-
 #user defined SED plot boundaries
 boundaries = "default"
 #if you want to set boundaries (nu in Hz, nuFnu in erg.cm-2.s-1):
@@ -92,12 +91,10 @@ indices_within_1sigma = blazar_report.get_indices_within_1sigma(flat_log_probs, 
 name_stem = "plot"
 command_params_1, command_params_2 = blazar_model.command_line_sub_strings(name_stem=name_stem, redshift=redshift, 
                                                                            prev_files=False, eic=eic)
-command_params_2[3] = "99"  # number of points used to make SED
+command_params_2[3] = "150"  # number of points used to make SED
 
 best_model = blazar_model.make_model(best_params, name_stem=name_stem, redshift=redshift, command_params_1=command_params_1,
                                       command_params_2=command_params_2, eic=eic,fixed_params=fixed_params)
-
-print("max_IC_log10nuFnu2",max(best_model[1][50:]))
 
 
 
@@ -234,27 +231,21 @@ if residual:
         ax1.fill_between(best_model[2], f_high(best_model[2])/f_best(best_model[2]) -1, 
                          -f_best(best_model[2])/f_low(best_model[2]) +1, alpha=.5,zorder=1)
     if residual == "sigma":
-        #remove ULs
-        i = 0
-        vFv_data = list(vFv_data)
-        v_data = list(v_data)
-        err_low = list(err_data[0])
-        err_high = list(err_data[1])
-        instrument_data = list(instrument_data)
-        while i < len(vFv_data):
-            if err_high[i] != 0:
-                i+=1
-            else: 
-                vFv_data.pop(i)
-                v_data.pop(i)
-                err_low.pop(i)
-                err_high.pop(i)
-                instrument_data.pop(i)
+        for i in range(len(err_data[1])):
+            if err_data[1][i] == 0:
+                err_data[0][i] = 0
+                
+        err_low = err_data[0]
+        err_high = err_data[1]
                 
             
         diff =  vFv_data- f_best(v_data)
         #check if data is above or below model flux points, True if above
         sign = diff > 0
+        #transform err_data to consider ULs (P=95% when below, P=5% when above)
+        if_UL = err_data[0] == 0
+        err_low += if_UL * np.abs(blazar_utils.chi_squared_UL_to_err(0.95, f_best(v_data), vFv_data))
+        err_high += if_UL * np.abs(blazar_utils.chi_squared_UL_to_err(0.05, f_best(v_data), vFv_data))
         vFv_sigma = sign*(vFv_data-f_best(v_data))/err_low - ~sign*(f_best(v_data)-vFv_data)/err_high
         vFv_sigma_inst = [vFv_sigma[0]]
         
@@ -264,15 +255,16 @@ if residual:
     vFv_data_inst = [vFv_data[0]]
     err_data_inst_down = [err_low[0]]
     err_data_inst_up = [err_high[0]]
+    uplims_inst = [uplims[0]]
 
     
     for i in range(1,len(instrument_data)):
         if instrument_data[i] != list_intruments[-1]:
             if residual == "delta":
                 ax1.errorbar(v_data_inst, vFv_data_inst/f_best(v_data_inst)-1, yerr=(err_data_inst_down/f_best(v_data_inst), err_data_inst_up/f_best(v_data_inst)), 
-                            markersize=4, elinewidth=1, color = cmap(len(list_intruments)), fmt = filled_markers[len(list_intruments)-1])
+                            uplims = uplims_inst, markersize=4, elinewidth=1, color = cmap(len(list_intruments)), fmt = filled_markers[len(list_intruments)-1])
             if residual == "sigma":
-                ax1.errorbar(v_data_inst, vFv_sigma_inst, yerr=(1), 
+                ax1.errorbar(v_data_inst, vFv_sigma_inst, yerr=(1), uplims = uplims_inst,
                             markersize=4, elinewidth=1, color = cmap(len(list_intruments)), fmt = filled_markers[len(list_intruments)-1])
                 vFv_sigma_inst = [vFv_sigma[i]]
                              
@@ -281,20 +273,22 @@ if residual:
             vFv_data_inst = [vFv_data[i]]
             err_data_inst_down = [err_low[i]]
             err_data_inst_up = [err_high[i]]
+            uplims_inst = [uplims[i]]
         else:   
             if residual == "sigma":
                 vFv_sigma_inst.append(vFv_sigma[i])
-            v_data_inst.append(v_data[i])
-            vFv_data_inst.append(vFv_data[i])
-            err_data_inst_down.append(err_low[i])
-            err_data_inst_up.append(err_high[i])
+                v_data_inst.append(v_data[i])
+                vFv_data_inst.append(vFv_data[i])
+                err_data_inst_down.append(err_low[i])
+                err_data_inst_up.append(err_high[i])
+                uplims_inst.append(uplims[i])
             
         if i == len(instrument_data)-1:
             if residual == "delta":
                 ax1.errorbar(v_data_inst, vFv_data_inst/f_best(v_data_inst)-1, yerr=(err_data_inst_down/f_best(v_data_inst), err_data_inst_up/f_best(v_data_inst)), 
-                            markersize=4, elinewidth=1, color = cmap(len(list_intruments)), fmt = filled_markers[len(list_intruments)-1])
+                            uplims = uplims_inst, markersize=4, elinewidth=1, color = cmap(len(list_intruments)), fmt = filled_markers[len(list_intruments)-1])
             if residual == "sigma":
-                ax1.errorbar(v_data_inst, vFv_sigma_inst, yerr=(1), 
+                ax1.errorbar(v_data_inst, vFv_sigma_inst, yerr=(1), uplims = uplims_inst, 
                             markersize=4, elinewidth=1, color = cmap(len(list_intruments)), fmt = filled_markers[len(list_intruments)-1])  
     if residual == "delta":
         ax1.set_ylim(min(vFv_data/f_best(v_data)-1)*2, max(vFv_data/f_best(v_data)-1)*2)
