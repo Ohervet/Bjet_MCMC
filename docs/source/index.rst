@@ -11,3 +11,6 @@ This tool is built as an MCMC python wrapper around the C++ code Bjet.
 
 Contents
 --------
+.. toctree::
+
+   install_and_run
