@@ -2,19 +2,42 @@
 Dependencies
 ============
 
-###### **Recommended:** create conda env from `environment.yml` using `conda env create -f environment.yml`
+**Recommended:** create conda env from ``environment.yml`` using ``conda env create -f environment.yml``
 
 
-`emcee`
-- To install with conda: `conda install -c conda-forge emcee`
-- To install with pip: `emcee` recommends calling `pip install -U setuptools setuptools_scm pep517` and then `pip install -U emcee`
-- `emcee` installation [documentation](https://emcee.readthedocs.io/en/stable/user/install/).
+``emcee``
+---------
 
-`scipy`
-- To install with pip: `python -m pip install scipy`
-- To install with conda: `conda install -c conda-forge scipy`
-- To install with pip: `python -m pip install -U scipy`
-- `scipy` installation [documentation](https://scipy.org/install/)
+- conda: 
+
+  .. code-block:: console
+  
+    $ conda install -c conda-forge emcee
+
+- pip: 
+
+``emcee`` recommends calling
+
+.. code-block:: console
+
+  $ pip install -U setuptools setuptools_scm pep517
+  $ pip install -U emcee
+- ``emcee`` installation `documentation <https://emcee.readthedocs.io/en/stable/user/install/>`_
+
+``scipy``
+
+- pip: 
+
+.. code-block:: console
+  $ python -m pip install -U scipy
+
+- conda:
+
+.. code-block:: console
+
+  $ conda install -c conda-forge scipy
+
+- `scipy` installation `documentation <https://scipy.org/install/>`_
 
 `invoke`
 - To install with pip: `python -m pip install invoke`
