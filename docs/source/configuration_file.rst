@@ -14,84 +14,71 @@ such as
 There is a file named ``mcmc_config_template.txt`` as an example. Make a copy of this file named ``mcmc_config.txt``. 
 This file is automatically in ``.gitignore`` since it changes locally.
 
-Rows are:
-
-.. code-block:: console
-
-  description = <description of run>
-  folder_label = <prefix for folder name>
-  eic = <True/False, SSC or SSC + EIC>
-  data_file = <file name relative to blazars-mcmc>
-  n_steps = <# of steps>
-  n_walkers = <# of walkers>
-  discard = <steps to discard>
-  parallel = <True or False (use parallel processing)
-  cores = <# of cores to use if parallel True, optional>
-  tau_var = <Tau variability in hours>
-  redshift = <float for redshift>
-  custom_alpha2_limits = <False or True, lower, upper>
-
 Notes: 
 - Labels must be exactly as listed
-- `data_file` is the *relative path* from the home directory to the file with data.
-#### Example mcmc configuration file
-(file named `mcmc_config.txt`, can be modified)
-```
-# Configuration file for running mcmc
+- ``data_file`` is the *relative path* from the home directory to the file with data.
 
-# description:
-description=J1010
+Example of a configuration file
+-------------------------------
 
-# folder label:
-folder_label=J1010
+(file named ``mcmc_config.txt``, can be modified)::
 
-# eic (True/False):
-eic=False
 
-# Data file:
-data_file=real_data/J1010_SED_reduced.dat
+  # Configuration file for running mcmc
+  
+  # description:
+  description=J1010
+  
+  # folder label:
+  folder_label=J1010
+  
+  # eic (True/False):
+  eic=False
+  
+  # Data file:
+  data_file=real_data/J1010_SED_reduced.dat
+  
+  # Number of steps:
+  n_steps=1000
+  
+  # Number of walkers:
+  n_walkers=100
+  
+  # Discard number:
+  discard = 200
+  
+  # Parallel processing (True/False):
+  parallel=True
+  
+  # If parallel processing, # of cores (will use # of cores - 1 if not specified)
+  cores=15
+  
+  # use tau variability (boolean):
+  use_variability=False
+  
+  # tau variability (in hours):
+  tau_variability = 24
+  
+  # redshift
+  redshift = 0.143
+  
+  # Custom alpha2 limits (True/False, <val1>, <val2>) val1 and val2 optional
+  custom_alpha2_limits=False
+  
+  #to freeze a parameter to a given value, replace null with the values you want it to be frozen
+  delta       = null	#       doppler factor                  linear
+  K           = null	#       particle density [cm^-3]        log10
+  n1          = null	#       alpha_1 (first index)           linear
+  n2          = null	#       alpha_2 (second index)          linear
+  gamma_min	  = null	#       low-energy cutoff               log10
+  gamma_max	  = null	#       high-energy cutoff              log10
+  gamma_break = null	#       energy break                    log10
+  B	          = null	#       magnetic field strength [G]     log10
+  R	          = null	#       blob radius [cm]                log10
+  #-----------------------------------------------------------------------#
+  #-----------------------Additional params for EIC-----------------------#
+  bb_temp     = null	#       Black body temp of disk [K]     log10
+  l_nuc       = null	#       Nucleus luminosity [ergs/s]     log10
+  tau         = null	#       Frac of luminosity scattered    log10
+  blob_dist	  = null	#       Distance of blob from SMBH[cm]  log10
 
-# Number of steps:
-n_steps=1000
-
-# Number of walkers:
-n_walkers=100
-
-# Discard number:
-discard = 200
-
-# Parallel processing (True/False):
-parallel=True
-
-# If parallel processing, # of cores (will use # of cores - 1 if not specified)
-cores=15
-
-# use tau variability (boolean):
-use_variability=False
-
-# tau variability (in hours):
-tau_variability = 24
-
-# redshift
-redshift = 0.143
-
-# Custom alpha2 limits (True/False, <val1>, <val2>) val1 and val2 optional
-custom_alpha2_limits=False
-
-#to freeze a parameter to a given value, replace null by the values you want it to be frozen
-delta		= null	#       doppler factor                  linear
-K		= null	#       particle density [cm^-3]        log10
-n1		= null	#       alpha_1 (first index)           linear
-n2		= null	#       alpha_2 (second index)          linear
-gamma_min	= null	#       low-energy cutoff               log10
-gamma_max	= null	#       high-energy cutoff              log10
-gamma_break	= null	#       energy break                    log10
-B		= null	#       magnetic field strength [G]     log10
-R		= null	#       blob radius [cm]                log10
-#-----------------------------------------------------------------------#
-#-----------------------Additional params for EIC-----------------------#
-bb_temp		= null	#       Black body temp of disk [K]     log10
-l_nuc		= null	#       Nucleus luminosity [ergs/s]     log10
-tau		= null	#       Frac of luminosity scattered    log10
-blob_dist	= null	#       Distance of blob from SMBH[cm]  log10
-```
