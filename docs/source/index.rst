@@ -15,3 +15,4 @@ Contents
 
    install_and_run
    dependencies
+   configuration_file
