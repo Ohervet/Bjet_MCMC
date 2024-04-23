@@ -70,11 +70,11 @@ Example of a configuration file
   K           = null	#       particle density [cm^-3]        log10
   n1          = null	#       alpha_1 (first index)           linear
   n2          = null	#       alpha_2 (second index)          linear
-  gamma_min	  = null	#       low-energy cutoff               log10
-  gamma_max	  = null	#       high-energy cutoff              log10
+  gamma_min   = null	#       low-energy cutoff               log10
+  gamma_max   = null	#       high-energy cutoff              log10
   gamma_break = null	#       energy break                    log10
-  B	          = null	#       magnetic field strength [G]     log10
-  R	          = null	#       blob radius [cm]                log10
+  B           = null	#       magnetic field strength [G]     log10
+  R           = null	#       blob radius [cm]                log10
   #-----------------------------------------------------------------------#
   #-----------------------Additional params for EIC-----------------------#
   bb_temp     = null	#       Black body temp of disk [K]     log10
