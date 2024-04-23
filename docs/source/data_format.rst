@@ -8,7 +8,7 @@ Data by default is assumed to be in data files with the following columns as lab
 
 For upper limits, set ``delta_F(-)``	and ``delta_F(+)`` at 0. The value set for ``F(ergcm-2s-1)`` should be the flux U.L. at 95% confidence level. Upper limits are considered in the fitting algorithm as likelihood step functions, with a flat probability of 95% below the U.L. and 5% above, extending on both sides to infinity.
 
-Example of a data file
+Example of an SED data file
 ----------------------
 
 This is the default data file, already available in Bjet_MCMC : ``real_data/J1010_SED_reduced.dat``.
