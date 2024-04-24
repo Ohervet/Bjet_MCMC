@@ -120,8 +120,6 @@ As an optional parameter, these can be changed. The data must be space-delimited
 
 For upper limits, set `delta_F(-)`	and `delta_F(+)` at 0. The value set for `F(ergcm-2s-1)` should be the flux U.L. at 95% confidence level. Upper limits are considered in the fitting algorithm as likelihood step functions, with a flat probability of 95% below the U.L. and 5% above, extending on both sides to infinity.
 
-All rows of data **must have the same number of rows**.
-
 ### MCMC configuration file
 The default configuration file is `mcmc_config.txt` in the main directory. If you would like to use a different file, you can enter the absolute path of your configuration file as an argument when running `blazar_run_mcmc.py`, such as `python blazar_run_mcmc.py /home/myconfigfile.txt`
 
