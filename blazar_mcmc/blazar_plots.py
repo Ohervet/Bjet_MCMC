@@ -802,16 +802,17 @@ def plot_particle_spectrum(best_params, min_1sigma_params, max_1sigma_params, fi
     min_params = np.zeros(6)
     max_params = np.zeros(6)
     count = 0
-    for i in range(6):
-        if fixed_params[i+1]!= -np.inf:
-            params[i] = fixed_params[i+1]
-            min_params[i] = fixed_params[i+1]
-            max_params[i] = fixed_params[i+1]
+            
+    for i in range(1,6):
+        if fixed_params[i]!= -np.inf:
+            params[i] = fixed_params[i]
+            min_params[i] = fixed_params[i]
+            max_params[i] = fixed_params[i]
             count += 1
         else:
-            params[i] = best_params[i+1-count]
-            min_params[i] = min_1sigma_params[i+1-count]
-            max_params[i] = max_1sigma_params[i+1-count]
+            params[i] = best_params[i-count]
+            min_params[i] = min_1sigma_params[i-count]
+            max_params[i] = max_1sigma_params[i-count]
     K, alpha_1, alpha_2, gamma_min, gamma_max, gamma_break= params
     params_error_down = params - min_params
     params_error_up = max_params - params

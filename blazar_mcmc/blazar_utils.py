@@ -398,7 +398,7 @@ def get_random_parameters(param_min_vals=None, param_max_vals=None, alpha2_limit
     parameters = param_min_vals + parameter_size * np.random.rand(dim)
             
     while not np.isfinite(log_prior(parameters, param_min_vals, param_max_vals, redshift=redshift, tau_var=tau_var,
-                                    use_variability=use_variability)):
+                                    use_variability=use_variability, fixed_params=fixed_params)):
         parameters = param_min_vals + parameter_size * np.random.rand(dim)
     return parameters
 
@@ -539,8 +539,7 @@ def min_max_parameters(alpha2_limits=None, eic=False, fixed_params=None):
 
 # probability functions ------------------------------------------------------------------------------------------------
 def log_prior(params, param_min_vals=None, param_max_vals=None, redshift=None, tau_var=None,
-              use_variability=True,
-              alpha2_limits=None, eic=False):
+              use_variability=True, alpha2_limits=None, eic=False, fixed_params = None):
     """
     Using a uniform prior distribution. Return whether input params are valid.
     list parameters with eic: ["delta", "K", "alpha_1", "alpha_2", "gamma_min", "gamma_max", "gamma_break", "B", "R",
@@ -571,13 +570,24 @@ def log_prior(params, param_min_vals=None, param_max_vals=None, redshift=None, t
         all parameters are in range and otherwise -np.inf
     """
 
+    if fixed_params:
+    # reimplent fixed params
+        for i in range(len(fixed_params)):
+            if fixed_params[i] != -np.inf:
+                params = np.insert(params, i, fixed_params[i])
+                param_min_vals = np.insert(param_min_vals, i, fixed_params[i])
+                param_max_vals = np.insert(param_max_vals, i, fixed_params[i])
+
     if param_min_vals is None or param_max_vals is None:
         minima, maxima = min_max_parameters(alpha2_limits=alpha2_limits, eic=eic)
         if param_min_vals is None:
             param_min_vals = minima
         if param_max_vals is None:
             param_max_vals = maxima
+
     delta, K, n1, n2, gamma_min, gamma_max, gamma_break, B, R, *other_params = params
+            
+    
     if n1 > n2 or gamma_min > gamma_max or gamma_break < gamma_min or gamma_break > gamma_max:
         return -np.inf
     # check if between min and max
