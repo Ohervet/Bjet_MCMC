@@ -177,6 +177,16 @@ def text_report(best, min_1sigma, max_1sigma, best_chi_sq, data_points, param_na
     if param_names is None:
         param_names = modelProperties(eic, fixed_params=fixed_params).PARAM_NAMES
     log = modelProperties(eic).PARAM_IS_LOG
+    #remove any frozen parameter from the log list
+    if fixed_params:
+        fixed_params2 = fixed_params.copy()
+        i = 0
+        while i < len(fixed_params2):
+          if fixed_params2[i] != -np.inf:       
+            del log[i]
+            del fixed_params2[i]
+          else:
+            i+=1
     format_string = "{:^13}{:^15}{:^20}\n"
     num_format = "{:.2e}"
     range_format = num_format + " - " + num_format
