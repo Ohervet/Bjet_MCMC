@@ -179,8 +179,8 @@ def plot_data(data_file, title=None, no_title=False, adjust_scale=True, lower_ad
             vFv_data_inst = [vFv_data[i]]
             err_data_inst_down = [err_data[0][i]]
             err_data_inst_up = [err_data[1][i]]
-            nubin_data_inst_low = [nubin_data[0][0]]
-            nubin_data_inst_high = [nubin_data[1][0]]
+            nubin_data_inst_low = [nubin_data[0][i]]
+            nubin_data_inst_high = [nubin_data[1][i]]
             uplims_inst = [uplims[i]]
         else:   
             v_data_inst.append(v_data[i])
