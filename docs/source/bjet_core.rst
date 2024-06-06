@@ -6,7 +6,10 @@ bjet_core
 Manual installation
 ----------------------
 
-Compile the exec with `make bj_core`.
+Compile the exec with 
+.. code-block:: console
+
+   $ make bj_core
 
 Code is in the `bjet_core` folder. The necessary files are `bj_core.cpp`, `bj_core.h`, `processes_supp_core.cpp`, and `processes_supp_core.h`
 ### Usage
