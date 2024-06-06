@@ -810,9 +810,9 @@ def plot_particle_spectrum(best_params, min_1sigma_params, max_1sigma_params, fi
             max_params[i-1] = fixed_params[i]
             count += 1
         else:
-            params[i-1] = best_params[i-count]
-            min_params[i-1] = min_1sigma_params[i-count]
-            max_params[i-1] = max_1sigma_params[i-count]
+            params[i-1] = best_params[i-count-1]
+            min_params[i-1] = min_1sigma_params[i-count-1]
+            max_params[i-1] = max_1sigma_params[i-count-1]
     K, alpha_1, alpha_2, gamma_min, gamma_max, gamma_break= params
     params_error_down = params - min_params
     params_error_up = max_params - params
