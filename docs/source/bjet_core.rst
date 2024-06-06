@@ -4,7 +4,7 @@ bjet_core
 ``bjet_core`` contains an updated version of the multi-zone Bjet code developed in `Hervet et al. (2015) <https://ui.adsabs.harvard.edu/abs/2015A%26A...578A..69H/abstract>`_. This is the physical core of Bjet_MCMC and can be run in standalone mode outside the MCMC frame.
 
 Manual installation
-----------------------
+-------------------
 
 The code is in the ``bjet_core`` folder. The necessary files are ``bj_core.cpp``, ``bj_core.h``, ``processes_supp_core.cpp``, and ``processes_supp_core.h``.
 
@@ -14,7 +14,9 @@ Compile the executable with
 
    $ make bj_core
 
-### Usage
+Usage
+-----
+
 #### Options for calling the executable:
 - Usage 1: `bj_core --help`
 - Usage 2: `bj_core <parameter file>`
