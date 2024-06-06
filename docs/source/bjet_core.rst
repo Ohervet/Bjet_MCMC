@@ -57,11 +57,11 @@ Order of parameters in command line:
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 - Model type 0:
- ```
- bj_core <0, 1, 2, 3> <data folder if applicable> 0 (model type)
- z, H_0, THETA, DOP_B, K1, N1, N2, GAMMA_MIN, GAMMA_MAX, GAMMA_BRK, B, R_src,
- L_src, IIR_level, D_b, NU_DIM, NU_STR, NU_END, prefix
- ```
+
+.. code-block:: console
+ 
+    $ bj_core <0, 1, 2, 3> <data folder if applicable> 0 (model type) z, H_0, THETA, DOP_B, K1, N1, N2, GAMMA_MIN, GAMMA_MAX, GAMMA_BRK, B, R_src, L_src, IIR_level, D_b, NU_DIM, NU_STR, NU_END, prefix
+ 
  argc should be 22 or 23 depending on if data folder is listed
 
 - Model type 1:
