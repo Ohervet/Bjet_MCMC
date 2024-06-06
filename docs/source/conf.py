@@ -3,7 +3,7 @@
 # -- Project information
 
 project = 'Bjet_MCMC'
-copyright = '2023, Olivier Hervet'
+copyright = '2024, Olivier Hervet'
 author = 'Olivier Hervet'
 
 release = '0.2'
