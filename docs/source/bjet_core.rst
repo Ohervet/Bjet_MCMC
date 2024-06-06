@@ -7,6 +7,7 @@ Manual installation
 ----------------------
 
 Compile the exec with 
+
 .. code-block:: console
 
    $ make bj_core
