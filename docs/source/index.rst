@@ -17,3 +17,4 @@ Contents
    dependencies
    configuration_file
    data_format
+   bjet_core
