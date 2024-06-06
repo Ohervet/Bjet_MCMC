@@ -1,7 +1,7 @@
 bjet_core
 =========
 
-`bjet_core` contains an updated version of the multi-zone Bjet code developed in `Hervet et al. (2015) <https://ui.adsabs.harvard.edu/abs/2015A%26A...578A..69H/abstract>`_ ::. This is the physical core of Bjet_MCMC and can be run in standalone mode outside the MCMC frame.
+`bjet_core` contains an updated version of the multi-zone Bjet code developed in `Hervet et al. (2015) <https://ui.adsabs.harvard.edu/abs/2015A%26A...578A..69H/abstract>`. This is the physical core of Bjet_MCMC and can be run in standalone mode outside the MCMC frame.
 
 Compile the exec with `make bj_core`.
 
