@@ -17,8 +17,9 @@ Compile the executable with
 Usage
 -----
 
-#### Options for calling the executable:
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Options for calling the executable:
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
 - Usage 1: `bj_core --help`
 - Usage 2: `bj_core <parameter file>`
 - Usage 3: `bj_core 0 <parameter file>` same execution as usage 2, `_prev files` made
