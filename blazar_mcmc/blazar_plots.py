@@ -803,16 +803,16 @@ def plot_particle_spectrum(best_params, min_1sigma_params, max_1sigma_params, fi
     max_params = np.zeros(6)
     count = 0
             
-    for i in range(1,6):
+    for i in range(1,7):
         if fixed_params[i]!= -np.inf:
-            params[i] = fixed_params[i]
-            min_params[i] = fixed_params[i]
-            max_params[i] = fixed_params[i]
+            params[i-1] = fixed_params[i]
+            min_params[i-1] = fixed_params[i]
+            max_params[i-1] = fixed_params[i]
             count += 1
         else:
-            params[i] = best_params[i-count]
-            min_params[i] = min_1sigma_params[i-count]
-            max_params[i] = max_1sigma_params[i-count]
+            params[i-1] = best_params[i-count]
+            min_params[i-1] = min_1sigma_params[i-count]
+            max_params[i-1] = max_1sigma_params[i-count]
     K, alpha_1, alpha_2, gamma_min, gamma_max, gamma_break= params
     params_error_down = params - min_params
     params_error_up = max_params - params
@@ -821,31 +821,35 @@ def plot_particle_spectrum(best_params, min_1sigma_params, max_1sigma_params, fi
     plt.figure('Particle Spectrum')
     plt.plot(gamma, N_e_BknPowLaw(gamma, K, alpha_1, alpha_2, gamma_break),label='Particle Spectrum')
     plt.loglog()
-    #consider asymmetric errors in parameters (two-sided multivariate normal method)
-    cov_matrix_down = np.diag(params_error_down)**2
-    cov_matrix_up = np.diag(params_error_up)**2
-    rng = np.random.RandomState(seed=30)
-    parameter_samples_down= rng.multivariate_normal(params, cov_matrix_down, 5000)
-    parameter_samples_up = rng.multivariate_normal(params, cov_matrix_up, 5000)
-    parameter_samples = []
-    for i in range(len(parameter_samples_down)):
-        diff = params - parameter_samples_down[i]
-        sign = diff > 0
-        #be sure that parameter_samples_up are aways more than the mean
-        #by default from our method parameter_samples_down will always be below the mean
-        parameter_samples_up[i] =  params + np.abs(parameter_samples_up[i] - params)
-        #when a projection is below the mean, use parameter_samples_down, when above use parameter_samples_up
-        parameter_samples_temp = parameter_samples_down[i]*sign + parameter_samples_up[i]*~sign
-        #remove non-acceptet parameter sets from bjet
-        if parameter_samples_temp[1] <= parameter_samples_temp[2] and parameter_samples_temp[3] <= parameter_samples_temp[5] <= parameter_samples_temp[4]:    
-            parameter_samples.append(parameter_samples_temp)
-    realizations = np.array([N_e_BknPowLaw(gamma, pars[0], pars[1], pars[2], pars[5]) for pars in parameter_samples])
-    q = 100 * stats.norm.cdf(-1)    #1 is the 1 sigma
-    y_low = np.percentile(realizations, q, axis=0)
-    q = 100 * stats.norm.cdf(1)     #1 is the 1 sigma
-    y_high = np.percentile(realizations, q, axis=0)
-
-    plt.fill_between(gamma, y_low, y_high,facecolor=cmap(0),edgecolor='None', alpha = 0.5,label=r'Within 1$\sigma$')
+    
+    if count !=6:
+        #count = 6 means that all particle spectrum parameters are fixed, there is no error bars
+        
+        #consider asymmetric errors in parameters (two-sided multivariate normal method)
+        cov_matrix_down = np.diag(params_error_down)**2
+        cov_matrix_up = np.diag(params_error_up)**2
+        rng = np.random.RandomState(seed=30)
+        parameter_samples_down= rng.multivariate_normal(params, cov_matrix_down, 5000)
+        parameter_samples_up = rng.multivariate_normal(params, cov_matrix_up, 5000)
+        parameter_samples = []
+        for i in range(len(parameter_samples_down)):
+            diff = params - parameter_samples_down[i]
+            sign = diff > 0
+            #be sure that parameter_samples_up are aways more than the mean
+            #by default from our method parameter_samples_down will always be below the mean
+            parameter_samples_up[i] =  params + np.abs(parameter_samples_up[i] - params)
+            #when a projection is below the mean, use parameter_samples_down, when above use parameter_samples_up
+            parameter_samples_temp = parameter_samples_down[i]*sign + parameter_samples_up[i]*~sign
+            #remove non-acceptet parameter sets from bjet
+            if parameter_samples_temp[1] <= parameter_samples_temp[2] and parameter_samples_temp[3] <= parameter_samples_temp[5] <= parameter_samples_temp[4]:    
+                parameter_samples.append(parameter_samples_temp)
+        realizations = np.array([N_e_BknPowLaw(gamma, pars[0], pars[1], pars[2], pars[5]) for pars in parameter_samples])
+        q = 100 * stats.norm.cdf(-1)    #1 is the 1 sigma
+        y_low = np.percentile(realizations, q, axis=0)
+        q = 100 * stats.norm.cdf(1)     #1 is the 1 sigma
+        y_high = np.percentile(realizations, q, axis=0)
+    
+        plt.fill_between(gamma, y_low, y_high,facecolor=cmap(0),edgecolor='None', alpha = 0.5,label=r'Within 1$\sigma$')
     plt.xlabel(r'$\gamma$',fontsize=13)
     plt.ylabel(r'Density [cm$^{-3}$]',fontsize=13)
     plt.legend()
