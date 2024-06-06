@@ -72,7 +72,7 @@ argc should be 22 or 23 depending on if data folder is listed
 
 *Note that tau is present twice, this is a slight error in the bjet code. The second tau value is not used for anything, but it must be inputted.
 
- argc should be 28 or 29 depending on if data folder is listed
+argc should be 28 or 29 depending on if data folder is listed
 
 - Example:
 
