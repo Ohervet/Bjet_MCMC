@@ -1,5 +1,5 @@
-Manual usage of the multi-zone model bjet_core
-==============================================
+bjet_core
+=========
 
 `bjet_core` contains an updated version of the multi-zone Bjet code developped in Hervet 2015. This is the physical core of Bjet_MCMC and can be run in standalone mode, outside the MCMC frame.
 
