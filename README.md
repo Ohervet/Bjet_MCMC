@@ -26,6 +26,9 @@ Acknowledgments and citation
 
 
 ## Installation and running Bjet_MCMC:
+
+The official documentation is being moved on [readthedocs.io](https://bjet-mcmc.readthedocs.io/en/latest/) (still in progress). The documentation below will be removed eventually. 
+
 1. Ensure all dependencies are installed, see [dependencies](#dependencies). Recommended: create the conda env "bjet-mcmc" from `environment.yml` using `conda env create -f environment.yml`. Then load your environment with `conda activate bjet-mcmc`.
 2. Create a copy of `mcmc_config_template.txt` called `mcmc_config.txt`. For information and customized configuration files, see [configuration file](#mcmc-configuration-file). 
 3. Ensure the data file is formatted as described below and is at the relative path specified in `mcmc_config.txt`, see [data format](#data-format).
