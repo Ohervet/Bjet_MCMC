@@ -20,16 +20,16 @@ Usage
 Options for calling the executable:
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-- Usage 1: `bj_core --help`
-- Usage 2: `bj_core <parameter file>`
-- Usage 3: `bj_core 0 <parameter file>` same execution as usage 2, `_prev files` made
-- Usage 4: `bj_core 1 <parameter file>`                           no _prev files made
-- Usage 5: `bj_core 2 <data folder> <parameter file>`            _prev files made
-- Usage 6: `bj_core 3 <data folder> <parameter file>`               no _prev files made
-- Usage 7: `bj_core 0/1 <model type> <model params, at least 19 depending on model>`
-    ^params from command line, 0 = yes `_prev files`, 1 = no
-- Usage 8: `bj_core 2/3 <data folder> <model type> <model params, at least 19 depending on model>`
-    ^params from command line, 2 = yes `_prev files`, 3 = no
+- Usage 1: ``bj_core --help``
+- Usage 2: ``bj_core <parameter file>``
+- Usage 3: ``bj_core 0 <parameter file>`` same execution as usage 2, ``_prev files`` made
+- Usage 4: ``bj_core 1 <parameter file>``                           no _prev files made
+- Usage 5: ``bj_core 2 <data folder> <parameter file>``            _prev files made
+- Usage 6: ``bj_core 3 <data folder> <parameter file>``               no _prev files made
+- Usage 7: ``bj_core 0/1 <model type> <model parameter list>``
+    ^params from command line, 0 = yes ``_prev files``, 1 = no
+- Usage 8: `bj_core 2/3 <data folder> <model type> <model parameter list>`
+    ^params from command line, 2 = yes ``_prev files``, 3 = no
 
 #### Parameter files
 Parameter files specified in the command line should be paths relative to the `bj_core` executable. See `params.txt` in `bjet_core` for an example parameter file.
