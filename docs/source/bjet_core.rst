@@ -27,24 +27,35 @@ Options for calling the executable:
 - Usage 5: ``bj_core 2 <data folder> <parameter file>``            _prev files made
 - Usage 6: ``bj_core 3 <data folder> <parameter file>``               no _prev files made
 - Usage 7: ``bj_core 0/1 <model type> <list of parameters>``, 0 = yes ``_prev files``, 1 = no
-- Usage 8: `bj_core 2/3 <data folder> <model type> <list of parameters>`, 2 = yes ``_prev files``, 3 = no
+- Usage 8: ``bj_core 2/3 <data folder> <model type> <list of parameters>``, 2 = yes ``_prev files``, 3 = no
 
-#### Parameter files
-Parameter files specified in the command line should be paths relative to the `bj_core` executable. See `params.txt` in `bjet_core` for an example parameter file.
-#### Modes:
-- 0: `_prev` files are made, save in default data folder
-- 1: no `_prev` files are made, save in default data folder
-- 2: `_prev` files are made, save in specified data folder
-- 3: no _prev files are made, save in specified data folder
+Parameter files
+^^^^^^^^^^^^^^^
 
-(default data directory is in the same directory as the executable, named "data")
+Parameter files specified in the command line should be paths relative to the ``bj_core`` executable. See ``params.txt`` in ``bjet_core`` for an example parameter file.
 
-#### Valid values for model type:
+
+Modes:
+^^^^^^
+
+A `_prev`` file is a file with the previous model SED. When this option is activated, the model will not erase the SED from the former execution of the code. This is especially useful when doing "fit-by-eye"> to see the effects of a change in the model parameters on the same SED plot.
+- 0: ``_prev`` files are made, save in default data folder
+- 1: no ``_prev`` files are made, save in default data folder
+- 2: ``_prev`` files are made, save in specified data folder
+- 3: no ``_prev`` files are made, save in specified data folder
+
+(The default data directory is in the same directory as the executable, named "data")
+
+Valid values for model type:
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
 - 0: model with just blob
 - 1: blob + EIC parameters
-- Other models not yet implemented
+- Other models not yet implemented. The full multi-zone model can be used only with a parameter file.
 
-#### Order of parameters in command line:
+Order of parameters in command line:
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
 ##### Model type 0:
  ```
  bj_core <0, 1, 2, 3> <data folder if applicable> 0 (model type)
