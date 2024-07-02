@@ -1016,6 +1016,7 @@ double N_e_Jet(double gg) {
       // returns 1 if system command fails
       // returns 2 if called incorrectly or file reading fails
       int i, j, k, l;
+      int tmp_int;
       char stmp[256];
       char comma[256];
       char name[256];
@@ -2185,8 +2186,7 @@ double N_e_Jet(double gg) {
                 if ((dtmp < 7.00e+2) && (dtmp > 1.0e-10)) I_SYN = I_SYN * exp(-dtmp) + I_SYN_JET[j][i];
               }
             }
-
-            //intensity of a slice k at the end of its radiation transfert through the other slices downstream
+            //surface intensity of a slice k at the end of its radiation transfert through the other slices downstream
             I_SYN_TOT[k][i] = I_SYN;
             // transformation to observer frame (take the non-previously covered slice corona)
             F_SYN_JET[k][i] = M_PI * ((pow(Y_VAL[k], 2.0) - pow(Y_VAL[k - 1], 2.0)) / (D_L * D_L)) * (1.0 + z) * I_SYN;
@@ -2268,14 +2268,105 @@ double N_e_Jet(double gg) {
 
           sprintf(stmp, "%s/f_ssc_slice_%d.dat", DATA_DIRECTORY, j);
           stream_dat = fopen(stmp, "w+");
+          
+          //updated OH 2024
+          // the synchrotron radiation for SSC in each slice is the result of Sync radiation transfert of all slices from both ends of the jet
+          // radiative transfer for Jet SSC is actually relatively similar to blob-jet EIC
+          
+          //Actually what I calculate here could be used for the blob EIC without need of redoing the same radiation transfer
+          
+
+          //radiation transfert along the jet until the slice position, independent of the angle THETA
+          //parallel plans
+          
+          //approximation: synch seed photon at slice j = radiative transfer (I_SYN_JET) from 1 up to slice j
+          
+	  //fprintf(stderr, "%e\n\n",l);
+	  
+	  for (i = 1; i <= NU_DIM; i++) {
+	    I_SYN = 0.0;
+	     
+	    //radiative transfer along the jet
+            for (k = 1; k <= j; k++) {
+              sprintf(stmp, "%e", J_SYN_JET[k][i]);
+
+              if ((strcmp(stmp, "-inf") == 0) || (strcmp(stmp, "inf") == 0) || (strcmp(stmp, "nan") == 0) ||
+                  (J_SYN_JET[k][i] < 1.0e-300)) {
+                I_SYN_JET[k][i] = 0.0;
+
+              }  
+              //slice opacity     
+              dtmp = DEL_X[k] * K_ESA_JET[k][i];
+              
+              //the k-1 slice radiation transfer through a k slice with a larger surface area
+              // the intensity need to be scaled down by the surface area ratio along the transfer I_SYN[k] = I_SYN[k-1] * pow(Y_VAL[k]/Y_VAL[k-1], 2.0)
+              if (k == 1){
+                dtmp2 = 1;
+              } else {
+                dtmp2 = pow(Y_VAL[k-1]/Y_VAL[k], 2.0);
+              }
+              //if (i == 1) cout << "dtmp2:"<< dtmp2 << endl;
+              // thick
+              if (dtmp > 7.00e+2) I_SYN = I_SYN * 0.0 + I_SYN_JET[k][i];
+              // transparent
+              if (dtmp < 1.0e-10) I_SYN = I_SYN * dtmp2 * 1.0 + I_SYN_JET[k][i];
+              // thin
+              if ((dtmp < 7.00e+2) && (dtmp > 1.0e-10)) I_SYN = I_SYN * exp(-dtmp) * dtmp2 + I_SYN_JET[k][i];
+            }
+            //surface intensity of the slice 1 at the end of its radiation transfert up to slice j
+            I_SYN_TOT[j][i] = I_SYN;
+            
+            //saving jet synch intensity for the blob-jet EIC
+            //j is the last slice in the jet where the blob is not
+            if (X_VAL[j+1] <= D_b_src_j){
+              tmp_int = j;
+              I_rad_ext_s[i] = I_SYN;
+            }
+            
+            //radiative transfer in the opposite direction
+            I_SYN = 0.0;
+            for (k = SL_DIM; k > j; k--) {
+              sprintf(stmp, "%e", J_SYN_JET[k][i]);
+
+              if ((strcmp(stmp, "-inf") == 0) || (strcmp(stmp, "inf") == 0) || (strcmp(stmp, "nan") == 0) ||
+                  (J_SYN_JET[k][i] < 1.0e-300)) {
+                I_SYN_JET[k][i] = 0.0;
+
+              }
+              dtmp = DEL_X[k] * K_ESA_JET[k][i];
+              // thick
+              if (dtmp > 7.00e+2) I_SYN = I_SYN * 0.0 + I_SYN_JET[k][i];
+              // transparent
+              if (dtmp < 1.0e-10) I_SYN = I_SYN * 1.0 + I_SYN_JET[k][i];
+              // thin
+              if ((dtmp < 7.00e+2) && (dtmp > 1.0e-10)) I_SYN = I_SYN * exp(-dtmp) + I_SYN_JET[k][i];
+            }         
+            I_SYN_TOT[j][i] += I_SYN;
+            
+            //saving jet synch intensity for the blob-jet EIC
+            //j is the slice in the jet upstream of the blob
+            if (j == tmp_int+2) {
+              I_rad_ext1[i] = I_SYN;
+            }
+          }
+
 
           for (i = 1; i <= NU_DIM; i++) {
-
+       
+          
             // emission & absorption coefficients
+            /*
             J_COM_JET[j][i] = j_com(N_e_Jet, GAMMA_MIN1, G_VAL[j], I_SYN_JET[j], FreqTransO2S(NU_STR, DOP_JET, z),
                                     FreqTransO2S(NU_END, DOP_JET, z), NU_DIM, NU[i], COM_PREC1, COM_PREC2);
 
             K_ABS_SSC_JET[j][i] = gg_abs(NU[i], I_SYN_JET[j], NU_DIM, FreqTransO2S(NU_STR, DOP_JET, z),
+                                         FreqTransO2S(NU_END, DOP_JET, z), SYN_PREC1, SYN_PREC2);
+            */
+            //updated OH 2024
+            J_COM_JET[j][i] = j_com(N_e_Jet, GAMMA_MIN1, G_VAL[j], I_SYN_TOT[j], FreqTransO2S(NU_STR, DOP_JET, z),
+                                    FreqTransO2S(NU_END, DOP_JET, z), NU_DIM, NU[i], COM_PREC1, COM_PREC2);
+
+            K_ABS_SSC_JET[j][i] = gg_abs(NU[i], I_SYN_TOT[j], NU_DIM, FreqTransO2S(NU_STR, DOP_JET, z),
                                          FreqTransO2S(NU_END, DOP_JET, z), SYN_PREC1, SYN_PREC2);
 
 
@@ -2440,11 +2531,71 @@ double N_e_Jet(double gg) {
         fprintf(stderr, "CALCULATING EXT. INV. COMPTON SPECTRUM ON JET SYNCHROTRON... ");
 
         // CALCULATING EXT. INV. COMPTON SPECTRUM ON JET SYNCHROTRON
-
-
-
+        
+        //OH 2024
+        // take radiative transfer along the jet done for synchtrotron
+        
+        
+        //I_rad_ext_s = radiation tranfer done up to the end of the slice before the blob
+        
+        //if the blob is inside the jet
+        if (X_MIN < D_b_src_j) {
+        // k =  slice where the blob lies
         k = 1;
-        while (X_VAL[k + 1] <= D_b_src_j) {
+        while (X_VAL[k+1] <= D_b_src_j) {
+          k += 1;
+        }
+        
+        for (i = 1; i <= NU_DIM; i++) {
+          if (PRINT) fprintf(stderr, "%3i", i);
+	    I_SYN = I_rad_ext_s[i];
+            sprintf(stmp, "%e", J_SYN_JET[k][i]);
+          if ((strcmp(stmp, "-inf") == 0) || (strcmp(stmp, "inf") == 0) || (strcmp(stmp, "nan") == 0) ||
+             (J_SYN_JET[k][i] < 1.0e-300)) {
+             I_SYN_JET[k][i] = 0.0;
+          } else {
+            if (k == 1){
+              dtmp2 = 1;
+            } else {
+              dtmp2 = pow(Y_VAL[k-1]/Y_VAL[k], 2.0);
+            }
+            dtmp = (D_b_src_j - X_VAL[k]) * K_ESA_JET[j][i];
+            // thick
+            if (dtmp > 7.00e+2) I_SYN = I_SYN * 0.0 + J_SYN_JET[j][i] * DEL_X[j];
+            // transparent
+            if (dtmp < 1.0e-10) I_SYN = I_SYN * dtmp2 * 1.0 + I_SYN_JET[k][i];
+            // thin
+            if ((dtmp < 7.00e+2) && (dtmp > 1.0e-10)) I_SYN = I_SYN * exp(-dtmp) * dtmp2 + J_SYN_JET[j][i] * (D_b_src_j - X_VAL[k]);
+          }
+          //downstream Jet synch radiation transfer at the exact blob location         
+          I_rad_ext_s[i] = I_SYN;
+          
+          
+          //upstream calculation (shortcut)
+          //only the transfer on the blob the upstream side of the slice k need to be computed
+          I_SYN = I_rad_ext1[i];
+          dtmp = (X_VAL[k+1]-D_b_src_j) * K_ESA_JET[j][i];
+          // thick
+          if (dtmp > 7.00e+2) I_SYN = I_SYN * 0.0 + J_SYN_JET[j][i] * DEL_X[j];
+          // transparent
+          if (dtmp < 1.0e-10) I_SYN = I_SYN * dtmp2 * 1.0 + I_SYN_JET[k][i];
+          // thin
+          if ((dtmp < 7.00e+2) && (dtmp > 1.0e-10)) I_SYN = I_SYN * exp(-dtmp) * dtmp2 + J_SYN_JET[j][i] * (D_b_src_j - X_VAL[k]);
+          
+          //Upstream Jet synch radiation transfer at the exact blob location 
+          I_rad_ext1[i] = I_SYN;
+          
+          
+          if (PRINT) fprintf(stderr, "\b\b\b");
+        }
+        }
+        
+        
+        
+       // pre 2024
+       /*
+        k = 1;
+        while (X_VAL[k+1] <= D_b_src_j) {
           k += 1;
         }
         //if the blob is inside the jet
@@ -2493,9 +2644,6 @@ double N_e_Jet(double gg) {
           if (PRINT) fprintf(stderr, "\b\b\b");
         }
 
-
-
-
         //radiation transfert in the direction opposite of the jet propagation
         for (l = SL_DIM; l >= k; l--) {
           for (i = 1; i <= NU_DIM; i++) {
@@ -2530,24 +2678,13 @@ double N_e_Jet(double gg) {
             I_SYN_TOT[l][i] = I_SYN;
           }
         }
-
+*/
         for (i = 1; i <= NU_DIM; i++) {
           if (PRINT) fprintf(stderr, "%3i", i);
 
-          I_rad_ext1[i] = I_SYN_TOT[l][i];
+          //I_rad_ext1[i] = I_SYN_TOT[l][i];
 
 
-
-          //if the blob is inside the jet (outdated)
-          /*
-          if ( X_MIN < D_b_src_j){
-             // transformation jet to blob frame (blueshift)
-             I_rad_ext1[i] = (I_rad_ext1[i] + I_rad_ext_s[i]) * LOR_B_J;
-          } else {
-              //if the blob is upstream the jet (i.e upstream radio core)
-              I_rad_ext1[i] = (I_rad_ext1[i] + I_rad_ext_s[i]) * LOR_B_J / (4.0 * M_PI * (D_BJ + Y_MIN)*(D_BJ + Y_MIN) / (Y_MIN*Y_MIN));
-          }
-        */
           //updated version: Hervet 2021
           //if the blob is at distance > Xmin+Ymin, no change
           if (D_b_src_j >= X_MIN + Y_MIN) {
@@ -3219,10 +3356,14 @@ double N_e_Jet(double gg) {
       //fprintf(stderr, "Intrinsic adiabatic cool. time:           %6.3e s \n", R_src/V_B); //not true, this is a lower limit
       fprintf(stderr, "Observed minimal variability:             %6.3e h \n", R_src * (1 + z) / (c * DOP_B * 3600.));
       fprintf(stderr, "Electron particle density:   %6.3e cm^-3 \n", int_spec_b(1));
-      fprintf(stderr, "Electron energy density:     %6.3e erg cm^-3 \n", Ub_e);
-      fprintf(stderr, "Synchrotron energy density:  %6.3e erg cm^-3 \n", Ub_syn);
-      fprintf(stderr, "Magnetic energy density:     %6.3e erg cm^-3 \n", Ub_B);
-      fprintf(stderr, "U_B/U_e:                     %6.3e  \n\n\n", Ub_B / Ub_e);
+      fprintf(stderr, "Energy densities (blob's frame): \n");
+      fprintf(stderr, "     Electrons (U_e):     %6.3e erg cm^-3 \n", Ub_e);
+      fprintf(stderr, "     Magnetic (U_B):     %6.3e erg cm^-3 \n", Ub_B);
+      fprintf(stderr, "     Synchrotron (U_syn):  %6.3e erg cm^-3 \n", Ub_syn);
+      if (CASE_EIC) {
+      	fprintf(stderr, "     BLR (U_blr):  %6.3e erg cm^-3 \n", Ub_blr);
+      }
+      fprintf(stderr, "Equipartition U_B/U_e:                     %6.3e  \n\n\n", Ub_B / Ub_e);
       Lb_r = M_PI * R_src * R_src * LOR_B * LOR_B * c * (Ub_syn + Ub_ssc + Ub_ssc2 + Ub_eicd + Ub_eicj);
       Lj_r = Pj_syn + Pj_ssc;
       fprintf(stderr, "Magnetic power:              %6.3e erg s^-1 \n", Lb_B);
