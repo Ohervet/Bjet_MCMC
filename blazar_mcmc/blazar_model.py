@@ -54,7 +54,7 @@ from blazar_properties import *
 
 def make_SED(params, name_stem=None, theta=None, redshift=None, min_freq=None, max_freq=None, torus_temp=None,
              torus_luminosity=None, torus_frac=None, data_folder=None, executable=None, command_params_full=None,
-             command_params_1=None, command_params_2=None, prev_files=False, verbose=False, eic=False):
+             command_params_1=None, command_params_2=None, prev_files=False, verbose=False, eic=False, folder=None):
     """
     Arguments:
         params: 1D np array of NUM_DIM floats
@@ -149,9 +149,14 @@ def make_SED(params, name_stem=None, theta=None, redshift=None, min_freq=None, m
         subprocess.run([BASE_PATH + executable, *command_params_full], stderr=open(os.devnull, 'wb'),
                        stdout=open(os.devnull, 'wb'))
     else:
+        result = subprocess.run([BASE_PATH + executable, *command_params_full],  capture_output = True, text = True)
         print("params", params)
         print(command_params_full)
-        subprocess.run([BASE_PATH + executable, *command_params_full])
+        
+        #write log file and print
+        print(result.stderr)
+        with open(FOLDER_PATH + folder + "/bjet.log", 'w') as f:
+            f.write(result.stderr)
 
 
 def file_make_SED(parameter_file=None, data_folder=None, executable=None, prev_files=False, verbose=False):
@@ -335,7 +340,7 @@ def process_model(name_stem=None, data_folder=None, verbose=False, eic=False, ad
 def make_model(params, name_stem=None, theta=None, redshift=None, min_freq=None, max_freq=None, torus_temp=None,
                torus_luminosity=None, torus_frac=None, data_folder=None, executable=None, command_params_full=None,
                command_params_1=None, command_params_2=None, parameter_file=None, prev_files=False,
-               use_param_file=False, verbose=False, eic=False, fixed_params=None):
+               use_param_file=False, verbose=False, eic=False, fixed_params=None, folder=None):
     """
     Given parameters, returns v and vFv for the corresponding model.
 
@@ -386,7 +391,7 @@ def make_model(params, name_stem=None, theta=None, redshift=None, min_freq=None,
     make_SED(params, name_stem=name_stem, theta=theta, redshift=redshift, min_freq=min_freq, max_freq=max_freq,
              torus_temp=torus_temp, torus_luminosity=torus_luminosity, torus_frac=torus_frac, data_folder=data_folder,
              executable=executable, command_params_full=command_params_full, command_params_1=command_params_1,
-             command_params_2=command_params_2, prev_files=prev_files, verbose=verbose, eic=eic)
+             command_params_2=command_params_2, prev_files=prev_files, verbose=verbose, eic=eic, folder=folder)
     return process_model(name_stem=name_stem, data_folder=data_folder, eic=eic)
 
 
