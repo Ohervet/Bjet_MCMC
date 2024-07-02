@@ -270,7 +270,7 @@ def save_plots_and_info(configs, data, param_min_vals, param_max_vals, folder=No
                                     torus_frac=torus_frac, data_folder=data_folder, executable=executable,
                                     command_params_full=command_params_full, command_params_1=command_params_1,
                                     command_params_2=command_params_2, prev_files=False, use_param_file=False,
-                                    verbose=verbose, eic=eic, fixed_params=configs["fixed_params"])
+                                    verbose=verbose, eic=eic, fixed_params=configs["fixed_params"], folder=folder)
     
 
     for f in glob.glob(BASE_PATH + DATA_FOLDER + "/" + name_stem + "_*"):
@@ -286,7 +286,7 @@ def save_plots_and_info(configs, data, param_min_vals, param_max_vals, folder=No
     
     #need to run tests with fixed params before releasing it
     blazar_plots.plot_particle_spectrum(best_params, min_1sigma_params, max_1sigma_params, configs["fixed_params"],
-                                        file_name= folder+"/particle_spectrum.svg")
+                                        file_name= folder+"/particle_spectrum.svg", save=True, show=False)
     
     blazar_plots.corner_plot(flat_chain, param_min_vals, param_max_vals, best_params, min_1sigma_params,
                               max_1sigma_params, file_name=folder + "/corner_plot.svg", save=True, show=False, eic=eic,
@@ -299,8 +299,10 @@ def save_plots_and_info(configs, data, param_min_vals, param_max_vals, folder=No
     blazar_plots.plot_chi_squared(log_probs, configs["discard"], plot_type='best',
                                   file_name=(folder + "/chi_squared_plot_best.svg"), save=True, show=False)
     blazar_plots.plot_chi_squared(log_probs, configs["discard"], plot_type='all',
-                                  file_name=(folder + "/chi_squared_plot_all.jpeg"), save=True,
-                                  show=False)  # svg is big
+                                  file_name=(folder + "/chi_squared_plot_all.jpeg"), save=True, show=False)  # svg is big
+    
+    blazar_plots.plot_cooling_times(folder + "/bjet.log", best_params, fixed_params=configs["fixed_params"], 
+                                    file_name= folder + "/cooling_time_obs(Thomson).svg", save=True, show=False, eic=eic, redshift=redshift)
 
 def parse_info_doc(info_doc, info=None):
     if info is None:
