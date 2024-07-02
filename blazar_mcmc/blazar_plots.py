@@ -30,6 +30,7 @@ import random
 import corner
 import numpy as np
 import tqdm
+import subprocess
 from matplotlib import pyplot as plt
 from scipy import interpolate
 from scipy import stats
@@ -795,8 +796,8 @@ def N_e_BknPowLaw(gamma, K, alpha_1, alpha_2, gamma_break):
     sign = diff > 0
     return K * gamma**(-alpha_1)*sign + K2 * gamma**(-alpha_2)*~sign
 
-def plot_particle_spectrum(best_params, min_1sigma_params, max_1sigma_params, fixed_params, file_name=RESULTS_FOLDER + "/particle_spectrum.svg"):
-    
+def plot_particle_spectrum(best_params, min_1sigma_params, max_1sigma_params, fixed_params, 
+                           file_name=RESULTS_FOLDER + "/particle_spectrum.svg", save=False, show=True):
     #crate a list of particle spectrum parameters (free and fixed)
     params = np.zeros(6)
     min_params = np.zeros(6)
@@ -810,10 +811,11 @@ def plot_particle_spectrum(best_params, min_1sigma_params, max_1sigma_params, fi
             max_params[i-1] = fixed_params[i]
             count += 1
         else:
-            params[i-1] = best_params[i-count-1]
-            min_params[i-1] = min_1sigma_params[i-count-1]
-            max_params[i-1] = max_1sigma_params[i-count-1]
+            params[i-1] = best_params[i-count]
+            min_params[i-1] = min_1sigma_params[i-count]
+            max_params[i-1] = max_1sigma_params[i-count]
     K, alpha_1, alpha_2, gamma_min, gamma_max, gamma_break= params
+    print(params)
     params_error_down = params - min_params
     params_error_up = max_params - params
     
@@ -853,4 +855,38 @@ def plot_particle_spectrum(best_params, min_1sigma_params, max_1sigma_params, fi
     plt.xlabel(r'$\gamma$',fontsize=13)
     plt.ylabel(r'Density [cm$^{-3}$]',fontsize=13)
     plt.legend()
-    plt.savefig(BASE_PATH + file_name)
+    if save:
+        plt.savefig(BASE_PATH + file_name)
+
+sig_T  = 6.652453 * 1.0e-25 #[cm^2]
+m_e    = 9.109558 * 1.0e-28 #[g]
+c      = 2.997924 * 1.0e+10 #[cm / s]
+def cooling_time_Thomson(gamma, U_B, U_syn, U_blr):
+    #see e.g. Inoue & Takahara 1996
+    return 3 * m_e * c /(4 * (U_B+U_syn+U_blr) * sig_T * gamma)
+
+def plot_cooling_times(logfile, best_params, fixed_params, file_name= RESULTS_FOLDER + "/cooling_times.svg", save=False, 
+                       show=True, eic=False, redshift = None):
+    
+    #retrieve the energy densities from bjet.log
+    grep = subprocess.run(["grep", "(U_B)", BASE_PATH + logfile], capture_output = True, text = True)
+    U_B = float(grep.stdout.split()[2])
+    grep = subprocess.run(["grep", "(U_syn)", BASE_PATH + logfile], capture_output = True, text = True)
+    U_syn = float(grep.stdout.split()[2])
+    U_blr = 0.
+    if eic:
+        grep = subprocess.run(["grep", "(U_blr)", BASE_PATH + logfile], capture_output = True, text = True)
+        U_blr = float(grep.stdout.split()[2])
+        
+    gamma_min, gamma_max= best_params[4:6]
+    gamma = np.logspace(gamma_min, gamma_max, 500)
+    doppler = best_params[0]
+    
+    #plot cooling time in Thomson limit
+    plt.figure("Observed cooling time (Thomson limit)")
+    plt.plot(gamma, cooling_time_Thomson(gamma, U_B, U_syn, U_blr) * (1 + redshift) / (doppler))
+    plt.loglog()
+    plt.xlabel(r'$\gamma$',fontsize=13)
+    plt.ylabel(r'$\tau_{\mathrm{cool}}$ [s]',fontsize=13)
+    if save:
+        plt.savefig(BASE_PATH + file_name)
