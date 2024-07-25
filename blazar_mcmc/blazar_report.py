@@ -286,7 +286,7 @@ def save_plots_and_info(configs, data, param_min_vals, param_max_vals, folder=No
     
     #need to run tests with fixed params before releasing it
     blazar_plots.plot_particle_spectrum(best_params, min_1sigma_params, max_1sigma_params, configs["fixed_params"],
-                                        file_name= folder+"/particle_spectrum.svg", save=True, show=False)
+                                        file_name= BASE_PATH+folder+"/particle_spectrum.svg", save=True, show=False)
     
     blazar_plots.corner_plot(flat_chain, param_min_vals, param_max_vals, best_params, min_1sigma_params,
                               max_1sigma_params, file_name=folder + "/corner_plot.svg", save=True, show=False, eic=eic,
