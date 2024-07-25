@@ -218,7 +218,7 @@ def plot_data(data_file, title=None, no_title=False, adjust_scale=True, lower_ad
 def plot_model_and_data(model, data_file, flat_samples, indices_within_1sigma, 
                         redshift, eic, title=None, no_title=False, adjust_scale=True, 
                         lower_adjust_multiplier=None, upper_adjust_multiplier=None, file_name=RESULTS_FOLDER + "/model_and_data." + image_type,
-                        clear_plot=True, save=False, show=True, log=True, fixed_params=None):
+                        save=False, show=True, log=True, fixed_params=None):
     """
     Create a plot with data and model data
     Args:
@@ -242,9 +242,6 @@ def plot_model_and_data(model, data_file, flat_samples, indices_within_1sigma,
             How far below the data the plot should be scaled; default is 1.1
         upper_adjust_multiplier (optional): float
             How far above the data the plot should be scaled; default is 1.1
-        clear_plot (optional): bool
-            Whether the plot should be cleared before new data is plotted; default
-            is True
 
     After function call:
         If show is true, the plot is shown.
@@ -259,8 +256,8 @@ def plot_model_and_data(model, data_file, flat_samples, indices_within_1sigma,
     plt.rcParams.update(params)
 
 
-    if clear_plot:
-        plt.figure("Model and Data")
+    # if clear_plot:
+    #     plt.figure("Model and Data")
 
     plot_data(data_file, title=title, no_title=no_title, adjust_scale=adjust_scale,
               lower_adjust_multiplier=lower_adjust_multiplier, upper_adjust_multiplier=upper_adjust_multiplier,
@@ -797,15 +794,61 @@ def N_e_BknPowLaw(gamma, K, alpha_1, alpha_2, gamma_break):
     return K * gamma**(-alpha_1)*sign + K2 * gamma**(-alpha_2)*~sign
 
 def plot_particle_spectrum(best_params, min_1sigma_params, max_1sigma_params, fixed_params, 
-                           file_name=RESULTS_FOLDER + "/particle_spectrum.svg", save=False, show=True):
+                           file_name=BASE_PATH + RESULTS_FOLDER + "/particle_spectrum.svg", save=False, show=True):
+    """
+    Plot the broken power-law particle spectrum with 1sigma contour based on Bjet_MCMC outputs
+    Note the errors of gamma_min and gamma_max are not included in the contour
+
+    Parameters
+    ----------
+    best_params : 1D np array of floats
+        Array of best parameters found by the MCMC fit.
+        For simple SSC without fixed parameters, the order is:
+            [delta, K, alpha_1, alpha_2, gamma_min, gamma_max, gamma_break, B, R]
+        Additional description:
+            ---------------------------------------------------
+            delta       doppler factor                  linear
+            K           particle density [cm^-3]        log
+            n1          alpha_1 (first index)           linear
+            n2          alpha_2 (second index)          linear
+            gamma_min   low-energy cutoff               log
+            gamma_max   high-energy cutoff              log
+            gamma_break energy break                    log
+            B           magnetic field strength [G]     log
+            R           blob radius [cm]                log
+    min_1sigma_params : 1D np array of floats
+        Array of 1 sigma lower boundary of free parameters found by the MCMC fit.
+        The order should match the one of best_params
+    max_1sigma_params : 1D np array
+        Array of 1 sigma upper boundary of free parameters found by the MCMC fit.
+        The order should match the one of best_params
+    fixed_params : list of floats
+        List of user-fixed parameters. If no fixed parameters in simple SSC model:
+            fixed_params = [-inf, -inf, -inf, -inf, -inf, -inf, -inf, -inf, -inf]
+    file_name : str, optional
+        Absolute path and name for the saved plot.
+        The default is BASE_PATH + RESULTS_FOLDER + "/particle_spectrum.svg".
+    save : boolean, optional
+        True for saving. The default is False.
+    show : boolean, optional
+        True to display. The default is True.
+
+    Returns
+    -------
+    The particle spectrum plot.
+    """
+    
     #crate a list of particle spectrum parameters (free and fixed)
     params = np.zeros(6)
     min_params = np.zeros(6)
     max_params = np.zeros(6)
+    
     count = 0
-            
-    for i in range(1,7):
-        if fixed_params[i]!= -np.inf:
+    for i in range(7):
+        if i == 0 and fixed_params[i]!= -np.inf:
+            #case of fixed delta
+            count = 1
+        elif fixed_params[i]!= -np.inf:
             params[i-1] = fixed_params[i]
             min_params[i-1] = fixed_params[i]
             max_params[i-1] = fixed_params[i]
@@ -813,9 +856,9 @@ def plot_particle_spectrum(best_params, min_1sigma_params, max_1sigma_params, fi
         else:
             params[i-1] = best_params[i-count]
             min_params[i-1] = min_1sigma_params[i-count]
-            max_params[i-1] = max_1sigma_params[i-count]
-    K, alpha_1, alpha_2, gamma_min, gamma_max, gamma_break= params
-    print(params)
+            max_params[i-1] = max_1sigma_params[i-count]    
+    
+    K, alpha_1, alpha_2, gamma_min, gamma_max, gamma_break = params
     params_error_down = params - min_params
     params_error_up = max_params - params
     
@@ -842,7 +885,7 @@ def plot_particle_spectrum(best_params, min_1sigma_params, max_1sigma_params, fi
             parameter_samples_up[i] =  params + np.abs(parameter_samples_up[i] - params)
             #when a projection is below the mean, use parameter_samples_down, when above use parameter_samples_up
             parameter_samples_temp = parameter_samples_down[i]*sign + parameter_samples_up[i]*~sign
-            #remove non-acceptet parameter sets from bjet
+            #remove non-accepted parameter sets from bjet
             if parameter_samples_temp[1] <= parameter_samples_temp[2] and parameter_samples_temp[3] <= parameter_samples_temp[5] <= parameter_samples_temp[4]:    
                 parameter_samples.append(parameter_samples_temp)
         realizations = np.array([N_e_BknPowLaw(gamma, pars[0], pars[1], pars[2], pars[5]) for pars in parameter_samples])
@@ -851,12 +894,12 @@ def plot_particle_spectrum(best_params, min_1sigma_params, max_1sigma_params, fi
         q = 100 * stats.norm.cdf(1)     #1 is the 1 sigma
         y_high = np.percentile(realizations, q, axis=0)
     
-        plt.fill_between(gamma, y_low, y_high,facecolor=cmap(0),edgecolor='None', alpha = 0.5,label=r'Within 1$\sigma$')
+        plt.fill_between(gamma, y_low, y_high,edgecolor='None', alpha = 0.5,label=r'Within 1$\sigma$')
     plt.xlabel(r'$\gamma$',fontsize=13)
     plt.ylabel(r'Density [cm$^{-3}$]',fontsize=13)
     plt.legend()
     if save:
-        plt.savefig(BASE_PATH + file_name)
+        plt.savefig(file_name)
 
 sig_T  = 6.652453 * 1.0e-25 #[cm^2]
 m_e    = 9.109558 * 1.0e-28 #[g]
