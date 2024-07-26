@@ -75,4 +75,4 @@ Particle spectrum with 1-sigma confidence level contours of the best model.
 ---------------------------------
 Particle cooling time considering the Thomson regime.
 
-.. math:: \tau_\mathrm{cool}
+.. math:: \tau_\mathrm{cool}(\gamma) = \frac{3 m_e c}{4 U\mathrm{rad} \Sigma_T \gamma}
