@@ -67,5 +67,6 @@ e.g.
 ``particle_spectrum.svg``
 ----------------------
 Particle spectrum with 1-sigma confidence level contours of the best model.
+
 .. image:: ..\\figures\\model_and_data.png
   :width: 400
