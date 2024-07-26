@@ -74,4 +74,5 @@ Particle spectrum with 1-sigma confidence level contours of the best model.
 ``cooling_time_obs(Thomson).svg``
 ---------------------------------
 Particle cooling time considering the Thomson regime.
+
 .. math:: \tau_\mathrm{cool}
