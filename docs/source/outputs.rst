@@ -74,9 +74,9 @@ e.g.
 
 ``cooling_time_obs(Thomson).svg``
 ---------------------------------
-Particle cooling time considering the Thomson regime.
+Particle cooling time in the observer's frame considering the Thomson regime.
 
-.. math:: \tau_\mathrm{cool}(\gamma) = \frac{3 m_e c}{4 U_\mathrm{rad} \sigma_T \gamma}
+.. math:: \tau_\mathrm{cool}(\gamma) = \frac{3 m_e c}{4 U_\mathrm{rad} \sigma_T \gamma} \frac{1+z}{\delta}
 
 With :math:`U_\mathrm{rad}` the sum of all radiation field densities in the blob's frame.
 e.g.
