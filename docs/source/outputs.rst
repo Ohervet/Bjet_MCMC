@@ -58,10 +58,10 @@ Log file of the standard terminal output of bjet. It contains physical informati
 
 ``model_and_data.svg``
 ----------------------
-Multiwavelength SED with data points, best model and 1-sigma confidence level countours of the best model. Note the 1-sigma contours on this plot are an approximate of the real contours to save computation time.
+Multiwavelength SED with data points, best model, and 1-sigma confidence level contours of the best model. Note the 1-sigma contours on this plot are an approximation of the real contours to save computation time.
 e.g.
 
-.. image:: ..\\figures\\model_and_data.png
+.. image:: ../figures/model_and_data.png
   :width: 400
 
 ``particle_spectrum.svg``
