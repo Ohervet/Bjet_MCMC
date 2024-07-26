@@ -67,6 +67,7 @@ e.g.
 ``particle_spectrum.svg``
 -------------------------
 Particle spectrum with 1-sigma confidence level contours of the best model.
+e.g.
 
 .. image:: ../figures/particle_spectrum.png
   :width: 400
@@ -75,4 +76,10 @@ Particle spectrum with 1-sigma confidence level contours of the best model.
 ---------------------------------
 Particle cooling time considering the Thomson regime.
 
-.. math:: \tau_\mathrm{cool}(\gamma) = \frac{3 m_e c}{4 U\mathrm{rad} \Sigma_T \gamma}
+.. math:: \tau_\mathrm{cool}(\gamma) = \frac{3 m_e c}{4 U_\mathrm{rad} \sigma_T \gamma}
+
+With :math:`U_\mathrm{rad}` the sum of all radiation field densities in the blob's frame.
+e.g.
+
+.. image:: ../figures/cooling_time_obs(Thomson).png
+  :width: 400
