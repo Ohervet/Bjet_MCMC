@@ -9,7 +9,7 @@ By default, all outputs are written to a folder in ``local_results/`` entitled `
 Contains information from the configuations file, some paths and the running time.
 e.g. ::
 
-folder name: local_results/J1010_2023-07-04-23:03:45
+ folder name: local_results/J1010_2023-07-04-23:03:45
 report description: J1010
 
 config file: mcmc_config.txt
