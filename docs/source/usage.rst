@@ -51,3 +51,16 @@ e.g. ::
  -1.68218932 16.70306255]
 
  autocorrelation time: avg = 8.403521463690534 steps
+
+``bjet.log``
+------------
+Log file of the standard terminal output of bjet. It contains physical information from the best model fitted to the data.
+
+``model_and_data.svg``
+----------------------
+Multiwavelength SED with data points, best model and 1-sigma confidence level countours of the best model. Note the 1-sigma contours on this plot are an approximate of the real contours to save computation time.
+e.g.
+.. image:: path/filename.png
+  :width: 400
+
+
