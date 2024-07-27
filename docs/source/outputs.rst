@@ -93,3 +93,12 @@ Science plots
 
  .. image:: ../figures/cooling_time_obs(Thomson).png
    :width: 400
+
+:math:`\chi^2` plots
+--------------------
+:math:`\chi^2` plots are critical to assess the convergence of the MCMC chain. They provide insights to the user in taking longer/shorter chains or changing the number of free parameters.
+- ``chi_squared_plot_all.jpeg``
+ Display of all individual walkers. e.g.
+
+ .. image:: ../figures/chi_squared_plot_all.jpeg
+   :width: 400
