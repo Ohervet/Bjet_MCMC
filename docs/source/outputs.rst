@@ -29,13 +29,13 @@ Text files
 
   time: 5:45:22.151980
 
-``info.txt``
-------------
-Main output containing the best fit parameters with associated errors, and statistical information.
-e.g. ::
+- ``info.txt``
 
- configurations: 
- {'description': 'J1010_quicktest', 'folder_label': 'J1010', 'eic': False, 'data_file': 'real_data/J1010_SED_reduced.dat', 'n_steps': 100, 'n_walkers': 50, 'discard': 20, 'parallel': True, 'cores': 15, 'use_variability': True, 'tau_variability': 24.0, 'redshift': 0.143, 'custom_alpha2_limits': False, 'bb_temp': 'null', 'l_nuc': 'null', 'tau': 'null', 'blob_dist': 'null', 'alpha2_limits': [1.5, 7.5], 'fixed_params': [83.8, -inf, -inf, -inf, -inf, -inf, -inf, -inf, -inf]}
+ Main output containing the best fit parameters with associated errors, and statistical information.
+ e.g. ::
+
+  configurations: 
+  {'description': 'J1010_quicktest', 'folder_label': 'J1010', 'eic': False, 'data_file': 'real_data/J1010_SED_reduced.dat', 'n_steps': 100, 'n_walkers': 50, 'discard': 20, 'parallel': True, 'cores': 15, 'use_variability': True, 'tau_variability': 24.0, 'redshift': 0.143, 'custom_alpha2_limits': False, 'bb_temp': 'null', 'l_nuc': 'null', 'tau': 'null', 'blob_dist': 'null', 'alpha2_limits': [1.5, 7.5], 'fixed_params': [83.8, -inf, -inf, -inf, -inf, -inf, -inf, -inf, -inf]}
 
   Parameter    Best Value       1sigma Range    
       K         2.98e+04    2.98e+04 - 2.98e+04 
