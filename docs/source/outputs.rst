@@ -12,7 +12,6 @@ Text files
 ----------
 
 - ``basic_info.txt``
-
  Contains information from the configuations file, some paths and the running time.
  e.g. ::
 
