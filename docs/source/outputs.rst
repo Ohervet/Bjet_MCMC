@@ -109,12 +109,12 @@ Science plots
  Best :math:`\chi^2` at each step.
  e.g.
 
- .. image:: ../figures/chi_squared_plot_best.svg
+ .. image:: ../figures/chi_squared_plot_best.png
    :width: 400
 
 - ``chi_squared_plot_med.svg``
  Median of all walker's :math:`\chi^2` at each step.
  e.g.
 
- .. image:: ../figures/chi_squared_plot_med.svg
+ .. image:: ../figures/chi_squared_plot_med.png
    :width: 400
