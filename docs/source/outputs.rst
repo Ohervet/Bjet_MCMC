@@ -125,4 +125,4 @@ Corner plot
 e.g.
 
  .. image:: ../figures/corner_plot.png
-   :width: 400
+   :width: 800
