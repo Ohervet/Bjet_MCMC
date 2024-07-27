@@ -97,8 +97,24 @@ Science plots
 :math:`\chi^2` plots
 --------------------
 :math:`\chi^2` plots are critical to assess the convergence of the MCMC chain. They provide insights to the user in taking longer/shorter chains or changing the number of free parameters.
+
 - ``chi_squared_plot_all.jpeg``
- Display of all individual walkers. e.g.
+ :math:`\chi^2` of all individual walkers. 
+ e.g.
 
  .. image:: ../figures/chi_squared_plot_all.jpeg
+   :width: 400
+
+- ``chi_squared_plot_best.svg``
+ Best :math:`\chi^2` at each step.
+ e.g.
+
+ .. image:: ../figures/chi_squared_plot_best.svg
+   :width: 400
+
+- ``chi_squared_plot_med.svg``
+ Median of all walker's :math:`\chi^2` at each step.
+ e.g.
+
+ .. image:: ../figures/chi_squared_plot_med.svg
    :width: 400
