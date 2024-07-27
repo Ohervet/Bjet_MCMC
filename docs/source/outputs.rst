@@ -118,3 +118,11 @@ Science plots
 
  .. image:: ../figures/chi_squared_plot_med.png
    :width: 400
+
+Corner plot
+-----------
+1D posterior probability distribution of each free parameter, 2D posterior probability distribution of each pair of parameters, best parameter, 1-sigma parameter range.
+e.g.
+
+ .. image:: ../figures/corner_plot.png
+   :width: 400
