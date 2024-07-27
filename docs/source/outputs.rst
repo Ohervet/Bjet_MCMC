@@ -8,8 +8,11 @@ By default, all outputs are written to a folder in ``local_results/`` entitled `
 --------------
 H5 file containing the entire chain from the MCMC and the corresponding log-likelihood values. This is updated continuously. If the code crashes, all existing results are still present. H5 files can be re-loaded as the current state for the MCMC at the beginning of another run (see the main method in ``blazar_run_mcmc.py``) or loaded to use for statistics or plotting (see ``load_backend()`` in ``blazar_report.py``).
 
-``basic_info.txt``
-------------------
+Text files
+----------
+
+- ``basic_info.txt``
+
 Contains information from the configuations file, some paths and the running time.
 e.g. ::
 
