@@ -270,7 +270,7 @@ def save_plots_and_info(configs, data, param_min_vals, param_max_vals, folder=No
                                     torus_frac=torus_frac, data_folder=data_folder, executable=executable,
                                     command_params_full=command_params_full, command_params_1=command_params_1,
                                     command_params_2=command_params_2, prev_files=False, use_param_file=False,
-                                    verbose=verbose, eic=eic, fixed_params=configs["fixed_params"], folder=folder)
+                                    verbose=True, eic=eic, fixed_params=configs["fixed_params"], folder=folder)
     
 
     for f in glob.glob(BASE_PATH + DATA_FOLDER + "/" + name_stem + "_*"):
