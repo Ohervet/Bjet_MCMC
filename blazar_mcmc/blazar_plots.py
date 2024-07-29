@@ -10,8 +10,8 @@ All parameters are the logarithm of the true value except for delta, n1, and n2
 ---------------------------------------------------
 delta       doppler factor                  linear
 K           particle density [cm^-3]        log
-n1          alpha_1 (first index)           linear
-n2          alpha_2 (second index)          linear
+n1          n_1 (first index)           linear
+n2          n_2 (second index)          linear
 gamma_min   low-energy cutoff               log
 gamma_max   high-energy cutoff              log
 gamma_break energy break                    log
@@ -218,7 +218,7 @@ def plot_data(data_file, title=None, no_title=False, adjust_scale=True, lower_ad
 def plot_model_and_data(model, data_file, flat_samples, indices_within_1sigma, 
                         redshift, eic, title=None, no_title=False, adjust_scale=True, 
                         lower_adjust_multiplier=None, upper_adjust_multiplier=None, file_name=RESULTS_FOLDER + "/model_and_data." + image_type,
-                        save=False, show=True, log=True, fixed_params=None):
+                        save=False, show=True, log=True, fixed_params=None,verbose=False):
     """
     Create a plot with data and model data
     Args:
@@ -785,13 +785,13 @@ def residual_plot(data, best_model, lowest_per_point, highest_per_point):
     plt.xscale("log")
 
 
-def N_e_BknPowLaw(gamma, K, alpha_1, alpha_2, gamma_break):
+def N_e_BknPowLaw(gamma, K, n_1, n_2, gamma_break):
     K = 10**K
     gamma_break = 10**gamma_break
-    K2 = K * gamma_break**(alpha_2 - alpha_1)
+    K2 = K * gamma_break**(n_2 - n_1)
     diff = gamma_break - gamma
     sign = diff > 0
-    return K * gamma**(-alpha_1)*sign + K2 * gamma**(-alpha_2)*~sign
+    return K * gamma**(-n_1)*sign + K2 * gamma**(-n_2)*~sign
 
 def plot_particle_spectrum(best_params, min_1sigma_params, max_1sigma_params, fixed_params, 
                            file_name=BASE_PATH + RESULTS_FOLDER + "/particle_spectrum.svg", save=False, show=True):
@@ -804,13 +804,13 @@ def plot_particle_spectrum(best_params, min_1sigma_params, max_1sigma_params, fi
     best_params : 1D np array of floats
         Array of best parameters found by the MCMC fit.
         For simple SSC without fixed parameters, the order is:
-            [delta, K, alpha_1, alpha_2, gamma_min, gamma_max, gamma_break, B, R]
+            [delta, K, n_1, n_2, gamma_min, gamma_max, gamma_break, B, R]
         Additional description:
             ---------------------------------------------------
             delta       doppler factor                  linear
             K           particle density [cm^-3]        log
-            n1          alpha_1 (first index)           linear
-            n2          alpha_2 (second index)          linear
+            n1          n_1 (first index)           linear
+            n2          n_2 (second index)          linear
             gamma_min   low-energy cutoff               log
             gamma_max   high-energy cutoff              log
             gamma_break energy break                    log
@@ -858,13 +858,13 @@ def plot_particle_spectrum(best_params, min_1sigma_params, max_1sigma_params, fi
             min_params[i-1] = min_1sigma_params[i-count]
             max_params[i-1] = max_1sigma_params[i-count]    
     
-    K, alpha_1, alpha_2, gamma_min, gamma_max, gamma_break = params
+    K, n_1, n_2, gamma_min, gamma_max, gamma_break = params
     params_error_down = params - min_params
     params_error_up = max_params - params
     
     gamma = np.logspace(gamma_min, gamma_max, 500)
     plt.figure('Particle Spectrum')
-    plt.plot(gamma, N_e_BknPowLaw(gamma, K, alpha_1, alpha_2, gamma_break),label='Particle Spectrum')
+    plt.plot(gamma, N_e_BknPowLaw(gamma, K, n_1, n_2, gamma_break),label='Particle Spectrum')
     plt.loglog()
     
     if count !=6:

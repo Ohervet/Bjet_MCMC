@@ -15,8 +15,8 @@ All parameters are the logarithm of the true value except for delta, n1, and n2
 ---------------------------------------------------
 delta       doppler factor                  linear
 K           particle density [cm^-3]        log
-n1          alpha_1 (first index)           linear
-n2          alpha_2 (second index)          linear
+n1          first index                     linear
+n2          second index                    linear
 gamma_min   low-energy cutoff               log
 gamma_max   high-energy cutoff              log
 gamma_break energy break                    log
@@ -510,7 +510,7 @@ def min_max_parameters(alpha2_limits=None, eic=False, fixed_params=None):
         both are in the standard order:
             [delta, K, n1, n2, gamma_min, gamma_max, gamma_break, B, R]
         with eic:
-            ["delta", "K", "alpha_1", "alpha_2", "gamma_min", "gamma_max", "gamma_break", "B", "R",
+            ["delta", "K", "n_1", "n_2", "gamma_min", "gamma_max", "gamma_break", "B", "R",
              "bb_temp", "l_nuc", "tau", "blob_dist"]
     """
     if alpha2_limits is None or len(alpha2_limits) != 2:
@@ -542,7 +542,7 @@ def log_prior(params, param_min_vals=None, param_max_vals=None, redshift=None, t
               use_variability=True, alpha2_limits=None, eic=False, fixed_params = None):
     """
     Using a uniform prior distribution. Return whether input params are valid.
-    list parameters with eic: ["delta", "K", "alpha_1", "alpha_2", "gamma_min", "gamma_max", "gamma_break", "B", "R",
+    list parameters with eic: ["delta", "K", "n_1", "n_2", "gamma_min", "gamma_max", "gamma_break", "B", "R",
      "bb_temp", "l_nuc", "tau", "blob_dist"]
     Args:
         params: 1D np array of NUM_DIM floats

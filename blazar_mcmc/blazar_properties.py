@@ -33,18 +33,18 @@ class BlazarProperties(object):
 
 
 def modelProperties(is_eic=False, fixed_params=None):
-    sscProperties = BlazarProperties(9, ["delta", "K", "alpha_1", "alpha_2", "gamma_min", "gamma_max", "gamma_break", "B",
+    sscProperties = BlazarProperties(9, ["delta", "K", "n_1", "n_2", "gamma_min", "gamma_max", "gamma_break", "B",
                                          "R"],
-                                     [r"$\delta$", r"log $K$", r"$\alpha_1$", r"$\alpha_2$", r"log $\gamma_{min}$",
+                                     [r"$\delta$", r"log $K$", r"$n_1$", r"$n_2$", r"log $\gamma_{min}$",
                                       r"log $\gamma_{max}$", r"log $\gamma_{break}$", r"log $B$", r"log $R$"],
                                      ["doppler factor (delta)", "log K [cm^-3]", "alpha 1", "alpha 2", "log gamma_min",
                                       "log gamma_max", "log gamma_break", "log B", "log R [cm]"],
                                      [False, True, False, False, True, True, True, True, True])
     
     eicProperties = BlazarProperties(13,
-                                     ["delta", "K", "alpha_1", "alpha_2", "gamma_min", "gamma_max", "gamma_break", "B", "R",
+                                     ["delta", "K", "n_1", "n_2", "gamma_min", "gamma_max", "gamma_break", "B", "R",
                                       "bb_temp", "l_nuc", "tau", "blob_dist"],
-                                     [r"$\delta$", r"log $K$", r"$\alpha_1$", r"$\alpha_2$", r"log $\gamma_{min}$",
+                                     [r"$\delta$", r"log $K$", r"$n_1$", r"$n_2$", r"log $\gamma_{min}$",
                                       r"log $\gamma_{max}$", r"log $\gamma_{break}$", r"log $B$", r"log $R$", r"log $T_{BB}$",
                                       r"log $L_{nuc}$", r"log $\tau$", r"log $D_{b}$"],
                                      ["doppler factor (delta)", "log K [cm^-3]", "alpha 1", "alpha 2", "log gamma_min",
@@ -94,9 +94,9 @@ else:
 
 # with EIC
 EIC_NUM_DIM = 13
-EIC_PARAM_NAMES = ["delta", "K", "alpha_1", "alpha_2", "gamma_min", "gamma_max", "gamma_break", "B", "R", "bb_temp",
+EIC_PARAM_NAMES = ["delta", "K", "n_1", "n_2", "gamma_min", "gamma_max", "gamma_break", "B", "R", "bb_temp",
                    "L_nuc", "tau", "blob_dist"]
-EIC_FORMATTED_PARAM_NAMES = [r"$\delta$", r"log $K$", r"$\alpha_1$", r"$\alpha_2$", r"log $\gamma_{min}$",
+EIC_FORMATTED_PARAM_NAMES = [r"$\delta$", r"log $K$", r"$n_1$", r"$n_2$", r"log $\gamma_{min}$",
                              r"log $\gamma_{max}$", r"log $\gamma_{break}$", r"log $B$", r"log $R$", r"log $T_{BB}$",
                              r"log $L_{nuc}$", r"$\tau$", r"log $D_b$"]
 EIC_DETAILED_PARAM_NAMES = ["doppler factor (delta)", "log K [cm^-3]", "alpha 1", "alpha 2", "log gamma_min",
@@ -106,8 +106,8 @@ EIC_PARAM_IS_LOG = [False, True, False, False, True, True, True, True, True, Tru
 
 # SSC
 SSC_NUM_DIM = 9
-SSC_PARAM_NAMES = ["delta", "K", "alpha_1", "alpha_2", "gamma_min", "gamma_max", "gamma_break", "B", "R"]
-SSC_FORMATTED_PARAM_NAMES = [r"$\delta$", r"log $K$", r"$\alpha_1$", r"$\alpha_2$", r"log $\gamma_{min}$",
+SSC_PARAM_NAMES = ["delta", "K", "n_1", "n_2", "gamma_min", "gamma_max", "gamma_break", "B", "R"]
+SSC_FORMATTED_PARAM_NAMES = [r"$\delta$", r"log $K$", r"$n_1$", r"$n_2$", r"log $\gamma_{min}$",
                              r"log $\gamma_{max}$", r"log $\gamma_{break}$", r"log $B$", r"log $R$"]
 SSC_DETAILED_PARAM_NAMES = ["doppler factor (delta)", "log K [cm^-3]", "alpha 1", "alpha 2", "log gamma_min",
                             "log gamma_max", "log gamma_break", "log B", "log R [cm]"]
