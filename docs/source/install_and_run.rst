@@ -33,6 +33,5 @@ Running Bjet_MCMC for the first time
 3. Navigate inside folder ``blazar_mcmc``. Currently, code **must** be run from inside this folder or the imports won't work.
 4. First time use: execute ``blazar_initialize.py`` with ``python blazar_initialize.py`` or ``python3 blazar_initialize.py`` depending on your Python setup. This creates all necessary folders and compiles the C++ code (see :doc:`bjet_core`).
 5. Execute ``blazar_run_mcmc.py`` with ``python blazar_run_mcmc.py`` or ``python3 blazar_run_mcmc.py`` depending on your Python setup. 
-
-By default, configurations are read from ``mcmc_config.txt`` and results are written to a file in ``local_results`` entitled ``run_yyyy-mm-dd-hh:mm:ss``.
+6. Retrieve and check the results (see :doc:`outputs`).
 
