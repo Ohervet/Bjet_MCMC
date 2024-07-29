@@ -1,7 +1,7 @@
 # Bjet_MCMC
 
 <p align="center">
-  <img width="35%" src="logo/Bjet_MCMC_logo.png">
+  <img width="35%" src="logo/Bjet_MCMC_logo_v2.png">
 </p>
 
 **Bjet_MCMC** is a tool to to automatically model multiwavelength spectral energy distributions of blazars, considering one-zone synchrotron-self-Compton (SSC) model with or without the addition of external inverse-Compton process from the thermal emission of the nucleus. It also contains manual fitting functionalities for multi-zone SSC modeling.
