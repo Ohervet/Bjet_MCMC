@@ -1,10 +1,10 @@
-// Slightly modified version of bj02.cpp for use in MCMC code; modified by Sarah Youngquist, Feb 2022 (see below)
 
 // SSC MODEL FOR SPHERICAL HOMOGENEOUS BLOB AND A STRATIFIED JET
 // AND EXTERNAL INVERSE COMPTON FROM A BLACKBODY RADIATION FIELD (HOT CORONA / ACCRETION DISK / DUST TORUS)
 // AND SSC OF SECOND ORDER
 // AND A SELF CONSISTENT BLOB-JET INTERACTION
 //
+//        2024: Added: EIC from jet particles onto blob synchrotron emission. Edited: fixed issues with the jet SSC computation
 //        2021: Added: Consistent BLR absorption and implementing a BLR density profile based on Navelajko et al. 2014
 // Nov    2018: Added: Direct EIC from the blob on the disk radiation
 // August 2018: Added: IIR absorbption by Franceschini 2017
@@ -85,7 +85,7 @@ Changes to the code by Sarah Youngquist in Feb 2022:
   - In main method, parse the input mode and set the input type, set data directory
      if applicable, parse model type if applicable, call either load_params or load_params_from_list
 */
-//ToDo: integral form of smoothbkpowelaw+cutoff and PL+cutoff to allow more spectral shape with energetic calculation
+
 
 #include <iostream>
 #include <cstdlib>
@@ -176,6 +176,7 @@ double I_JET	       = 0.0;
 
 
     int SL_DIM;
+    int jet_slice_blob;
     double PHI, PHI_src;
     double THETA_src_j;
     double J_LEN, J_LEN_src;
@@ -227,6 +228,7 @@ double I_JET	       = 0.0;
     double I_eic_jet[NU_DIM_MAX + 1];
 
     double I_rad_syn[NU_MAX + 1];
+    double I_rad_syn2[NU_MAX + 1];
     double I_rad_com[NU_MAX + 1];
     double I_rad2nd[NU_MAX + 1];
     double I_rad_ext[NU_MAX + 1];
@@ -265,10 +267,13 @@ double I_JET	       = 0.0;
     double I_COM_JET_EDGE[SL_DIM_MAX + 1][NU_DIM_MAX + 1];
     double I_COM_JET_BASE[SL_DIM_MAX + 1][NU_DIM_MAX + 1];
     double J_COM_JET[SL_DIM_MAX + 1][NU_DIM_MAX + 1];
+    double J_COM_EXT_JET[SL_DIM_MAX + 1][NU_DIM_MAX + 1];
     double K_ABS_SSC_JET[SL_DIM_MAX + 1][NU_DIM_MAX + 1];
+    double K_ABS_COM_EXT_JET[SL_DIM_MAX + 1][NU_DIM_MAX + 1];
     double F_COM_JET[SL_DIM_MAX + 1][NU_DIM_MAX + 1];
 
     double I_SYN_TOT[SL_DIM_MAX + 1][NU_DIM_MAX + 1];
+    double I_SYN_BLOB_TOT[SL_DIM_MAX + 1][NU_DIM_MAX + 1];
     double I_COM_TOT[SL_DIM_MAX + 1][NU_DIM_MAX + 1];
     double F_SYN_BLOB[SL_DIM_MAX + 1][NU_DIM_MAX + 1];
 
@@ -1050,7 +1055,7 @@ double N_e_Jet(double gg) {
 
 
       //Maximum Lorentz factor case, for NGC 1275
-         /*
+      /*   
       V_B = c * (DOP_B * DOP_B * cos(THETA * M_PI / 180.0) +
             sqrt(1.0 - DOP_B * DOP_B * sin(THETA * M_PI / 180.0) * sin(THETA * M_PI / 180.0))) /
       (1.0 + DOP_B * DOP_B * cos(THETA * M_PI / 180.0) * cos(THETA * M_PI / 180.0));
@@ -1104,6 +1109,9 @@ double N_e_Jet(double gg) {
         LOR_B_J = 1.0 / (sqrt(1.0 - pow(V_B_J / c, 2.0)));
         DOP_B_J = 1.0 / (LOR_B_J * (1.0 - V_B_J / c * cos(THETA * M_PI / 180.0)));
 
+        // distance SMBH-first slice (jet frame)
+	X_MIN = Y_MIN / tan(PHI_src * M_PI / 180.0);
+	
         // distance blob - first slice (jet frame)
         D_BJ = X_MIN - D_b_src_j;
       }
@@ -1253,8 +1261,6 @@ double N_e_Jet(double gg) {
         kk = k_esa(N_e, GAMMA_MIN, GAMMA_MAX, NU[i], B, ABS_PREC1, ABS_PREC2);
         // Here the computation is made in the source frame
 
-
-
         // transfer equation//
         if (L_src == 0.0) {
           I_syn = SphTransfEquat(jj, kk, R_src);
@@ -1263,9 +1269,10 @@ double N_e_Jet(double gg) {
           // solution of the transfer for central point of blob is
           // the same like for cylindrical geometry
           //I_rad[i] = 0.75 * CylTransfEquat(0.0, jj, kk, R_src);
-          //OH, the coefficient 0.70 seems more accurate
+          //OH: the coefficient 0.70 seems more accurate
           I_rad[i] = 0.70 * CylTransfEquat(0.0, jj, kk, R_src);
           I_rad_syn[i] = I_syn;
+          I_rad_syn2[i] = I_syn; // this one is saved for the Jet EIC
         } else {
           I_syn = CylTransfEquat(0.0, jj, kk, L_src);
           I_rad[i] = I_syn;
@@ -1324,15 +1331,6 @@ double N_e_Jet(double gg) {
         jj = j_com(N_e, GAMMA_MIN, GAMMA_MAX, I_rad, 
                   NU_STR_B,NU_END_B, 
                   NU_DIM, NU[i], COM_PREC1, COM_PREC2); 
-        //test
-        /*
-        if (i == 0){
-          dtmp4 = jj;
-        }
-        if (jj >= dtmp4){
-          dtmp4 = jj;
-        }
-        */
 
         kk = gg_abs(NU[i], I_rad, NU_DIM, 
                     NU_STR_B, 
@@ -1563,9 +1561,6 @@ double N_e_Jet(double gg) {
 
           // X corona (Ghisellini 2009)
           if (CASE_X && L_BB_disk <= L_BB_disk1) {
-            //OJ 287 test
-            //L_x = 0.2 * L_nuc * pow(NU[i],-1.0) * exp(-NU[i]/3.628e+19);
-            //original
             L_x = 0.3 * L_nuc * pow(NU[i], -1) * exp(-NU[i] / 3.628e+19);
           }
 
@@ -1578,7 +1573,6 @@ double N_e_Jet(double gg) {
           } else {
             L_BB_nuc[i] = L_x;
           }
-          //fprintf(stderr, "%6.3e\n", L_BB_nuc[i]);
 
           fx_tmp = (1.0 + z) * L_BB_nuc[i] / (4.0 * M_PI * D_L * D_L);
           if (fx_tmp > 1.0e-300) {
@@ -1782,12 +1776,7 @@ double N_e_Jet(double gg) {
                      NU_STR_B*LOR_B,
                      NU_END_B*LOR_B,
                      NU_DIM, NU[i], COM_PREC1, COM_PREC2);
-/*
-        kk = gg_abs(NU[i]*LOR_B, I_rad_ext, NU_DIM,
-                        FreqTransO2S(NU_STR, DOP_B, z)*LOR_B,
-                        FreqTransO2S(NU_END, DOP_B, z)*LOR_B, COM_PREC1, COM_PREC2);
         //absorption on BLR done further
-        */
 
         // absorption by pair production (inside the blob, on synch field)
         kk1 = gg_abs(NU[i], I_rad, NU_DIM, 
@@ -1800,7 +1789,6 @@ double N_e_Jet(double gg) {
             I_com = CylTransfEquat(0.0, jj, kk1, L_src);
           }
 
-          //I_com_ext[i] = I_com_ext[i] + I_com;
           I_com_ext[i] = I_com;
 
 
@@ -1834,7 +1822,6 @@ double N_e_Jet(double gg) {
             F_IC_tot[i] = dtmp * exp(-tt);
 
             if (F_IC_tot[i] > 1.0e-300) {
-              //fprintf(stderr, "%6.3e %6.3e\n", nu_tmp, nu_tmp*F_IC_tot[i]);
               fprintf(stream_dat, "%f %f %f %f %f\n", log10(nu_tmp), log10(F_IC_tot[i]), log10(nu_tmp * F_IC_tot[i]),
                       log10(dtmp), log10(nu_tmp * dtmp));
             }
@@ -1986,7 +1973,7 @@ double N_e_Jet(double gg) {
 
         // CALCULATE PARAMETERS
         //ref comoving
-        X_MIN = Y_MIN / tan(PHI_src * M_PI / 180.0);
+        //X_MIN = Y_MIN / tan(PHI_src * M_PI / 180.0);
         //fprintf(stream_dat, "%e XMIN: \n", X_MIN);
         X_MAX = X_MIN + J_LEN_src * pc;
         A = Y_MIN / X_MIN;
@@ -2148,7 +2135,6 @@ double N_e_Jet(double gg) {
         // CALCULATE TOTAL SYNCHROTRON SPECTRUM
 
         //new method 03_2016
-
         for (k = 1; k <= SL_DIM; k++) {
           //time gap before the central emission of a slice escape the jet by the edge
           DEL_Tph = Y_VAL[k] / (c * sin(THETA_src_j * M_PI / 180.0) - V_exp);
@@ -2272,16 +2258,8 @@ double N_e_Jet(double gg) {
           //updated OH 2024
           // the synchrotron radiation for SSC in each slice is the result of Sync radiation transfert of all slices from both ends of the jet
           // radiative transfer for Jet SSC is actually relatively similar to blob-jet EIC
-          
-          //Actually what I calculate here could be used for the blob EIC without need of redoing the same radiation transfer
-          
-
-          //radiation transfert along the jet until the slice position, independent of the angle THETA
-          //parallel plans
-          
+          //radiation transfert along the jet until the slice position, independent of the angle THETA (parallel plans)
           //approximation: synch seed photon at slice j = radiative transfer (I_SYN_JET) from 1 up to slice j
-          
-	  //fprintf(stderr, "%e\n\n",l);
 	  
 	  for (i = 1; i <= NU_DIM; i++) {
 	    I_SYN = 0.0;
@@ -2316,7 +2294,7 @@ double N_e_Jet(double gg) {
             //surface intensity of the slice 1 at the end of its radiation transfert up to slice j
             I_SYN_TOT[j][i] = I_SYN;
             
-            //saving jet synch intensity for the blob-jet EIC
+            //saving jet sync intensity for the blob-jet EIC
             //j is the last slice in the jet where the blob is not
             if (X_VAL[j+1] <= D_b_src_j){
               tmp_int = j;
@@ -2355,19 +2333,12 @@ double N_e_Jet(double gg) {
        
           
             // emission & absorption coefficients
-            /*
-            J_COM_JET[j][i] = j_com(N_e_Jet, GAMMA_MIN1, G_VAL[j], I_SYN_JET[j], FreqTransO2S(NU_STR, DOP_JET, z),
-                                    FreqTransO2S(NU_END, DOP_JET, z), NU_DIM, NU[i], COM_PREC1, COM_PREC2);
-
-            K_ABS_SSC_JET[j][i] = gg_abs(NU[i], I_SYN_JET[j], NU_DIM, FreqTransO2S(NU_STR, DOP_JET, z),
-                                         FreqTransO2S(NU_END, DOP_JET, z), SYN_PREC1, SYN_PREC2);
-            */
             //updated OH 2024
             J_COM_JET[j][i] = j_com(N_e_Jet, GAMMA_MIN1, G_VAL[j], I_SYN_TOT[j], FreqTransO2S(NU_STR, DOP_JET, z),
                                     FreqTransO2S(NU_END, DOP_JET, z), NU_DIM, NU[i], COM_PREC1, COM_PREC2);
 
             K_ABS_SSC_JET[j][i] = gg_abs(NU[i], I_SYN_TOT[j], NU_DIM, FreqTransO2S(NU_STR, DOP_JET, z),
-                                         FreqTransO2S(NU_END, DOP_JET, z), SYN_PREC1, SYN_PREC2);
+                                         FreqTransO2S(NU_END, DOP_JET, z), COM_PREC1, COM_PREC2);
 
 
             // absorption by pair production
@@ -2402,7 +2373,6 @@ double N_e_Jet(double gg) {
             } else tt = 0.;
 
             // flux transformation to observer frame
-
             I_COM_JET[j][i] =
                 ((fabs((cos(THETA_src_j * M_PI / 180.0))) * M_PI * (Y_VAL[j] * Y_VAL[j]) * I_COM_JET_BASE[j][i]) +
                  (sin(THETA_src_j * M_PI / 180.0) * 2 * Y_VAL[j] * DEL_X[j] * I_COM_JET_EDGE[j][i])) / Stot[j];
@@ -2422,8 +2392,6 @@ double N_e_Jet(double gg) {
         }
 
         // CALCULATE TOTAL COMPTON SPECTRUM
-
-
         for (k = 1; k <= SL_DIM; k++) {
           //time gap before the central emission of a slice escape the jet by the edge
           DEL_Tph = Y_VAL[k] / (c * sin(THETA_src_j * M_PI / 180.0) - V_exp);
@@ -2529,21 +2497,18 @@ double N_e_Jet(double gg) {
 
 
         fprintf(stderr, "CALCULATING EXT. INV. COMPTON SPECTRUM ON JET SYNCHROTRON... ");
-
         // CALCULATING EXT. INV. COMPTON SPECTRUM ON JET SYNCHROTRON
         
         //OH 2024
         // take radiative transfer along the jet done for synchtrotron
-        
-        
         //I_rad_ext_s = radiation tranfer done up to the end of the slice before the blob
         
         //if the blob is inside the jet
         if (X_MIN < D_b_src_j) {
-        // k =  slice where the blob lies
         k = 1;
         while (X_VAL[k+1] <= D_b_src_j) {
-          k += 1;
+          k += 1; // k =  slice where the blob lies
+          jet_slice_blob = k;
         }
         
         for (i = 1; i <= NU_DIM; i++) {
@@ -2590,95 +2555,6 @@ double N_e_Jet(double gg) {
         }
         }
         
-        
-        
-       // pre 2024
-       /*
-        k = 1;
-        while (X_VAL[k+1] <= D_b_src_j) {
-          k += 1;
-        }
-        //if the blob is inside the jet
-        if (X_MIN < D_b_src_j) {
-          //radiation transfert along the jet until the blob position, independent of the angle THETA
-          //parallel plans
-          for (l = 1; l <= k; l++) {
-            //fprintf(stderr, "%e\n\n",l);
-            for (i = 1; i <= NU_DIM; i++) {
-              I_SYN = 0.0;
-              for (j = l; j <= k; j++) {
-                sprintf(stmp, "%e", J_SYN_JET[j][i]);
-                //fprintf(stderr, "%d\n",j);
-                if ((strcmp(stmp, "-inf") == 0) || (strcmp(stmp, "inf") == 0) || (strcmp(stmp, "nan") == 0) ||
-                    (J_SYN_JET[j][i] < 1.0e-300)) {
-                  I_SYN_JET[j][i] = 0.0;
-                } else {
-                  if (j < k) {
-                    dtmp = DEL_X[j] * K_ESA_JET[j][i];
-                    // transparent
-                    if (dtmp < 1.0e-10) I_SYN = I_SYN * 1.0 + J_SYN_JET[j][i] * DEL_X[j];
-                  } else {
-                    dtmp = (D_b_src_j - X_VAL[k]) * K_ESA_JET[j][i];
-                    // transparent
-                    if (dtmp < 1.0e-10) I_SYN = I_SYN * 1.0 + J_SYN_JET[j][i] * (D_b_src_j - X_VAL[k]);
-                  }
-
-                  // thick
-                  if (dtmp > 7.00e+2) I_SYN = I_SYN * 0.0 + J_SYN_JET[j][i] / K_ESA_JET[j][i];
-                  // thin
-                  if ((dtmp < 7.00e+2) && (dtmp > 1.0e-10)) I_SYN = I_SYN * exp(-dtmp) + I_SYN_JET[j][i];
-                }
-              }
-
-              I_SYN_TOT[l][i] = I_SYN;
-            }
-          }
-        }
-
-
-        for (i = 1; i <= NU_DIM; i++) {
-          if (PRINT) fprintf(stderr, "%3i", i);
-
-          I_rad_ext_s[i] = I_SYN_TOT[k][i];
-
-          if (PRINT) fprintf(stderr, "\b\b\b");
-        }
-
-        //radiation transfert in the direction opposite of the jet propagation
-        for (l = SL_DIM; l >= k; l--) {
-          for (i = 1; i <= NU_DIM; i++) {
-            I_SYN = 0.0;
-            for (j = l; j >= k; j--) {
-              sprintf(stmp, "%e", J_SYN_JET[j][i]);
-              if ((strcmp(stmp, "-inf") == 0) || (strcmp(stmp, "inf") == 0) || (strcmp(stmp, "nan") == 0) ||
-                  (J_SYN_JET[j][i] < 1.0e-300)) {
-                I_SYN_JET[j][i] = 0.0;
-
-              } else {
-                if (j > k) {
-                  dtmp = DEL_X[j] * K_ESA_JET[j][i];
-                  // transparent
-                  if (dtmp < 1.0e-10) I_SYN = I_SYN * 1.0 + J_SYN_JET[j][i] * DEL_X[j];
-
-                } else {
-                  dtmp = (X_VAL[k + 1] - D_b) * K_ESA_JET[j][i];
-                  // transparent
-                  if (dtmp < 1.0e-10) I_SYN = I_SYN * 1.0 + J_SYN_JET[j][i] * (X_VAL[k + 1] - D_b);
-
-                }
-                // thick
-                if (dtmp > 7.00e+2) I_SYN = I_SYN * 0.0 + J_SYN_JET[j][i] / K_ESA_JET[j][i];
-                // transparent
-                //if (dtmp < 1.0e-10)                       I_SYN = I_SYN * 1.0        + J_SYN_JET[j][i] * DEL_X[j];
-                // thin
-                if ((dtmp < 7.00e+2) && (dtmp > 1.0e-10)) I_SYN = I_SYN * exp(-dtmp) + I_SYN_JET[j][i];
-              }
-            }
-
-            I_SYN_TOT[l][i] = I_SYN;
-          }
-        }
-*/
         for (i = 1; i <= NU_DIM; i++) {
           if (PRINT) fprintf(stderr, "%3i", i);
 
@@ -2705,7 +2581,9 @@ double N_e_Jet(double gg) {
             dtmp = 2.0 * M_PI * dtmp1 / Y_MIN;
           }
           //resulting intensity in the blob frame
-          I_rad_ext1[i] = (I_rad_ext1[i] + I_rad_ext_s[i]) * dtmp / (4.0 * M_PI);
+          //Specific intensity boosted by LOR_B_J, frequencies boosted again by LOR_B_J
+          //matches U'ext boosted by LOR_B_J**2 (e.g. Ghisellini 2005)
+          I_rad_ext1[i] = LOR_B_J * (I_rad_ext1[i] + I_rad_ext_s[i]) * dtmp / (4.0 * M_PI);
 
 
 
@@ -2754,8 +2632,7 @@ double N_e_Jet(double gg) {
 
         Ub_eicj = 4 * M_PI / c * Simpson(I_eic_jet, NU, NU_DIM, 1, NU_DIM);
       }
-
-
+      
       if (CASE_EIC == 1) {
       fprintf(stderr, "CALCULATING RADIATION ABSORPTION OF THE BLOB EMISSION THROUGH THE BLR ... ");
 
@@ -2970,6 +2847,7 @@ double N_e_Jet(double gg) {
         Ub_eicd = 4 * M_PI / c * Simpson(I_com_ext, NU, NU_DIM, 1, NU_DIM);
 
       }
+      fprintf(stderr, "DONE\n\n");
     }
 
 
@@ -3011,7 +2889,7 @@ double N_e_Jet(double gg) {
 
         //time gap before the blob emission escape the jet by the edge
         DEL_Tph = Y_VAL[j - 1] / (c * sin(THETA_src_j * M_PI / 180.0) - V_exp);
-        k = j - 1;
+        k = j - 1; //jet slice where the blob lies
         dtmp2 = 0;
         //fprintf(stderr, "%6.3e DEL_Tph", DEL_Tph);
         while (k <= SL_DIM && DEL_Tph > 0.0) {
@@ -3062,6 +2940,7 @@ double N_e_Jet(double gg) {
                 dtmp2 += dtmp1;
               }
             }
+            //fprintf(stderr, "I_SYN_BLOB_TOT %e", I_SYN_BLOB_TOT[k][50]);
             //fprintf(stderr, "Jet opacity: %6.3e  Eblob obs frame: %6.3e [TeV]\n", dtmp1,  FreqTransS2O(NU[i] * DOP_B_J, DOP_B/DOP_B_J , z) / (HZ_PER_EV*1e+12));
           }
           k += 1;
@@ -3319,14 +3198,218 @@ double N_e_Jet(double gg) {
           }
         }
         fclose(stream_dat);
+        fprintf(stderr, " DONE\n\n");
 
-        fprintf(stderr, "Jet opacity: %6.3e  Eblob observer frame: 3.703e-01 [TeV]\n",
-                dtmp2); //,  FreqTransS2O(NU[i] * DOP_B_J, DOP_B/DOP_B_J , z) / (HZ_PER_EV*1e+12));
 
+
+        fprintf(stderr, "CALCULATING JET EXT. INV. COMPTON SPECTRUM ON BLOB SYNCHROTRON...");
+        // CALCULATING JET EXT. INV. COMPTON SPECTRUM ON BLOB SYNCHROTRON.
+        //OH 2024
+        
+        if (jet_slice_blob == 0){
+          tmp_int = 1;
+        }else{
+          tmp_int = jet_slice_blob;
+        }
+        for (j = tmp_int; j <= SL_DIM; j++) {
+          if (PRINT) fprintf(stderr, "%3i", j);
+          sprintf(stmp, "%s/f_eic_slice_%d.dat", DATA_DIRECTORY, j);
+          stream_dat = fopen(stmp, "w+");
+          
+          for (i = 1; i <= NU_DIM; i++) {
+            //need to redo blob's radiation transfer
+            //the radiation transfer for for seed syn photons is independant of the observer's viewing angle
+            //the k-1 slice radiation transfer through a k slice with a larger surface area
+            // the intensity need to be scaled down by the surface area ratio along the transfer I_SYN[k] = I_SYN[k-1] * pow(Y_VAL[k]/Y_VAL[k-1], 2.0)
+            //convert blob synchrotron in jet frame
+            if (j == tmp_int){
+              I_SYN = I_rad_syn2[i] * LOR_B_J * R_src*R_src / (Y_VAL[j]*Y_VAL[j]); //consider a dilution factor of the blob sync seed photon within each slice
+              dtmp2 = 1;
+              //slice opacity     
+              dtmp = (DEL_X[j] - D_b_src_j + X_VAL[j])* K_ESA_JET[j][i]; //K_ESA_JET already previously calculated for jet syn emission
+            } else {
+              dtmp2 = dtmp2 * pow(Y_VAL[j-1]/Y_VAL[j], 2.0);
+              //slice opacity     
+              dtmp = DEL_X[j] * K_ESA_JET[j][i]; 
+            }
+
+            //the slices only absorb blob emission
+            // thick
+            if (dtmp > 7.00e+2) I_SYN = I_SYN * 0.0;
+            // transparent
+            //if (dtmp < 1.0e-10) I_SYN = I_SYN  + I_rad_syn2[i];
+            // thin
+            if ((dtmp < 7.00e+2) && (dtmp > 1.0e-10)) I_SYN = I_SYN * exp(-dtmp) * dtmp2;
+            
+            //blob synchrotron in all  jet slices
+            I_SYN_BLOB_TOT[j][i] = I_SYN;
+          }
+          
+          for (i = 1; i <= NU_DIM; i++) {
+            // EIC emission & absorption coefficients (how the jet sees the blob synchrotron)
+            J_COM_EXT_JET[j][i] = j_com(N_e_Jet, GAMMA_MIN1, G_VAL[j], I_SYN_BLOB_TOT[j], 
+                          FreqTransO2S(NU_STR, DOP_JET, z)*LOR_B_J,
+                          FreqTransO2S(NU_END, DOP_JET, z)*LOR_B_J, 
+                          NU_DIM, NU[i]*LOR_B_J, COM_PREC1, COM_PREC2);
+
+            K_ABS_COM_EXT_JET[j][i] = gg_abs(NU[i]*LOR_B_J, I_SYN_BLOB_TOT[j], NU_DIM, 
+                              FreqTransO2S(NU_STR, DOP_JET, z)*LOR_B_J,
+                              FreqTransO2S(NU_END, DOP_JET, z)*LOR_B_J,
+                              COM_PREC1, COM_PREC2);  
+            
+            // absorption by pair production
+            // width different for the slice containing the blob
+            if (j == jet_slice_blob) {
+              dtmp = X_VAL[jet_slice_blob+1] - D_b_src_j;
+            } else {
+              dtmp = DEL_X[j];
+            }
+            I_COM_JET_BASE[j][i] = CylTransfEquat(0.0, J_COM_EXT_JET[j][i], K_ABS_COM_EXT_JET[j][i], dtmp);   
+            
+            //Edge surface intensity
+            if (THETA > PHI) {
+              I_COM_JET_EDGE[j][i] = SphTransfEquat(J_COM_EXT_JET[j][i], K_ABS_COM_EXT_JET[j][i], Y_VAL[j]);
+            } else {
+              I_COM_JET_EDGE[j][i] = 0.0;
+            }
+             
+            // frequency transformation to observer frame
+            nu_tmp = FreqTransS2O(NU[i] * LOR_B_J, DOP_JET, z);
+
+            // optical depth for absorption of VHE gamma rays by IIR
+            if (IIR_level == 1) {
+
+              if (EBLFLAG == 0) {
+                if (z <= 0.1) {
+                  tt = tau_IRA_Kneiske(nu_tmp, z, 0);
+                } else {
+                  tt = tau_IRA_Kneiske(nu_tmp, z, 1);
+                }
+              } else if (EBLFLAG == 1) {
+                tt = tau_IRA_Franceschini(nu_tmp, z);
+              } else if (EBLFLAG == 2) {
+                tt = tau_IRA_Finke(nu_tmp, z);
+              } else if (EBLFLAG == 3) {
+                tt = tau_IRA_Franceschini17(nu_tmp, z);
+              }
+            } else tt = 0.;
+
+            // flux transformation to observer frame
+            I_COM_JET[j][i] =
+                ((fabs((cos(THETA_src_j * M_PI / 180.0))) * M_PI * (Y_VAL[j] * Y_VAL[j]) * I_COM_JET_BASE[j][i]) +
+                 (sin(THETA_src_j * M_PI / 180.0) * 2 * Y_VAL[j] * DEL_X[j] * I_COM_JET_EDGE[j][i])) / Stot[j];
+
+            //misaligned jet
+            fx_tmp = CylIntens2Flux(I_COM_JET_BASE[j][i], I_COM_JET_EDGE[j][i], Y_VAL[j], DEL_X[j], DOP_JET, z, H_0,
+                                    THETA_src_j);
+
+            // absorption by IIR
+            fx_tmp = fx_tmp * exp(-tt);
+
+            fprintf(stream_dat, "%e %e %e\n", nu_tmp, fx_tmp, nu_tmp * fx_tmp);
+          }
+          fclose(stream_dat);
+          if (PRINT) fprintf(stderr, "\b\b\b");
+        }               
+               
+        // CALCULATE TOTAL EIC SPECTRUM
+        for (k = 1; k <= SL_DIM; k++) {
+          //time gap before the central emission of a slice escape the jet by the edge
+          DEL_Tph = Y_VAL[k] / (c * sin(THETA_src_j * M_PI / 180.0) - V_exp);
+
+          for (i = 1; i <= NU_DIM; i++) {
+            I_COM = 0.0;
+
+            for (j = k; j <= SL_DIM; j++) {
+              sprintf(stmp, "%e", J_COM_EXT_JET[j][i]);
+
+              if ((strcmp(stmp, "-inf") == 0) || (strcmp(stmp, "inf") == 0) || (strcmp(stmp, "nan") == 0) ||
+                  (J_COM_EXT_JET[j][i] < 1.0e-300)) {
+                J_COM_EXT_JET[j][i] = 0.0;
+
+              } else {
+                //evolution time of a slice
+                DEL_Tj = DEL_X[j] / V_JET;
+
+                //photons are crossing the slice before its evolution
+                if (DEL_Tj >= DEL_Tph) {
+                  dtmp = DEL_Tph * c * K_ABS_COM_EXT_JET[j][i];
+                }
+                  // The slice is evolving during the photons passage
+                else {
+                  dtmp = DEL_Tj * c * K_ABS_COM_EXT_JET[j][i];
+                  DEL_Tph -= DEL_Tj;
+                  if (DEL_Tph < 0.0) DEL_Tph = 0.0;
+                }
+
+                if (dtmp > 7.00e+2) I_COM = I_COM * 0.0 + I_COM_JET[j][i];
+                if (dtmp < 1.0e-10) I_COM = I_COM * 1.0 + I_COM_JET[j][i];
+                if ((dtmp < 7.00e+2) && (dtmp > 1.0e-10)) I_COM = I_COM * exp(-dtmp) + I_COM_JET[j][i];
+              }
+            }
+
+            I_COM_TOT[k][i] = I_COM;
+            // transformation to observer frame
+            F_COM_JET[k][i] = M_PI * ((pow(Y_VAL[k], 2.0) - pow(Y_VAL[k - 1], 2.0)) / (D_L * D_L)) * (1.0 + z) * I_COM;
+          }
+        }
+
+        sprintf(stmp, "%s/F_jet_eic.dat", DATA_DIRECTORY);
+        if (INPUT_MODE == 0) {
+          if (ifexist(stmp)) {
+            sprintf(comma, "mv %s/F_jet_eic.dat %s/F_jet_eic_prev.dat", DATA_DIRECTORY, DATA_DIRECTORY);
+            if (system(comma)) return 1;
+          }
+        }
+        
+        errno = 0;
+        stream_dat = fopen(stmp, "w+");
+        if (errno == 0) {
+
+          for (i = 1; i <= NU_DIM; i++) {
+            dtmp = 0.0;
+            for (j = 1; j <= SL_DIM; j++) {
+              dtmp = dtmp + F_COM_JET[j][i];
+            }
+
+            //nu_tmp = FreqTransS2O(NU[i], DOP_JET, z);
+            nu_tmp = FreqTransS2O(NU[i] * LOR_B_J, DOP_JET, z);
+            fx_tmp = ftr(dtmp);
+
+            dtmp1 = log10(nu_tmp);
+            dtmp2 = log10(fx_tmp);
+            dtmp3 = log10(nu_tmp * fx_tmp);
+
+            sprintf(stmp1, "%f", dtmp2);
+            sprintf(stmp2, "%f", dtmp3);
+
+            if ((strcmp(stmp1, "-inf") == 0) || (strcmp(stmp1, "inf") == 0) || (strcmp(stmp1, "nan") == 0) ||
+                (strcmp(stmp2, "-inf") == 0) || (strcmp(stmp2, "inf") == 0) || (strcmp(stmp2, "nan") == 0)) {
+            } else {
+              fprintf(stream_dat, "%e %e %e %f %f %f\n", nu_tmp, fx_tmp, nu_tmp * fx_tmp, dtmp1, dtmp2, dtmp3);
+            }
+          }
+          fclose(stream_dat);
+        } else {
+          fprintf(stderr, "ERROR (%d) %s\n", errno, strerror(errno));
+          fprintf(stderr, "TOTAL JET EIC SPECTRUM: '%s' NOT SAVED !!!\n", name);
+          return 2;
+        }
 
 
         fprintf(stderr, " DONE\n\n");
-        fprintf(stderr, "Jet slice where the blob takes place:  %6.3d\n", j - 1);
+
+
+
+// Printed physical outputs ******************************************************************           
+        
+/*
+        fprintf(stderr, "Jet opacity: %6.3e  Eblob observer frame: 3.703e-01 [TeV]\n",
+                dtmp2); //,  FreqTransS2O(NU[i] * DOP_B_J, DOP_B/DOP_B_J , z) / (HZ_PER_EV*1e+12));
+
+*/
+
+        fprintf(stderr, "Jet slice where the blob takes place:  %6.3d\n", jet_slice_blob);
       }
 
 
