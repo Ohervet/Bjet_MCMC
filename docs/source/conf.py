@@ -31,7 +31,7 @@ templates_path = ['_templates']
 
 html_theme = 'sphinx_rtd_theme'
 html_static_path = ['_static']
-html_logo = "../../logo/Bjet_MCMC_logo.png"
+html_logo = "../../logo/Bjet_MCMC_logo_v2.png"
 html_theme_options = {
     'logo_only': True,
     'display_version': False,
