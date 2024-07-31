@@ -86,9 +86,9 @@ Science plots
 
  Particle cooling time in the observer's frame considering the Thomson regime.
 
- .. math:: \tau_\mathrm{cool}(\gamma) = \frac{3 m_e c}{4 U'_\mathrm{rad} \sigma_T \gamma} \frac{1+z}{\delta}
+ .. math:: \tau_\mathrm{cool}(\gamma) = \frac{3 m_e c}{4 (U_B + U'_\mathrm{rad}) \sigma_T \gamma} \frac{1+z}{\delta}
 
- With :math:`U'_\mathrm{rad}` the sum of all radiation field densities in the blob's frame.
+ With :math:`U_\mathrm{B}` the magnetic field energy density and `U'_\mathrm{rad}` the sum of all soft photons radiation field densities in the blob's frame.
  e.g.
 
  .. image:: ../figures/cooling_time_obs(Thomson).png
