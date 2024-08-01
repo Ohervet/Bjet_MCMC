@@ -11,8 +11,7 @@ The code is licensed under a [BSD-3-Clause License](LICENSE).
 
 Acknowledgments and citation
 -------
-- If you use this code in a scientific publication or communication, please cite the paper `Hervet et al. 2024 <https://iopscience.iop.org/article/10.3847/1538-4357/ad09c0>`_ ::
-.
+- If you use this code in a scientific publication or communication, please cite the paper `Hervet et al. 2024 <https://iopscience.iop.org/article/10.3847/1538-4357/ad09c0>`_ .
 - For any use of the multi-zones SSC option, please also cite `Hervet at al. 2015 <https://ui.adsabs.harvard.edu/abs/2015A%26A...578A..69H/abstract>`_ ::.
 - To reference a specific version, you can also use Zenodo citation: [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.10070356.svg)](https://zenodo.org/doi/10.5281/zenodo.10070356) 
 
