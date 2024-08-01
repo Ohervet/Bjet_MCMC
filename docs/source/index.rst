@@ -18,9 +18,6 @@ Acknowledgments and citation
   :target: https://doi.org/10.5281/zenodo.10070356
 
 
-(https://zenodo.org/doi/10.5281/zenodo.10070356) 
-
-
 
 .. note::
 
