@@ -8,7 +8,7 @@ License
 -------
 The code is licensed under a :doc:`BSD 3-Clause License`.
 :ref:`BSD 3-Clause License`
-
+:ref:`BSD 3-Clause License<License>`
 
 Acknowledgments and citation
 -------
