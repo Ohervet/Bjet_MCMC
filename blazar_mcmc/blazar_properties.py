@@ -3,7 +3,8 @@ This gets the path to .../blazars-mcmc, which then allows for function calls
 to use the absolute path."
 """
 
-import pathlib
+import os
+#import pathlib
 import tempfile
 import numpy as np
 
@@ -75,7 +76,8 @@ def modelProperties(is_eic=False, fixed_params=None):
     
 
 def _get_path():
-    base_path = str(pathlib.Path().resolve())
+    base_path = str(os.path.dirname(__file__))
+    #base_path = str(pathlib.Path().resolve())
     stop = base_path.find(PROGRAM_NAME)
     if stop == -1:
         raise Exception(PROGRAM_NAME + " is not in file path")
