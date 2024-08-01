@@ -6,8 +6,7 @@ This tool is built as an MCMC python wrapper around the C++ code Bjet.
 
 License
 -------
-The code is licensed under a :doc:`BSD 3-Clause License`
-[BSD-3-Clause License](LICENSE).
+The code is licensed under a :doc:`BSD 3-Clause License`.
 
 
 Acknowledgments and citation
