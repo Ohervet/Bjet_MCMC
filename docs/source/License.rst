@@ -1,4 +1,7 @@
 BSD 3-Clause License
+====================
+
+.. _BSD 3-Clause License:
 
 Copyright (c) 2024, Olivier Hervet
 
