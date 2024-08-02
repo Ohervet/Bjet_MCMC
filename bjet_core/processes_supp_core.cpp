@@ -1830,7 +1830,7 @@ double gg_abs(double nu_c,
 
       if ((nu_c < nu_min ) ||
           (nu_c > nu_max )) {
-        fprintf(stderr, "SUBROUTINE: '%s' ERROR: Wrong value of 'nu_c': '%e', not in ['%e','%e']\n", name,nu_c,nu_min,nu_max);
+        //fprintf(stderr, "SUBROUTINE: '%s' ERROR: Wrong value of 'nu_c': '%e', not in ['%e','%e']\n", name,nu_c,nu_min,nu_max);
 	return 0.0;
       }		
       if ((prec1 < 3) ||
@@ -2460,7 +2460,7 @@ double FreqTransS2O(double nu, double Doppler, double z) {
         fprintf(stderr, "SUBROUTINE: '%s' ERROR: Wrong value of 'nu'\n", name);
 	return 0.0;
       }	
-      if ((Doppler < 1.0) || 
+      if ((Doppler < 0.0) || 
           (Doppler > 1.0e+2)
 	 ) {
         fprintf(stderr, "SUBROUTINE: '%s' ERROR: Wrong value of 'Doppler'\n", name);
