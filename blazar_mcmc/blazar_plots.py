@@ -40,7 +40,7 @@ from blazar_properties import *
 import blazar_utils
 cmap = plt.get_cmap("tab10")
 image_type = 'svg'
-
+plt.ioff()
 
 # plots of SED ---------------------------------------------------------------------------------------------------------
 def plot_model(model, title=None, no_title=False, line=True, points=True, point_style='.', line_style='-',
@@ -334,8 +334,7 @@ def corner_plot(values, param_min_vals, param_max_vals, best_params, sigma_below
     min_maxes = []
     for i in range(modelProperties(eic,fixed_params=fixed_params).NUM_DIM):
         min_maxes.append([param_min_vals[i], param_max_vals[i]])
-    fig = corner.corner(values, labels=param_names,
-                        range=min_maxes, use_math_text=True, plot_datapoints=False,
+    fig = corner.corner(values, labels=param_names, range=min_maxes, use_math_text=True, plot_datapoints=False,
                         fill_contours=True, label_kwargs={"fontsize": 15},labelpad=0.28,max_n_ticks=4)
 
     fig.subplots_adjust(top=.97,bottom=.08,left=.07,right=0.88)
@@ -933,3 +932,52 @@ def plot_cooling_times(logfile, best_params, fixed_params, file_name= RESULTS_FO
     plt.ylabel(r'$\tau_{\mathrm{cool}}$ [s]',fontsize=13)
     if save:
         plt.savefig(BASE_PATH + file_name)
+        
+        
+
+def plot_likelihood_profiles(flat_samples, flat_log_probs, best_params, min_1sigma_params, max_1sigma_params, save=False, 
+                             show=True,fixed_params=None, eic=False, folder_path = BASE_PATH+RESULTS_FOLDER):
+    #plot posterior likelihood profiles for all free parameters.
+    
+    param_names = modelProperties(eic, fixed_params=fixed_params).PARAM_NAMES
+    fromatted_param_names = modelProperties(eic, fixed_params=fixed_params).FORMATTED_PARAM_NAMES
+
+    for j in range(len(best_params)):
+        #test to plot likelihood profiles
+        param_array = flat_samples[:,j]
+        #sort parameter with associated log_prob
+        param_array, sorted_log_probs = zip(*sorted(zip(param_array, flat_log_probs)))
+        nbins = 40
+        Drange = (param_array[-1] - param_array[0])
+        binsize = Drange/(nbins-1)
+        param_binned = np.linspace(param_array[0],param_array[-1],nbins)
+        bin_min = param_array[0]
+        bin_max = bin_min + binsize
+        prob_tmp = []
+        prob_max= []
+        ln_prob_max = []
+        param_binned_mid = []
+        for i in range(len(param_array)):
+            if bin_min <= param_array[i] < bin_max:
+                prob_tmp.append(sorted_log_probs[i])
+            else:
+                prob_max.append(np.exp(max(prob_tmp)))
+                ln_prob_max.append(max(prob_tmp))
+                param_binned_mid.append(bin_min + binsize/2.)
+                prob_tmp = []
+                bin_min += binsize
+                bin_max += binsize
+                
+        figure_name = "likelihood_"+param_names[j]
+        plt.figure(figure_name)
+        plt.plot(param_binned_mid, prob_max, ds='steps-mid',color='0')
+        plt.axvline(best_params[j], color='r')
+        plt.axvline(min_1sigma_params[j], color='b', ls='--')
+        plt.axvline(max_1sigma_params[j], color='b', ls='--')
+        plt.xlabel(str(fromatted_param_names[j]),fontsize=13)
+        plt.ylabel(r"Likelihood",fontsize=13)
+        
+        if save:
+            plt.savefig(folder_path+"/"+figure_name+".svg")
+        if show:
+            plt.show()

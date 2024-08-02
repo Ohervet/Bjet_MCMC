@@ -29,16 +29,25 @@ params = {#'backend': 'ps',
       'legend.fontsize': 12}
 plt.rcParams.update(params)
 
+
+
+#-----FLAGS-----#
+
+#recreate all text files and plots outputs
+Full_outputs = True
+
+#user defined SED plot boundaries
+boundaries = "default"
+#if you want to set boundaries (nu in Hz, nuFnu in erg.cm-2.s-1):
+#boundaries = [nu_min,nu_max, nuFnu_min, nuFnu_max]
+
+#type of residual plot to be displayed
 residual = "sigma"
 
 
 backend_file = input("Enter relative path to backend file: ")
 #example: local_results/J1010/J1010_2023-07-04-23:03:45/backend.h5
 
-#user defined SED plot boundaries
-boundaries = "default"
-#if you want to set boundaries (nu in Hz, nuFnu in erg.cm-2.s-1):
-#boundaries = [nu_min,nu_max, nuFnu_min, nuFnu_max]
 
 #frequency/energy conversion
 h = 4.135667662E-15
@@ -78,20 +87,19 @@ fixed_params = configs["fixed_params"]
 param_min_vals, param_max_vals = blazar_utils.min_max_parameters(eic=eic,fixed_params=fixed_params)
 reader = emcee.backends.HDFBackend(FOLDER_PATH + backend_file)
 chain = reader.get_chain(discard=discard)
+#all parameters values:
 flat_samples = reader.get_chain(flat=True, discard=discard)
     
 log_probs = reader.get_log_prob(discard=discard)
 flat_log_probs = reader.get_log_prob(flat=True, discard=discard)
 
 best_log_prob, best_params = blazar_report.get_best_log_prob_and_params(log_probs=flat_log_probs, flat_chain=flat_samples)
-min_1sigma_params, max_1sigma_params = blazar_report.min_max_params_1sigma(flat_samples, flat_log_probs, eic=eic)
-indices_within_1sigma = blazar_report.get_indices_within_1sigma(flat_log_probs, eic=eic)
-
+indices_within_1sigma = blazar_report.get_indices_within_1sigma(flat_log_probs, eic=eic, ndim=modelProperties(eic).NUM_DIM)
 
 name_stem = "plot"
 command_params_1, command_params_2 = blazar_model.command_line_sub_strings(name_stem=name_stem, redshift=redshift, 
                                                                            prev_files=False, eic=eic)
-command_params_2[3] = "150"  # number of points used to make SED
+command_params_2[3] = "99"  # number of points used to make SED
 
 best_model = blazar_model.make_model(best_params, name_stem=name_stem, redshift=redshift, command_params_1=command_params_1,
                                       command_params_2=command_params_2, eic=eic,fixed_params=fixed_params)
@@ -302,13 +310,12 @@ if residual:
     ax1.minorticks_on()
 
 plt.tight_layout()
-
-
+plt.show()
 plt.savefig(BASE_PATH + folder + "/user_plot_SED.svg")
 
 
-
-# blazar_report.save_plots_and_info(configs, (v_data, vFv_data, err_data), param_min_vals, param_max_vals, folder=folder, 
-#                                   samples=(chain, flat_samples, log_probs, flat_log_probs), use_samples=True, redshift=redshift, 
-#                                   eic=eic, verbose=True)
+if Full_outputs:
+    blazar_report.save_plots_and_info(configs, (v_data, vFv_data, err_data), param_min_vals, param_max_vals, folder=folder, 
+                                      samples=(chain, flat_samples, log_probs, flat_log_probs), use_samples=True, redshift=redshift, 
+                                      eic=eic, verbose=True)
 

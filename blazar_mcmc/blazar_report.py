@@ -49,7 +49,7 @@ from blazar_properties import *
 # utils ----------------------------------------------------------------------------------------------------------------
 
 
-def get_indices_within_1sigma(values, use_log_probs=True, alpha=0.32, eic=False):
+def get_indices_within_1sigma(values, use_log_probs=True, alpha=0.318, eic=False, ndim = 1):
     """
     Arguments:
     values (2D np array, _ rows, NUM_DIM columns): flat samples
@@ -63,14 +63,14 @@ def get_indices_within_1sigma(values, use_log_probs=True, alpha=0.32, eic=False)
         chi_squared = 1 * values
     min_chi_squared_index = np.argmin(chi_squared)
     min_chi_squared = chi_squared[min_chi_squared_index]
-    delta_chi_squared = stats.chi2.ppf(1 - alpha, modelProperties(eic).NUM_DIM)
+    delta_chi_squared = stats.chi2.ppf(1 - alpha, ndim)#modelProperties(eic).NUM_DIM)
     indices_within_1sigma = np.where(chi_squared < min_chi_squared + delta_chi_squared)[0]
     return indices_within_1sigma
 
 
-def min_max_params_1sigma(flat_data, flat_log_probs, eic=False):
+def min_max_params_1sigma(flat_data, flat_log_probs, eic=False, ndim = 1):
     n_dim = len(flat_data[0])
-    indices_within_1sigma = get_indices_within_1sigma(flat_log_probs, eic=eic)
+    indices_within_1sigma = get_indices_within_1sigma(flat_log_probs, eic=eic,ndim=ndim)
     mins = np.copy(flat_data[indices_within_1sigma[0]])
     maxes = np.copy(flat_data[indices_within_1sigma[0]])
     for i in range(len(indices_within_1sigma)):
@@ -128,7 +128,8 @@ def make_text_file(output_file, configs, data_points, backend_file=None, reader=
         tau = emcee.autocorr.integrated_time(samples, quiet=True)
         maximum_log_prob, best_params = get_best_log_prob_and_params(log_probs=log_probs, flat_chain=flat_chain)
         print("best parameters:", best_params)
-        min_1sigma_params, max_1sigma_params = min_max_params_1sigma(flat_chain, log_probs, eic=eic)
+        min_1sigma_params, max_1sigma_params = min_max_params_1sigma(flat_chain, log_probs, eic=eic, ndim=1)
+        min_1sigma_params_SED, max_1sigma_params_SED = min_max_params_1sigma(flat_chain, log_probs, eic=eic, ndim=modelProperties(eic).NUM_DIM)
         if description is not None:
             f.write("report description: ")
             f.write(str(description))
@@ -147,8 +148,8 @@ def make_text_file(output_file, configs, data_points, backend_file=None, reader=
         f.write("\n\n")
 
         f.write(
-            text_report(best_params, min_1sigma_params, max_1sigma_params, -2 * maximum_log_prob, data_points, eic=eic,
-                        fixed_params=fixed_params))
+            text_report(best_params, min_1sigma_params, max_1sigma_params_SED, min_1sigma_params_SED, max_1sigma_params, 
+                        -2 * maximum_log_prob, data_points, eic=eic, fixed_params=fixed_params))
         f.write("\n\n")
 
         f.write("best params: ")
@@ -173,7 +174,7 @@ def make_text_file(output_file, configs, data_points, backend_file=None, reader=
         f.write("\n\n")
 
 
-def text_report(best, min_1sigma, max_1sigma, best_chi_sq, data_points, param_names=None, eic=False, fixed_params=None):
+def text_report(best, min_1sigma, max_1sigma, min_1sigma_SED, max_1sigma_SED, best_chi_sq, data_points, param_names=None, eic=False, fixed_params=None):
     if param_names is None:
         param_names = modelProperties(eic, fixed_params=fixed_params).PARAM_NAMES
     log = modelProperties(eic).PARAM_IS_LOG
@@ -187,23 +188,29 @@ def text_report(best, min_1sigma, max_1sigma, best_chi_sq, data_points, param_na
             del fixed_params2[i]
           else:
             i+=1
-    format_string = "{:^13}{:^15}{:^20}\n"
+    format_string = "{:^13}{:^15}{:^20}{:^40}\n"
     num_format = "{:.2e}"
     range_format = num_format + " - " + num_format
-    output = format_string.format("Parameter", "Best Value", "1sigma Range")
+    output = format_string.format("Parameter", "Best Value", "1-Sigma Range", "Extremums within 1-Sigma SED contour")
     for i in range(len(best)):
         b = best[i]
         s1 = min_1sigma[i]
         s2 = max_1sigma[i]
+        s1_SED = min_1sigma_SED[i]
+        s2_SED = max_1sigma_SED[i]
         if log[i]:
             b = np.power(10, b)
             s1 = np.power(10, s1)
             s2 = np.power(10, s2)
-        output += format_string.format(param_names[i], num_format.format(b), range_format.format(s1, s2))
+            s1_SED = np.power(10, s1_SED)
+            s2_SED = np.power(10, s2_SED)
+        output += format_string.format(param_names[i], num_format.format(b), range_format.format(s1, s2), 
+                                       range_format.format(s1_SED, s2_SED))
 
     dims = modelProperties(eic).NUM_DIM
     output += "Reduced chi squared: {:.2f} / {} = {:.2f}\n".format(best_chi_sq, data_points - dims,
                                                                    best_chi_sq / (data_points - dims))
+    
     return output
 
 
@@ -256,7 +263,7 @@ def save_plots_and_info(configs, data, param_min_vals, param_max_vals, folder=No
     best_log_prob, best_params = get_best_log_prob_and_params(
         log_probs=flat_log_probs, flat_chain=flat_chain)
     min_1sigma_params, max_1sigma_params = min_max_params_1sigma(flat_chain, flat_log_probs, eic=eic)
-    indices_within_1sigma = get_indices_within_1sigma(flat_log_probs, eic=eic)
+    indices_within_1sigma = get_indices_within_1sigma(flat_log_probs, eic=eic, ndim=modelProperties(eic).NUM_DIM)
     name_stem = NAME_STEM + str(random.getrandbits(20))
     
     command_params_1, command_params_2 = blazar_model.command_line_sub_strings(name_stem=name_stem, redshift=redshift, 
@@ -291,6 +298,9 @@ def save_plots_and_info(configs, data, param_min_vals, param_max_vals, folder=No
     blazar_plots.corner_plot(flat_chain, param_min_vals, param_max_vals, best_params, min_1sigma_params,
                               max_1sigma_params, file_name=folder + "/corner_plot.svg", save=True, show=False, eic=eic,
                               fixed_params=configs["fixed_params"])
+    blazar_plots.plot_likelihood_profiles(flat_chain, flat_log_probs, best_params, min_1sigma_params, max_1sigma_params, 
+                                          save=True, show=False,fixed_params=configs["fixed_params"], eic=eic, 
+                                          folder_path = BASE_PATH+folder)
     #This output is not easy to read, so not fully relevant. removed for now
     # blazar_plots.plot_chain(chain, file_name=(folder + "/plot_of_chain.jpeg"), save=True, show=False,
     #                         eic=eic)  # too much stuff for svg
