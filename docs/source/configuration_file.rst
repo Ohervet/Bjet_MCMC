@@ -16,7 +16,7 @@ This file is automatically in ``.gitignore`` since it changes locally.
 
 Notes: 
 
-- Labels must be exactly as listed in the configuration file
+- Labels must be exactly as listed in the configuration file.
 
 - ``data_file`` is the *relative path* from the Bjet_MCMC directory to the file with data.
 
