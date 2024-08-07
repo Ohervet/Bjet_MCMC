@@ -148,7 +148,7 @@ def make_text_file(output_file, configs, data_points, backend_file=None, reader=
         f.write("\n\n")
 
         f.write(
-            text_report(best_params, min_1sigma_params, max_1sigma_params_SED, min_1sigma_params_SED, max_1sigma_params, 
+            text_report(best_params, min_1sigma_params, max_1sigma_params, min_1sigma_params_SED, max_1sigma_params_SED, 
                         -2 * maximum_log_prob, data_points, eic=eic, fixed_params=fixed_params))
         f.write("\n\n")
 
