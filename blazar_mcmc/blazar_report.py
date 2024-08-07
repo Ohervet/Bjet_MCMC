@@ -207,7 +207,8 @@ def text_report(best, min_1sigma, max_1sigma, min_1sigma_SED, max_1sigma_SED, be
         output += format_string.format(param_names[i], num_format.format(b), range_format.format(s1, s2), 
                                        range_format.format(s1_SED, s2_SED))
 
-    dims = modelProperties(eic).NUM_DIM
+    #dims = modelProperties(eic).NUM_DIM
+    dims = len(best)
     output += "Reduced chi squared: {:.2f} / {} = {:.2f}\n".format(best_chi_sq, data_points - dims,
                                                                    best_chi_sq / (data_points - dims))
     
