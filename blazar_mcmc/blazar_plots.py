@@ -169,12 +169,20 @@ def plot_data(data_file, title=None, no_title=False, adjust_scale=True, lower_ad
     nubin_data_inst_low = [nubin_data[0][0]]
     nubin_data_inst_high = [nubin_data[1][0]]
     uplims_inst = [uplims[0]]
+    tmp = 0
+    
     for i in range(1,len(instrument_data)):
+        
+        #cycle colors
+        if len(list_intruments)-tmp >= 10:
+            tmp += 10
+        color_index = len(list_intruments) - tmp
+        
         if instrument_data[i] != list_intruments[-1]:
             ax.errorbar(v_data_inst, vFv_data_inst, xerr=(nubin_data_inst_low, nubin_data_inst_high), 
                         yerr=(err_data_inst_down, err_data_inst_up), uplims = uplims_inst, 
                         fmt=filled_markers[len(list_intruments)-1], label=str(list_intruments[-1]), 
-                        elinewidth=1, markersize=marker_size, color = cmap(len(list_intruments)))
+                        elinewidth=1, markersize=marker_size, color = cmap(color_index))
             list_intruments.append(instrument_data[i])
             v_data_inst = [v_data[i]]
             vFv_data_inst = [vFv_data[i]]
@@ -195,7 +203,7 @@ def plot_data(data_file, title=None, no_title=False, adjust_scale=True, lower_ad
             ax.errorbar(v_data_inst, vFv_data_inst, xerr=(nubin_data_inst_low, nubin_data_inst_high), 
                         yerr=(err_data_inst_down, err_data_inst_up), uplims = uplims_inst, 
                         fmt=filled_markers[len(list_intruments)-1], label=str(list_intruments[-1]), 
-                        elinewidth=1, markersize=marker_size, color = cmap(len(list_intruments)))
+                        elinewidth=1, markersize=marker_size, color = cmap(color_index))
     ax.legend(loc='best',ncol=2)
     
     secax = ax.secondary_xaxis('top', functions=(blazar_utils.v_to_e, blazar_utils.e_to_v))
