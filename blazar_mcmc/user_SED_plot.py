@@ -1,26 +1,27 @@
-import glob
-import os
-import random
-import sys
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Name: user_SED_plot.py
 
+Script to produce custom SED plot. The user can change anything in this script without impacting 
+the standard behavior of Bjet_MCMC. 
+
+All standard outputs of Bjet_MCMC can be re-created with the option Full_outputs = True
+
+"""
+import os
 import emcee
 import numpy as np
 import matplotlib.pyplot as plt
-from scipy import stats
 from scipy import interpolate
-from astropy.io import ascii
-import corner
 
 import blazar_model
 import blazar_report
 import blazar_utils
-import blazar_run_mcmc
 import blazar_plots
-import blazar_initialize
-import blazar_clean
 from blazar_properties import *
 cmap = plt.get_cmap("tab10")
-filled_markers = ('o', 'v', '^', '<', '>', '8', 's', 'p', '*', 'h', 'H', 'D', 'd', 'P', 'X')
+filled_markers = ('o', '^', '<', '>', '8', 's', 'p', '*', 'h', 'H', 'D', 'd', 'P', 'X')
 marker_size = 4
 params = {#'backend': 'ps',
       'axes.labelsize': 14,
@@ -196,16 +197,20 @@ nubin_data_inst_low= [nubin_data[0][0]]
 nubin_data_inst_high= [nubin_data[1][0]]
 uplims_inst = [uplims[0]]
 tmp = 0
+tmp2 = 0
 
 for i in range(1,len(instrument_data)):
-    #cycle colors
-    if len(list_intruments)-tmp >= 10:
-        tmp += 10
+    #cycle colors & markers
+    if len(list_intruments)-tmp >= cmap.N:
+        tmp += cmap.N
     color_index = len(list_intruments) - tmp
+    if len(list_intruments)-tmp2 >= len(filled_markers):
+        tmp2 += len(filled_markers)
+    marker_index = len(list_intruments) - tmp2
 
     if instrument_data[i] != list_intruments[-1]:
         ax.errorbar(v_data_inst, vFv_data_inst, xerr=(nubin_data_inst_low, nubin_data_inst_high), yerr=(err_data_inst_down, err_data_inst_up), uplims = uplims_inst,
-                    label=str(list_intruments[-1]), markersize=marker_size, elinewidth=1, color = cmap(color_index), fmt=filled_markers[len(list_intruments)-1])
+                    label=str(list_intruments[-1]), markersize=marker_size, elinewidth=1, color = cmap(color_index), fmt=filled_markers[marker_index-1])
         list_intruments.append(instrument_data[i])
         v_data_inst = [v_data[i]]
         vFv_data_inst = [vFv_data[i]]
@@ -224,7 +229,7 @@ for i in range(1,len(instrument_data)):
         uplims_inst.append(uplims[i])
     if i == len(instrument_data)-1:
         ax.errorbar(v_data_inst, vFv_data_inst, xerr=(nubin_data_inst_low, nubin_data_inst_high), yerr=(err_data_inst_down, err_data_inst_up), uplims = uplims_inst,
-                    label=str(list_intruments[-1]), markersize=marker_size, elinewidth=1, color = cmap(color_index), fmt=filled_markers[len(list_intruments)-1])
+                    label=str(list_intruments[-1]), markersize=marker_size, elinewidth=1, color = cmap(color_index), fmt=filled_markers[marker_index-1])
 
 
 ax.legend(loc='upper center',ncol=4)
@@ -271,21 +276,24 @@ if residual:
     err_data_inst_up = [err_high[0]]
     uplims_inst = [uplims[0]]
     tmp = 0
+    tmp2 = 0
     
     for i in range(1,len(instrument_data)):
-        
-        #cycle colors
-        if len(list_intruments)-tmp >= 10:
-            tmp += 10
+        #cycle colors & markers
+        if len(list_intruments)-tmp >= cmap.N:
+            tmp += cmap.N
         color_index = len(list_intruments) - tmp
-        
+        if len(list_intruments)-tmp2 >= len(filled_markers):
+            tmp2 += len(filled_markers)
+        marker_index = len(list_intruments) - tmp2
+            
         if instrument_data[i] != list_intruments[-1]:
             if residual == "delta":
                 ax1.errorbar(v_data_inst, vFv_data_inst/f_best(v_data_inst)-1, yerr=(err_data_inst_down/f_best(v_data_inst), err_data_inst_up/f_best(v_data_inst)), 
-                            uplims = uplims_inst, markersize=4, elinewidth=1, color = cmap(color_index), fmt = filled_markers[len(list_intruments)-1])
+                            uplims = uplims_inst, markersize=4, elinewidth=1, color = cmap(color_index), fmt = filled_markers[marker_index-1])
             if residual == "sigma":
                 ax1.errorbar(v_data_inst, vFv_sigma_inst, yerr=(1), uplims = uplims_inst,
-                            markersize=4, elinewidth=1, color = cmap(color_index), fmt = filled_markers[len(list_intruments)-1])
+                            markersize=4, elinewidth=1, color = cmap(color_index), fmt = filled_markers[marker_index-1])
                 vFv_sigma_inst = [vFv_sigma[i]]
                              
             list_intruments.append(instrument_data[i])
@@ -306,10 +314,10 @@ if residual:
         if i == len(instrument_data)-1:
             if residual == "delta":
                 ax1.errorbar(v_data_inst, vFv_data_inst/f_best(v_data_inst)-1, yerr=(err_data_inst_down/f_best(v_data_inst), err_data_inst_up/f_best(v_data_inst)), 
-                            uplims = uplims_inst, markersize=4, elinewidth=1, color = cmap(color_index), fmt = filled_markers[len(list_intruments)-1])
+                            uplims = uplims_inst, markersize=4, elinewidth=1, color = cmap(color_index), fmt = filled_markers[marker_index-1])
             if residual == "sigma":
                 ax1.errorbar(v_data_inst, vFv_sigma_inst, yerr=(1), uplims = uplims_inst, 
-                            markersize=4, elinewidth=1, color = cmap(color_index), fmt = filled_markers[len(list_intruments)-1])  
+                            markersize=4, elinewidth=1, color = cmap(color_index), fmt = filled_markers[marker_index-1])  
     if residual == "delta":
         ax1.set_ylim(min(vFv_data/f_best(v_data)-1)*2, max(vFv_data/f_best(v_data)-1)*2)
         ax1.set_ylabel("Residuals")

@@ -136,7 +136,7 @@ def plot_data(data_file, title=None, no_title=False, adjust_scale=True, lower_ad
         If show is true, the plot is shown.
         If save is true, the plot is saved as file.
     """
-    filled_markers = ('o', 'v', '^', '<', '>', '8', 's', 'p', '*', 'h', 'H', 'D', 'd', 'P', 'X')
+    filled_markers = ('o', '^', '<', '>', '8', 's', 'p', '*', 'h', 'H', 'D', 'd', 'P', 'X')
     marker_size = 3
     
     if clear_plot:
@@ -170,18 +170,21 @@ def plot_data(data_file, title=None, no_title=False, adjust_scale=True, lower_ad
     nubin_data_inst_high = [nubin_data[1][0]]
     uplims_inst = [uplims[0]]
     tmp = 0
+    tmp2 = 0
     
     for i in range(1,len(instrument_data)):
-        
-        #cycle colors
-        if len(list_intruments)-tmp >= 10:
-            tmp += 10
+        #cycle colors & markers
+        if len(list_intruments)-tmp >= cmap.N:
+            tmp += cmap.N
         color_index = len(list_intruments) - tmp
+        if len(list_intruments)-tmp2 >= len(filled_markers):
+            tmp2 += len(filled_markers)
+        marker_index = len(list_intruments) - tmp2
         
         if instrument_data[i] != list_intruments[-1]:
             ax.errorbar(v_data_inst, vFv_data_inst, xerr=(nubin_data_inst_low, nubin_data_inst_high), 
                         yerr=(err_data_inst_down, err_data_inst_up), uplims = uplims_inst, 
-                        fmt=filled_markers[len(list_intruments)-1], label=str(list_intruments[-1]), 
+                        fmt=filled_markers[marker_index-1], label=str(list_intruments[-1]), 
                         elinewidth=1, markersize=marker_size, color = cmap(color_index))
             list_intruments.append(instrument_data[i])
             v_data_inst = [v_data[i]]
@@ -202,7 +205,7 @@ def plot_data(data_file, title=None, no_title=False, adjust_scale=True, lower_ad
         if i == len(instrument_data)-1:
             ax.errorbar(v_data_inst, vFv_data_inst, xerr=(nubin_data_inst_low, nubin_data_inst_high), 
                         yerr=(err_data_inst_down, err_data_inst_up), uplims = uplims_inst, 
-                        fmt=filled_markers[len(list_intruments)-1], label=str(list_intruments[-1]), 
+                        fmt=filled_markers[marker_index-1], label=str(list_intruments[-1]), 
                         elinewidth=1, markersize=marker_size, color = cmap(color_index))
     ax.legend(loc='best',ncol=2)
     
