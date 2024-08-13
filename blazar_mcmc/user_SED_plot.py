@@ -49,6 +49,8 @@ residual = "sigma"
 backend_file = input("Enter relative path to backend file: ")
 #example: local_results/J1010/J1010_2023-07-04-23:03:45/backend.h5
 
+#local_results/J1010_2024-08-12-16:47:25/backend.h5
+
 
 #frequency/energy conversion
 h = 4.135667662E-15
@@ -71,12 +73,16 @@ data = blazar_utils.read_data(configs["data_file"], instrument=True)
 
 
 v_data, vFv_data, err_data, instrument_data, nubin_data = data
-#setting upper limits
+#setting limits
 uplims = [False]*len(v_data)
+lolims = [False]*len(v_data)
 for i in range(len(err_data[1])):
     if err_data[0][i] == 0:
         uplims[i] = True
         err_data[0][i] = vFv_data[i]/4
+    if err_data[0][i] == -1:
+        lolims[i] = True
+        err_data[1][i] = vFv_data[i]/4
         
 redshift = configs["redshift"]
 discard = configs["discard"]
@@ -196,6 +202,7 @@ err_data_inst_up = [err_data[1][0]]
 nubin_data_inst_low= [nubin_data[0][0]]
 nubin_data_inst_high= [nubin_data[1][0]]
 uplims_inst = [uplims[0]]
+lolims_inst = [lolims[0]]
 tmp = 0
 tmp2 = 0
 
@@ -210,7 +217,8 @@ for i in range(1,len(instrument_data)):
 
     if instrument_data[i] != list_intruments[-1]:
         ax.errorbar(v_data_inst, vFv_data_inst, xerr=(nubin_data_inst_low, nubin_data_inst_high), yerr=(err_data_inst_down, err_data_inst_up), uplims = uplims_inst,
-                    label=str(list_intruments[-1]), markersize=marker_size, elinewidth=1, color = cmap(color_index), fmt=filled_markers[marker_index-1])
+                    lolims=lolims_inst, label=str(list_intruments[-1]), markersize=marker_size, elinewidth=1, color = cmap(color_index), 
+                    fmt=filled_markers[marker_index-1])
         list_intruments.append(instrument_data[i])
         v_data_inst = [v_data[i]]
         vFv_data_inst = [vFv_data[i]]
@@ -219,6 +227,7 @@ for i in range(1,len(instrument_data)):
         nubin_data_inst_low= [nubin_data[0][i]]
         nubin_data_inst_high= [nubin_data[1][i]]
         uplims_inst = [uplims[i]]
+        lolims_inst = [lolims[i]]
     else:   
         v_data_inst.append(v_data[i])
         vFv_data_inst.append(vFv_data[i])
@@ -227,9 +236,11 @@ for i in range(1,len(instrument_data)):
         nubin_data_inst_low.append(nubin_data[0][i])
         nubin_data_inst_high.append(nubin_data[1][i])
         uplims_inst.append(uplims[i])
+        lolims_inst.append(lolims[i])
     if i == len(instrument_data)-1:
         ax.errorbar(v_data_inst, vFv_data_inst, xerr=(nubin_data_inst_low, nubin_data_inst_high), yerr=(err_data_inst_down, err_data_inst_up), uplims = uplims_inst,
-                    label=str(list_intruments[-1]), markersize=marker_size, elinewidth=1, color = cmap(color_index), fmt=filled_markers[marker_index-1])
+                    lolims=lolims_inst, label=str(list_intruments[-1]), markersize=marker_size, elinewidth=1, color = cmap(color_index), 
+                    fmt=filled_markers[marker_index-1])
 
 
 ax.legend(loc='upper center',ncol=4)
@@ -263,8 +274,13 @@ if residual:
         sign = diff > 0
         #transform err_data to consider ULs (P=95% when below, P=5% when above)
         if_UL = err_data[0] == 0
-        err_low += if_UL * np.abs(blazar_utils.chi_squared_UL_to_err(0.95, f_best(v_data), vFv_data))
-        err_high += if_UL * np.abs(blazar_utils.chi_squared_UL_to_err(0.05, f_best(v_data), vFv_data))
+        err_data[0] += if_UL * blazar_utils.chi_squared_Limit_to_err(0.95, f_best(v_data), vFv_data)
+        err_data[1] += if_UL * blazar_utils.chi_squared_Limit_to_err(0.05, f_best(v_data), vFv_data)
+        #transform err_data to consider LLs (P=95% when above, P=5% when below)
+        if_LL = err_data[0] == -1
+        err_data[0] += if_LL * blazar_utils.chi_squared_Limit_to_err(0.05, f_best(v_data), vFv_data)
+        err_data[1] += if_LL * blazar_utils.chi_squared_Limit_to_err(0.95, f_best(v_data), vFv_data)            
+
         vFv_sigma = sign*(vFv_data-f_best(v_data))/err_low - ~sign*(f_best(v_data)-vFv_data)/err_high
         vFv_sigma_inst = [vFv_sigma[0]]
         
@@ -275,6 +291,7 @@ if residual:
     err_data_inst_down = [err_low[0]]
     err_data_inst_up = [err_high[0]]
     uplims_inst = [uplims[0]]
+    lolims_inst = [lolims[0]]
     tmp = 0
     tmp2 = 0
     
@@ -289,10 +306,12 @@ if residual:
             
         if instrument_data[i] != list_intruments[-1]:
             if residual == "delta":
-                ax1.errorbar(v_data_inst, vFv_data_inst/f_best(v_data_inst)-1, yerr=(err_data_inst_down/f_best(v_data_inst), err_data_inst_up/f_best(v_data_inst)), 
-                            uplims = uplims_inst, markersize=4, elinewidth=1, color = cmap(color_index), fmt = filled_markers[marker_index-1])
+                ax1.errorbar(v_data_inst, vFv_data_inst/f_best(v_data_inst)-1, 
+                             yerr=(err_data_inst_down/f_best(v_data_inst), err_data_inst_up/f_best(v_data_inst)), 
+                            uplims = uplims_inst, lolims = lolims_inst, markersize=4, elinewidth=1, 
+                            color = cmap(color_index), fmt = filled_markers[marker_index-1])
             if residual == "sigma":
-                ax1.errorbar(v_data_inst, vFv_sigma_inst, yerr=(1), uplims = uplims_inst,
+                ax1.errorbar(v_data_inst, vFv_sigma_inst, yerr=(1), uplims = uplims_inst, lolims = lolims_inst,
                             markersize=4, elinewidth=1, color = cmap(color_index), fmt = filled_markers[marker_index-1])
                 vFv_sigma_inst = [vFv_sigma[i]]
                              
@@ -302,6 +321,7 @@ if residual:
             err_data_inst_down = [err_low[i]]
             err_data_inst_up = [err_high[i]]
             uplims_inst = [uplims[i]]
+            lolims_inst = [lolims[i]]
         else:   
             if residual == "sigma":
                 vFv_sigma_inst.append(vFv_sigma[i])
@@ -310,13 +330,16 @@ if residual:
                 err_data_inst_down.append(err_low[i])
                 err_data_inst_up.append(err_high[i])
                 uplims_inst.append(uplims[i])
+                lolims_inst.append(lolims[i])
             
         if i == len(instrument_data)-1:
             if residual == "delta":
-                ax1.errorbar(v_data_inst, vFv_data_inst/f_best(v_data_inst)-1, yerr=(err_data_inst_down/f_best(v_data_inst), err_data_inst_up/f_best(v_data_inst)), 
-                            uplims = uplims_inst, markersize=4, elinewidth=1, color = cmap(color_index), fmt = filled_markers[marker_index-1])
+                ax1.errorbar(v_data_inst, vFv_data_inst/f_best(v_data_inst)-1, 
+                             yerr=(err_data_inst_down/f_best(v_data_inst), err_data_inst_up/f_best(v_data_inst)), 
+                            uplims = uplims_inst, lolims = lolims_inst, markersize=4, elinewidth=1, color = cmap(color_index), 
+                            fmt = filled_markers[marker_index-1])
             if residual == "sigma":
-                ax1.errorbar(v_data_inst, vFv_sigma_inst, yerr=(1), uplims = uplims_inst, 
+                ax1.errorbar(v_data_inst, vFv_sigma_inst, yerr=(1), uplims = uplims_inst, lolims = lolims_inst,
                             markersize=4, elinewidth=1, color = cmap(color_index), fmt = filled_markers[marker_index-1])  
     if residual == "delta":
         ax1.set_ylim(min(vFv_data/f_best(v_data)-1)*2, max(vFv_data/f_best(v_data)-1)*2)

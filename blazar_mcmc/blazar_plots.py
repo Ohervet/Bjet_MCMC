@@ -154,12 +154,16 @@ def plot_data(data_file, title=None, no_title=False, adjust_scale=True, lower_ad
 
     data = blazar_utils.read_data(data_file, instrument=True)
     v_data, vFv_data, err_data, instrument_data, nubin_data = data
-    #setting upper limits
+    #setting limits
     uplims = [False]*len(v_data)
+    lolims = [False]*len(v_data)
     for i in range(len(err_data[1])):
         if err_data[0][i] == 0:
             uplims[i] = True
             err_data[0][i] = vFv_data[i]/4
+        if err_data[0][i] == -1:
+            lolims[i] = True
+            err_data[1][i] = vFv_data[i]/4
     
     list_intruments=[instrument_data[0]]
     v_data_inst = [v_data[0]]
@@ -169,6 +173,7 @@ def plot_data(data_file, title=None, no_title=False, adjust_scale=True, lower_ad
     nubin_data_inst_low = [nubin_data[0][0]]
     nubin_data_inst_high = [nubin_data[1][0]]
     uplims_inst = [uplims[0]]
+    lolims_inst = [lolims[0]]
     tmp = 0
     tmp2 = 0
     
@@ -183,7 +188,7 @@ def plot_data(data_file, title=None, no_title=False, adjust_scale=True, lower_ad
         
         if instrument_data[i] != list_intruments[-1]:
             ax.errorbar(v_data_inst, vFv_data_inst, xerr=(nubin_data_inst_low, nubin_data_inst_high), 
-                        yerr=(err_data_inst_down, err_data_inst_up), uplims = uplims_inst, 
+                        yerr=(err_data_inst_down, err_data_inst_up), uplims = uplims_inst, lolims = lolims_inst, 
                         fmt=filled_markers[marker_index-1], label=str(list_intruments[-1]), 
                         elinewidth=1, markersize=marker_size, color = cmap(color_index))
             list_intruments.append(instrument_data[i])
@@ -194,6 +199,7 @@ def plot_data(data_file, title=None, no_title=False, adjust_scale=True, lower_ad
             nubin_data_inst_low = [nubin_data[0][i]]
             nubin_data_inst_high = [nubin_data[1][i]]
             uplims_inst = [uplims[i]]
+            lolims_inst = [lolims[i]]
         else:   
             v_data_inst.append(v_data[i])
             vFv_data_inst.append(vFv_data[i])
@@ -202,9 +208,10 @@ def plot_data(data_file, title=None, no_title=False, adjust_scale=True, lower_ad
             nubin_data_inst_low.append(nubin_data[0][i])
             nubin_data_inst_high.append(nubin_data[1][i])
             uplims_inst.append(uplims[i])
+            lolims_inst.append(lolims[i])
         if i == len(instrument_data)-1:
             ax.errorbar(v_data_inst, vFv_data_inst, xerr=(nubin_data_inst_low, nubin_data_inst_high), 
-                        yerr=(err_data_inst_down, err_data_inst_up), uplims = uplims_inst, 
+                        yerr=(err_data_inst_down, err_data_inst_up), uplims = uplims_inst, lolims = lolims_inst, 
                         fmt=filled_markers[marker_index-1], label=str(list_intruments[-1]), 
                         elinewidth=1, markersize=marker_size, color = cmap(color_index))
     ax.legend(loc='best',ncol=2)
@@ -972,6 +979,8 @@ def plot_likelihood_profiles(flat_samples, flat_log_probs, best_params, min_1sig
             if bin_min <= param_array[i] < bin_max:
                 prob_tmp.append(sorted_log_probs[i])
             else:
+                if len(prob_tmp) == 0:
+                    prob_tmp.append(0)
                 prob_max.append(np.exp(max(prob_tmp)))
                 ln_prob_max.append(max(prob_tmp))
                 param_binned_mid.append(bin_min + binsize/2.)

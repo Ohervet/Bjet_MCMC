@@ -321,26 +321,10 @@ def read_data(data_file, cols=(0, 1, 4), use_E=True, verbose=False, instrument=F
     err_data_down = table['delta_F(-)']
     err_data_up = table['delta_F(+)']
     err_data = np.array([err_data_down, err_data_up])
-
-
-    # # remove values where the error is 0 (upper limits)
-    # if instrument == False:
-    #     indices_to_remove = np.where(err_data == 0)[0]
-    #     err_data_filtered = np.array([np.delete(err_data, indices_to_remove), np.delete(err_data_up, indices_to_remove)])
-    #     v_data_filtered = np.delete(v_data, indices_to_remove)
-    #     #nubin_data_filtered = np.array([np.delete(v_low, indices_to_remove), np.delete(v_high, indices_to_remove)])
-    #     vFv_data_filtered = np.delete(vFv_data, indices_to_remove)
-
-    #     if verbose:
-    #         print("Data from", data_file)
-    #         print("v_data_filtered:", v_data_filtered)
-    #         print("vFv_data_filtered:", vFv_data_filtered)
-    #         print("err_data_filtered:", err_data_filtered)
         
     if instrument:
         instrument_data = table['instrument']
         nubin_data = np.array([v_low,v_high])
-        #instrument_data_filtered = np.delete(instrument_data, indices_to_remove)
         if verbose:
             print("Data from", data_file)
             print("v_data:", v_data)
@@ -350,7 +334,6 @@ def read_data(data_file, cols=(0, 1, 4), use_E=True, verbose=False, instrument=F
             print("nubin_data:", nubin_data)
         return v_data, vFv_data, err_data, instrument_data, nubin_data
     else:
-        #return v_data_filtered, vFv_data_filtered, err_data_filtered
         return v_data, vFv_data, err_data
 
 
@@ -618,22 +601,22 @@ def log_prior(params, param_min_vals=None, param_max_vals=None, redshift=None, t
     return 0.0
 
 
-def chi_squared_UL_to_err(P, func_nu_data, vFv_UL_data):
+def chi_squared_Limit_to_err(P, func_nu_data, vFv_Limit_data):
     """
-    Method to include upper limits in Chi2 calculation.
+    Method to include upper and lower limits in Chi2 calculation.
     This will return the equivalent 1sigma error to be included in a standard Chi2 formula
     in a way that the resulting Chi2 will be equal to -2*ln(P).
-    P being the UL likelihood (above and below)
+    P being the UL/LL likelihood (above and below)
 
     Parameters
     ----------
     P : float
         likelihood value associated with a data point.
-        For ULs P is usually set either at 0.05 or 0.95 (probability above and below UL)
+        For ULs/LLs P is usually set either at 0.05 or 0.95 (probability above and below UL/LL)
     func_nu_data : float
         model flux value a nu = nu_data
-    vFv_UL_data : float
-        measure flux UL
+    vFv_Limit_data : float
+        measure flux UL/LL
 
     Returns
     -------
@@ -641,7 +624,7 @@ def chi_squared_UL_to_err(P, func_nu_data, vFv_UL_data):
 
     """
     Chi2 = -2*np.log(P)
-    return (func_nu_data-vFv_UL_data)/np.sqrt(Chi2)
+    return np.abs(func_nu_data-vFv_Limit_data)/np.sqrt(Chi2)
 
 
 def chi_squared_from_model(model_results, v_data, vFv_data, err_data):
@@ -677,8 +660,12 @@ def chi_squared_from_model(model_results, v_data, vFv_data, err_data):
     
     #transform err_data to consider ULs (P=95% when below, P=5% when above)
     if_UL = err_data[0] == 0
-    err_data[0] += if_UL * chi_squared_UL_to_err(0.95, func_nu_data, vFv_data)
-    err_data[1] += if_UL * chi_squared_UL_to_err(0.05, func_nu_data, vFv_data)
+    err_data[0] += if_UL * chi_squared_Limit_to_err(0.95, func_nu_data, vFv_data)
+    err_data[1] += if_UL * chi_squared_Limit_to_err(0.05, func_nu_data, vFv_data)
+    #transform err_data to consider LLs (P=95% when above, P=5% when below)
+    if_LL = err_data[0] == -1
+    err_data[0] += if_LL * chi_squared_Limit_to_err(0.05, func_nu_data, vFv_data)
+    err_data[1] += if_LL * chi_squared_Limit_to_err(0.95, func_nu_data, vFv_data)    
     
     return np.sum((diff / (sign*err_data[1] + ~sign*err_data[0]))**2.)
 
