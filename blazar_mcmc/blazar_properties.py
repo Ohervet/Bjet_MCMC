@@ -10,7 +10,6 @@ import tempfile
 import numpy as np
 
 __all__ = [
-    "PROGRAM_NAME",
     "TMP",
     "INITIALIZE",
     "MAIN_FOLDER",
@@ -38,8 +37,7 @@ __all__ = [
     "SSC_PARAM_IS_LOG",
 ]
 
-
-PROGRAM_NAME = "/Bjet_MCMC"
+# PROGRAM_NAME = "/blazar_mcmc"
 TMP = False
 INITIALIZE = False
 MAIN_FOLDER = "blazars-mcmc"
@@ -189,13 +187,17 @@ def modelProperties(is_eic=False, fixed_params=None):
     return parameters
 
 
+# TODO Implement a different scheme for saving output files. Do not place in program install location but in a user
+#  defined analysis directory.
 def _get_path():
-    base_path = str(os.path.dirname(__file__))
-    # base_path = str(pathlib.Path().resolve())
-    stop = base_path.find(PROGRAM_NAME)
-    if stop == -1:
-        raise Exception(PROGRAM_NAME + " is not in file path")
-    return base_path[: -len(MAIN_FOLDER)] + "/"
+    return f"{os.environ['HOME']}/Documents/"
+
+    # base_path = str(os.path.dirname(__file__))
+    # # base_path = str(pathlib.Path().resolve())
+    # stop = base_path.find(PROGRAM_NAME)
+    # if stop == -1:
+    #     raise Exception(PROGRAM_NAME + " is not in file path")
+    # return base_path[: -len(MAIN_FOLDER)] + "/"
 
 
 if TMP:

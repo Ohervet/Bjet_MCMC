@@ -44,12 +44,12 @@ add_data(current_data, new_data=None, file_suffix=None, name_stem=None, data_fol
 FUNCTIONS
 """
 import os
-import subprocess
 
 import numpy as np
 from scipy import interpolate
 
 from blazar_mcmc.blazar_properties import *
+from bjet_core import bj_core
 
 __all__ = [
     "add_data",
@@ -134,6 +134,7 @@ def make_SED(
         eic: bool
             states whether the run is eic or std; default is false (std)
     """
+    # TODO rewrite this entire method using bj_core methods and without building a command string.
     if executable is None:
         executable = CPP_FOLDER + "/" + EXECUTABLE
 
@@ -240,7 +241,7 @@ def file_make_SED(
         Data saved to <home directory>/DATA_FOLDER/<file prefix>_*.dat
         Parameter file overwritten or created
     """
-
+    # TODO rewrite this entire method using bj_core methods and without building a command string.
     if parameter_file is None:
         parameter_file = PARAMETER_FOLDER + "/params.txt"
     if executable is None:

@@ -417,7 +417,7 @@ def mcmc(
     return sampler, directory
 
 
-if __name__ == "__main__":
+def main_cli():
     """
     Calling blazar_run_mcmc.py without argument will run mcmc using the configurations in mcmc_config.txt
     To run it with a specific configuration file, the absolute path can be given as first argument
@@ -458,3 +458,7 @@ if __name__ == "__main__":
     if TMP:
         shutil.move(BASE_PATH + results_directory, FOLDER_PATH + results_directory)
         shutil.rmtree(TEMP_DIR)
+
+
+if __name__ == "__main__":
+    main_cli()

@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import datetime
 import multiprocessing
 import shutil
@@ -7,17 +9,16 @@ import emcee
 from blazar_mcmc import blazar_utils
 from blazar_mcmc import blazar_report
 from blazar_mcmc import blazar_properties
+from bjet_core import bj_core
 
 import glob
 import numpy as np
 import pathlib
-import subprocess
 import os
 import random
 from scipy import interpolate
 
 __all__ = [
-    "PROGRAM_NAME",
     "RESULTS_FOLDER",
     "DATA_FOLDER",
     "EXECUTABLE",
@@ -43,7 +44,7 @@ __all__ = [
     "mcmc",
 ]
 
-PROGRAM_NAME = "Bjet_MCMC"
+# TODO Removed PROGRAM_NAME, so now results directory must go elsewhere (since that was the reference to it)
 RESULTS_FOLDER = "local_results"
 DATA_FOLDER = "sed_calculations"
 EXECUTABLE = "bjet_core/bj_core"
@@ -103,6 +104,7 @@ param_max_vals = np.array(param_max_vals)
 
 def make_model(params, name_stem="run"):
     # convert to log
+    # TODO rewrite this entire method using bj_core methods and without building a command string.
     params = params * 1.0
     for i in range(len(params)):
         if PARAM_IS_LOG[i]:
@@ -333,7 +335,7 @@ def mcmc(p0=None):
     return sampler, directory
 
 
-if __name__ == "__main__":
+def main_cli():
     """
     p0_file = "local_results/3C66A_b6_eic_2022-06-08-20:17:26/backend.h5"
     reader = emcee.backends.HDFBackend(BASE_PATH + p0_file, read_only=True)
@@ -344,3 +346,7 @@ if __name__ == "__main__":
     if blazar_properties.TMP:
         shutil.move(BASE_PATH + directory, blazar_properties.FOLDER_PATH + directory)
         shutil.rmtree(blazar_properties.TEMP_DIR)
+
+
+if __name__ == "__main__":
+    main_cli()
