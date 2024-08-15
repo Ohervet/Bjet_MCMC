@@ -10,11 +10,10 @@ bjet_core_ext_module = Extension(
     ],
     swig_opts=["-c++"],
 )
+
 setup(
     cmdclass={"build_ext": build_ext},
     ext_modules=[bjet_core_ext_module],
-    # py_modules=["bj_core"],
-    packages=["_bj_core", "blazar_mcmc"],
-    # package_dir={"bjet_core": "bjet_core", "blazar_mcmc": "blazar_mcmc"},
+    packages=["blazar_mcmc", "bjet_core"],
     include_package_data=True,
 )
