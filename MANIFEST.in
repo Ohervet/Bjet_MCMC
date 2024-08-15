@@ -1,0 +1,3 @@
+recursive-include bjet_core *
+recursive-exclude */__pycache__ *
+recursive-exclude */.idea *
