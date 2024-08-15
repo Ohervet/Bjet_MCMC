@@ -121,10 +121,13 @@ from astropy.io import ascii
 import blazar_model
 from blazar_properties import *
 
-#ev Hz conversion
-h = 4.135667662E-15
+# ev Hz conversion
+h = 4.135667662e-15
+
+
 def v_to_e(val):
     return val * h
+
 
 def e_to_v(val):
     return val / h
@@ -142,7 +145,7 @@ def read_configs(config_file=None, config_string=None, verbose=False):
 
     Args:
         config_file (optional): str
-            Absolute path to file with configurations; default is None, using the 
+            Absolute path to file with configurations; default is None, using the
             relative path to "mcmc_config.txt"
         config_string (optional): str
             This is a string of the form {'key': value, ...}. If a config_string
@@ -179,25 +182,48 @@ def read_configs(config_file=None, config_string=None, verbose=False):
     """
 
     default_alpha2_limits = [1.5, 7.5]
-    attributes = ["eic", "data_file", "n_steps", "n_walkers", "discard",
-                  "parallel", "use_variability", "redshift", "custom_alpha2_limits"]
+    attributes = [
+        "eic",
+        "data_file",
+        "n_steps",
+        "n_walkers",
+        "discard",
+        "parallel",
+        "use_variability",
+        "redshift",
+        "custom_alpha2_limits",
+    ]
     optional_attributes = ["cores", "tau_variability", "description", "folder_label"]
-    ssc_parameters = ["delta", "K","n1","n2", "gamma_min","gamma_max", "gamma_break","B","R"]
+    ssc_parameters = [
+        "delta",
+        "K",
+        "n1",
+        "n2",
+        "gamma_min",
+        "gamma_max",
+        "gamma_break",
+        "B",
+        "R",
+    ]
     eic_parameters = ["bb_temp", "l_nuc", "tau", "blob_dist"]
     configurations = {}  # dictionary of parameters
     if config_file is None:
-        CONFIG_PATH = FOLDER_PATH+"mcmc_config.txt"
+        CONFIG_PATH = FOLDER_PATH + "mcmc_config.txt"
     else:
         CONFIG_PATH = config_file
     if config_string is None:
         # read configurations
-        with open(CONFIG_PATH, 'r') as file:
+        with open(CONFIG_PATH, "r") as file:
             if verbose:
                 print("Reading configuration options from:", config_file)
             for line in file:
-                elements = re.split('=|# ', line)
-                if elements[0].strip() in attributes or elements[0].strip() in optional_attributes \
-                    or elements[0].strip() in ssc_parameters or elements[0].strip() in eic_parameters:  # determine if line with an attribute
+                elements = re.split("=|# ", line)
+                if (
+                    elements[0].strip() in attributes
+                    or elements[0].strip() in optional_attributes
+                    or elements[0].strip() in ssc_parameters
+                    or elements[0].strip() in eic_parameters
+                ):  # determine if line with an attribute
                     configurations[elements[0].strip()] = elements[1].strip()
     else:
         inf = np.inf
@@ -207,57 +233,76 @@ def read_configs(config_file=None, config_string=None, verbose=False):
     for att in attributes:
         if att not in configurations:
             raise Exception("No " + att + " provided!")
-            
-    if config_string is None:       
+
+    if config_string is None:
         # change int params to ints, bools to bools
         configurations["n_steps"] = int(configurations["n_steps"])
         configurations["n_walkers"] = int(configurations["n_walkers"])
         configurations["discard"] = int(configurations["discard"])
-        configurations["parallel"] = (configurations["parallel"] == "True" or configurations["parallel"] == "true")
+        configurations["parallel"] = (
+            configurations["parallel"] == "True" or configurations["parallel"] == "true"
+        )
         configurations["use_variability"] = (
-                configurations["use_variability"] == "True" or configurations["use_variability"] == "true")
+            configurations["use_variability"] == "True"
+            or configurations["use_variability"] == "true"
+        )
         configurations["redshift"] = float(configurations["redshift"])
-    
+
         if "eic" in configurations:  # will default to false
-            configurations["eic"] = (configurations["eic"] == "True" or configurations["eic"] == "true")
+            configurations["eic"] = (
+                configurations["eic"] == "True" or configurations["eic"] == "true"
+            )
         else:
             configurations["eic"] = False
-    
+
         if configurations["use_variability"]:
             configurations["tau_variability"] = float(configurations["tau_variability"])
             if "tau_variability" not in configurations:
                 raise Exception("No tau_variability provided!")
         else:
             configurations["tau_variability"] = None
-    
+
         if "cores" in configurations:
             configurations["cores"] = int(configurations["cores"])
 
-   # set alpha2 limits
-        configurations["custom_alpha2_limits"] = configurations["custom_alpha2_limits"].split('=')
-        configurations["custom_alpha2_limits"] = configurations["custom_alpha2_limits"][-1].split(',')
-        if configurations["custom_alpha2_limits"][0] == "True" or configurations["custom_alpha2_limits"] == "true":
+        # set alpha2 limits
+        configurations["custom_alpha2_limits"] = configurations[
+            "custom_alpha2_limits"
+        ].split("=")
+        configurations["custom_alpha2_limits"] = configurations["custom_alpha2_limits"][
+            -1
+        ].split(",")
+        if (
+            configurations["custom_alpha2_limits"][0] == "True"
+            or configurations["custom_alpha2_limits"] == "true"
+        ):
             if len(configurations["custom_alpha2_limits"]) < 3:
-                raise Exception("custom_alpha2_limits True but insufficient alpha2 limits provided!")
-            alpha2_limits = [float(configurations["custom_alpha2_limits"][1]),
-                             float(configurations["custom_alpha2_limits"][2])]
+                raise Exception(
+                    "custom_alpha2_limits True but insufficient alpha2 limits provided!"
+                )
+            alpha2_limits = [
+                float(configurations["custom_alpha2_limits"][1]),
+                float(configurations["custom_alpha2_limits"][2]),
+            ]
             alpha2_limits.sort()
             configurations["custom_alpha2_limits"] = True
-            print("alpha2 limits sets at",alpha2_limits)
+            print("alpha2 limits sets at", alpha2_limits)
         else:
             configurations["custom_alpha2_limits"] = False
             alpha2_limits = default_alpha2_limits
         configurations["alpha2_limits"] = alpha2_limits
-        
-        #set up  fixed parameters
+
+        # set up  fixed parameters
         if configurations["eic"]:
-            all_parameters = ssc_parameters+eic_parameters
+            all_parameters = ssc_parameters + eic_parameters
         else:
             all_parameters = ssc_parameters
-        configurations["fixed_params"] = [-np.inf]*len(all_parameters)
+        configurations["fixed_params"] = [-np.inf] * len(all_parameters)
         for i in range(len(all_parameters)):
-            if configurations[all_parameters[i]] != 'null':
-                configurations["fixed_params"][i] = float(configurations[all_parameters[i]])
+            if configurations[all_parameters[i]] != "null":
+                configurations["fixed_params"][i] = float(
+                    configurations[all_parameters[i]]
+                )
             configurations.pop(all_parameters[i])
 
     if verbose:
@@ -302,29 +347,28 @@ def read_data(data_file, cols=(0, 1, 4), use_E=True, verbose=False, instrument=F
         v_data, vFv_data, err_data
     """
 
-    
-    table = ascii.read(FOLDER_PATH + data_file, format='csv',data_start = 1,delimiter='\s')
-
-                                             	 
+    table = ascii.read(
+        FOLDER_PATH + data_file, format="csv", data_start=1, delimiter="\s"
+    )
 
     # get v data (may need to convert from E)
     if use_E:
-        h = 4.135667662E-15  # eV * s
-        v_data = table['!E(eV)']/h
-        v_low = table['delta_E(-)']/h
-        v_high = table['delta_E(+)']/h
+        h = 4.135667662e-15  # eV * s
+        v_data = table["!E(eV)"] / h
+        v_low = table["delta_E(-)"] / h
+        v_high = table["delta_E(+)"] / h
     else:
-        v_data = table['!E(eV)']
-        v_low = table['delta_E(-)']
-        v_high = table['delta_E(+)']
-    vFv_data = table['F(ergcm-2s-1)']
-    err_data_down = table['delta_F(-)']
-    err_data_up = table['delta_F(+)']
+        v_data = table["!E(eV)"]
+        v_low = table["delta_E(-)"]
+        v_high = table["delta_E(+)"]
+    vFv_data = table["F(ergcm-2s-1)"]
+    err_data_down = table["delta_F(-)"]
+    err_data_up = table["delta_F(+)"]
     err_data = np.array([err_data_down, err_data_up])
-        
+
     if instrument:
-        instrument_data = table['instrument']
-        nubin_data = np.array([v_low,v_high])
+        instrument_data = table["instrument"]
+        nubin_data = np.array([v_low, v_high])
         if verbose:
             print("Data from", data_file)
             print("v_data:", v_data)
@@ -337,9 +381,16 @@ def read_data(data_file, cols=(0, 1, 4), use_E=True, verbose=False, instrument=F
         return v_data, vFv_data, err_data
 
 
-
-def get_random_parameters(param_min_vals=None, param_max_vals=None, alpha2_limits=None, redshift=None, tau_var=None,
-                          use_variability=True, eic=False, fixed_params=None):
+def get_random_parameters(
+    param_min_vals=None,
+    param_max_vals=None,
+    alpha2_limits=None,
+    redshift=None,
+    tau_var=None,
+    use_variability=True,
+    eic=False,
+    fixed_params=None,
+):
     """
     Get a random array of parameters in the parameter space.
     Args:
@@ -370,7 +421,9 @@ def get_random_parameters(param_min_vals=None, param_max_vals=None, alpha2_limit
     """
     dim = len(param_min_vals)
     if param_min_vals is None or param_max_vals is None:
-        default_min_max = min_max_parameters(alpha2_limits=alpha2_limits, eic=eic, fixed_params = fixed_params)
+        default_min_max = min_max_parameters(
+            alpha2_limits=alpha2_limits, eic=eic, fixed_params=fixed_params
+        )
     if param_min_vals is None:
         param_min_vals = default_min_max[0]
     if param_max_vals is None:
@@ -379,19 +432,38 @@ def get_random_parameters(param_min_vals=None, param_max_vals=None, alpha2_limit
     # ensures valid parameters
     parameter_size = param_max_vals - param_min_vals
     parameters = param_min_vals + parameter_size * np.random.rand(dim)
-            
-    while not np.isfinite(log_prior(parameters, param_min_vals, param_max_vals, redshift=redshift, tau_var=tau_var,
-                                    use_variability=use_variability, fixed_params=fixed_params)):
+
+    while not np.isfinite(
+        log_prior(
+            parameters,
+            param_min_vals,
+            param_max_vals,
+            redshift=redshift,
+            tau_var=tau_var,
+            use_variability=use_variability,
+            fixed_params=fixed_params,
+        )
+    ):
         parameters = param_min_vals + parameter_size * np.random.rand(dim)
     return parameters
 
- #need to implement gaussian ball of random parameters around "standard blazar values"
- # mu gauss = best params for J1010 for example
- #sig gauss = parameter space /10 (100?)
+
+# need to implement gaussian ball of random parameters around "standard blazar values"
+# mu gauss = best params for J1010 for example
+# sig gauss = parameter space /10 (100?)
 
 
-def random_defaults(walkers, param_min_vals=None, param_max_vals=None, alpha2_limits=None, redshift=None, tau_var=None,
-                    use_variability=True, eic=False, fixed_params=None):
+def random_defaults(
+    walkers,
+    param_min_vals=None,
+    param_max_vals=None,
+    alpha2_limits=None,
+    redshift=None,
+    tau_var=None,
+    use_variability=True,
+    eic=False,
+    fixed_params=None,
+):
     """
     Get the values used for the initial values for the MCMC. The defaults are
     random values in the acceptable range that satisfy the log_prior criteria.
@@ -422,15 +494,31 @@ def random_defaults(walkers, param_min_vals=None, param_max_vals=None, alpha2_li
         default values for all NUM_DIM parameters for each walker
     """
     return np.array(
-        [get_random_parameters(param_min_vals=param_min_vals, param_max_vals=param_max_vals,
-                               alpha2_limits=alpha2_limits, redshift=redshift,
-                               tau_var=tau_var,
-                               use_variability=use_variability, eic=eic, fixed_params=fixed_params) for _ in range(walkers)])
+        [
+            get_random_parameters(
+                param_min_vals=param_min_vals,
+                param_max_vals=param_max_vals,
+                alpha2_limits=alpha2_limits,
+                redshift=redshift,
+                tau_var=tau_var,
+                use_variability=use_variability,
+                eic=eic,
+                fixed_params=fixed_params,
+            )
+            for _ in range(walkers)
+        ]
+    )
 
 
-def random_eic_from_std(std_values, walkers, param_min_vals=None, param_max_vals=None, redshift=None,
-                        tau_var=None,
-                        use_variability=True):
+def random_eic_from_std(
+    std_values,
+    walkers,
+    param_min_vals=None,
+    param_max_vals=None,
+    redshift=None,
+    tau_var=None,
+    use_variability=True,
+):
     """
     Given a current state of a chain for a non-EIC run (with 9 free parameters),
     fill in the last 4 parameters with random defaults.
@@ -462,18 +550,42 @@ def random_eic_from_std(std_values, walkers, param_min_vals=None, param_max_vals
     """
     if len(std_values[0]) != 9:
         raise ValueError(
-            "Given defaults from a std run must have 9 values. " + str(len(std_values[0])) + " values found.")
+            "Given defaults from a std run must have 9 values. "
+            + str(len(std_values[0]))
+            + " values found."
+        )
     if len(param_min_vals) != 13:
         raise ValueError(
-            "The minima and maxima must be for EIC with 13 values. " + str(len(param_min_vals)) + " values found.")
+            "The minima and maxima must be for EIC with 13 values. "
+            + str(len(param_min_vals))
+            + " values found."
+        )
     if len(std_values) != walkers:
-        raise ValueError("Number of walkers is " + str(walkers) + " but " + str(len(std_values)) + " defaults given")
+        raise ValueError(
+            "Number of walkers is "
+            + str(walkers)
+            + " but "
+            + str(len(std_values))
+            + " defaults given"
+        )
     defaults = []
     for params in std_values:
-        defaults.append(np.array(list(params) + list(
-            get_random_parameters(param_min_vals=param_min_vals, param_max_vals=param_max_vals, redshift=redshift,
-                                  tau_var=tau_var,
-                                  use_variability=use_variability, eic=True, fixed_params=fixed_params))[9:]))
+        defaults.append(
+            np.array(
+                list(params)
+                + list(
+                    get_random_parameters(
+                        param_min_vals=param_min_vals,
+                        param_max_vals=param_max_vals,
+                        redshift=redshift,
+                        tau_var=tau_var,
+                        use_variability=use_variability,
+                        eic=True,
+                        fixed_params=fixed_params,
+                    )
+                )[9:]
+            )
+        )
     return np.array(defaults)
 
 
@@ -498,31 +610,40 @@ def min_max_parameters(alpha2_limits=None, eic=False, fixed_params=None):
     """
     if alpha2_limits is None or len(alpha2_limits) != 2:
         alpha2_limits = (1.5, 7.5)
-    param_min_vals = [1., 0., 1., float(alpha2_limits[0]), 0., 3., 2., -4., 14.]
-    param_max_vals = [100, 8., 5., float(alpha2_limits[1]), 5., 8., 7.0, 0., 19.]
+    param_min_vals = [1.0, 0.0, 1.0, float(alpha2_limits[0]), 0.0, 3.0, 2.0, -4.0, 14.0]
+    param_max_vals = [100, 8.0, 5.0, float(alpha2_limits[1]), 5.0, 8.0, 7.0, 0.0, 19.0]
     if eic:
         extra_min = [3.5, 40.0, -5.0, 15]
         extra_max = [6.0, 50.0, 0.0, 21.0]
         param_min_vals = param_min_vals + extra_min
         param_max_vals = param_max_vals + extra_max
-        
-    #remove any frozen parameter from the parameter list
+
+    # remove any frozen parameter from the parameter list
     if fixed_params:
         fixed_params2 = fixed_params.copy()
         i = 0
         while i < len(fixed_params2):
-          if fixed_params2[i] != -np.inf:       
-            del param_min_vals[i]
-            del param_max_vals[i]
-            del fixed_params2[i]
-          else:
-            i+=1
+            if fixed_params2[i] != -np.inf:
+                del param_min_vals[i]
+                del param_max_vals[i]
+                del fixed_params2[i]
+            else:
+                i += 1
     return np.array(param_min_vals), np.array(param_max_vals)
 
 
 # probability functions ------------------------------------------------------------------------------------------------
-def log_prior(params, param_min_vals=None, param_max_vals=None, redshift=None, tau_var=None,
-              use_variability=True, alpha2_limits=None, eic=False, fixed_params = None):
+def log_prior(
+    params,
+    param_min_vals=None,
+    param_max_vals=None,
+    redshift=None,
+    tau_var=None,
+    use_variability=True,
+    alpha2_limits=None,
+    eic=False,
+    fixed_params=None,
+):
     """
     Using a uniform prior distribution. Return whether input params are valid.
     list parameters with eic: ["delta", "K", "n_1", "n_2", "gamma_min", "gamma_max", "gamma_break", "B", "R",
@@ -554,7 +675,7 @@ def log_prior(params, param_min_vals=None, param_max_vals=None, redshift=None, t
     """
 
     if fixed_params:
-    # reimplent fixed params
+        # reimplent fixed params
         for i in range(len(fixed_params)):
             if fixed_params[i] != -np.inf:
                 params = np.insert(params, i, fixed_params[i])
@@ -569,9 +690,13 @@ def log_prior(params, param_min_vals=None, param_max_vals=None, redshift=None, t
             param_max_vals = maxima
 
     delta, K, n1, n2, gamma_min, gamma_max, gamma_break, B, R, *other_params = params
-            
-    
-    if n1 > n2 or gamma_min > gamma_max or gamma_break < gamma_min or gamma_break > gamma_max:
+
+    if (
+        n1 > n2
+        or gamma_min > gamma_max
+        or gamma_break < gamma_min
+        or gamma_break > gamma_max
+    ):
         return -np.inf
     # check if between min and max
     for i in range(len(params)):
@@ -588,14 +713,16 @@ def log_prior(params, param_min_vals=None, param_max_vals=None, redshift=None, t
         # redshift = 0.143
     if use_variability:
         tau_var = tau_var * 60 * 60  # convert to seconds
-        c = 2.997924 * 1.0e+10
+        c = 2.997924 * 1.0e10
         R = np.power(10, R)
         if tau_var < (1 + redshift) / c * R / delta:
             return -np.inf
 
     if eic:
-        #the intrinsic jet half opening angle cannot be more than 5deg. (e.g. Hervet 2016)
-        opening_angle = np.arctan(np.power(10, params[8])/np.power(10, params[12])) *180/pi
+        # the intrinsic jet half opening angle cannot be more than 5deg. (e.g. Hervet 2016)
+        opening_angle = (
+            np.arctan(np.power(10, params[8]) / np.power(10, params[12])) * 180 / pi
+        )
         if opening_angle > 5:
             return -np.inf
     return 0.0
@@ -623,8 +750,8 @@ def chi_squared_Limit_to_err(P, func_nu_data, vFv_Limit_data):
     float: standard deviation to be included in a Chi2 formula
 
     """
-    Chi2 = -2*np.log(P)
-    return np.abs(func_nu_data-vFv_Limit_data)/np.sqrt(Chi2)
+    Chi2 = -2 * np.log(P)
+    return np.abs(func_nu_data - vFv_Limit_data) / np.sqrt(Chi2)
 
 
 def chi_squared_from_model(model_results, v_data, vFv_data, err_data):
@@ -648,35 +775,52 @@ def chi_squared_from_model(model_results, v_data, vFv_data, err_data):
 
     logv_all = model_results[0]
     logvFv_all = model_results[1]
-    
+
     # calculate chi-squared by plugging in the v_data_values into the interpolation
     # from v_all to vFv_all
-    func = interpolate.interp1d(logv_all, logvFv_all, fill_value='extrapolate')
+    func = interpolate.interp1d(logv_all, logvFv_all, fill_value="extrapolate")
     func_nu_data = np.power(10, func(np.log10(v_data)))
-    
+
     diff = func_nu_data - vFv_data
-    #check if model is above or below data flux points, True if above
+    # check if model is above or below data flux points, True if above
     sign = diff > 0
-    
-    #transform err_data to consider ULs (P=95% when below, P=5% when above)
+
+    # transform err_data to consider ULs (P=95% when below, P=5% when above)
     if_UL = err_data[0] == 0
     err_data[0] += if_UL * chi_squared_Limit_to_err(0.95, func_nu_data, vFv_data)
     err_data[1] += if_UL * chi_squared_Limit_to_err(0.05, func_nu_data, vFv_data)
-    #transform err_data to consider LLs (P=95% when above, P=5% when below)
+    # transform err_data to consider LLs (P=95% when above, P=5% when below)
     if_LL = err_data[0] == -1
     err_data[0] += if_LL * chi_squared_Limit_to_err(0.05, func_nu_data, vFv_data)
-    err_data[1] += if_LL * chi_squared_Limit_to_err(0.95, func_nu_data, vFv_data)    
-    
-    return np.sum((diff / (sign*err_data[1] + ~sign*err_data[0]))**2.)
+    err_data[1] += if_LL * chi_squared_Limit_to_err(0.95, func_nu_data, vFv_data)
+
+    return np.sum((diff / (sign * err_data[1] + ~sign * err_data[0])) ** 2.0)
 
 
-
-
-def chi_squared(params, v_data, vFv_data, err_data, name_stem=None, theta=None, redshift=None, min_freq=None,
-                max_freq=None, torus_temp=None, torus_luminosity=None, torus_frac=None, data_folder=None,
-                executable=None,
-                command_params_full=None, command_params_1=None, command_params_2=None, parameter_file=None,
-                prev_files=False, use_param_file=True, verbose=False, eic=False):
+def chi_squared(
+    params,
+    v_data,
+    vFv_data,
+    err_data,
+    name_stem=None,
+    theta=None,
+    redshift=None,
+    min_freq=None,
+    max_freq=None,
+    torus_temp=None,
+    torus_luminosity=None,
+    torus_frac=None,
+    data_folder=None,
+    executable=None,
+    command_params_full=None,
+    command_params_1=None,
+    command_params_2=None,
+    parameter_file=None,
+    prev_files=False,
+    use_param_file=True,
+    verbose=False,
+    eic=False,
+):
     """
     Get the chi squared value for a given set of parameters and data.
 
@@ -755,15 +899,28 @@ def chi_squared(params, v_data, vFv_data, err_data, name_stem=None, theta=None, 
         float
         The chi_squared value
     """
-    model_results = blazar_model.make_model(params, name_stem=name_stem, theta=theta, redshift=redshift,
-                                            min_freq=min_freq, max_freq=max_freq, torus_temp=torus_temp,
-                                            torus_luminosity=torus_luminosity, torus_frac=torus_frac,
-                                            data_folder=data_folder, executable=executable,
-                                            command_params_full=command_params_full, command_params_1=command_params_1,
-                                            command_params_2=command_params_2, parameter_file=parameter_file,
-                                            prev_files=prev_files, use_param_file=use_param_file, verbose=verbose,
-                                            eic=eic)
-    
+    model_results = blazar_model.make_model(
+        params,
+        name_stem=name_stem,
+        theta=theta,
+        redshift=redshift,
+        min_freq=min_freq,
+        max_freq=max_freq,
+        torus_temp=torus_temp,
+        torus_luminosity=torus_luminosity,
+        torus_frac=torus_frac,
+        data_folder=data_folder,
+        executable=executable,
+        command_params_full=command_params_full,
+        command_params_1=command_params_1,
+        command_params_2=command_params_2,
+        parameter_file=parameter_file,
+        prev_files=prev_files,
+        use_param_file=use_param_file,
+        verbose=verbose,
+        eic=eic,
+    )
+
     return chi_squared_from_model(model_results, v_data, vFv_data, err_data)
 
 
@@ -790,13 +947,36 @@ def log_prob_from_model(model_results, v_data, vFv_data, err_data):
     return -0.5 * chi_squared_from_model(model_results, v_data, vFv_data, err_data)
 
 
-def log_probability(params, v_data, vFv_data, err_data, name_stem=None, param_min_vals=None,
-                    param_max_vals=None,
-                    theta=None, redshift=None, tau_var=None, use_variability=True, min_freq=None, max_freq=None,
-                    torus_temp=None, torus_luminosity=None, torus_frac=None, data_folder=None, executable=None,
-                    command_params_full=None, command_params_1=None, command_params_2=None, unique_name=False,
-                    parameter_file=None,
-                    prev_files=False, use_param_file=True, verbose=False, eic=False, fixed_params=None):
+def log_probability(
+    params,
+    v_data,
+    vFv_data,
+    err_data,
+    name_stem=None,
+    param_min_vals=None,
+    param_max_vals=None,
+    theta=None,
+    redshift=None,
+    tau_var=None,
+    use_variability=True,
+    min_freq=None,
+    max_freq=None,
+    torus_temp=None,
+    torus_luminosity=None,
+    torus_frac=None,
+    data_folder=None,
+    executable=None,
+    command_params_full=None,
+    command_params_1=None,
+    command_params_2=None,
+    unique_name=False,
+    parameter_file=None,
+    prev_files=False,
+    use_param_file=True,
+    verbose=False,
+    eic=False,
+    fixed_params=None,
+):
     """
     This is the log_prob for the modeling (bigger = better fit).
     It returns -0.5 * the chi squared value for the v and vFv values from
@@ -891,17 +1071,24 @@ def log_probability(params, v_data, vFv_data, err_data, name_stem=None, param_mi
         float
         -0.5 * chi squared value
     """
-    #all frozen parameters need to be reimplemented for the likelihood computation
+    # all frozen parameters need to be reimplemented for the likelihood computation
     if fixed_params:
         for i in range(len(fixed_params)):
-            if fixed_params[i]!= -np.inf:
+            if fixed_params[i] != -np.inf:
                 params = np.insert(params, i, fixed_params[i])
                 param_min_vals = np.insert(param_min_vals, i, fixed_params[i])
                 param_max_vals = np.insert(param_max_vals, i, fixed_params[i])
-        
-    
-    if not np.isfinite(log_prior(params, param_min_vals, param_max_vals, redshift=redshift, tau_var=tau_var,
-                                 use_variability=use_variability)):
+
+    if not np.isfinite(
+        log_prior(
+            params,
+            param_min_vals,
+            param_max_vals,
+            redshift=redshift,
+            tau_var=tau_var,
+            use_variability=use_variability,
+        )
+    ):
         return -np.inf
     # not infinite
     if name_stem is None:
@@ -912,14 +1099,30 @@ def log_probability(params, v_data, vFv_data, err_data, name_stem=None, param_mi
         parameter_file = PARAMETER_FOLDER + "/" + name_stem + ".txt"
     if command_params_2 is not None:
         command_params_2[-1] = name_stem  # change the file stem
-    result = -0.5 * chi_squared(params, v_data, vFv_data, err_data, name_stem=name_stem, theta=theta,
-                                redshift=redshift, min_freq=min_freq,
-                                max_freq=max_freq, torus_temp=torus_temp, torus_luminosity=torus_luminosity,
-                                torus_frac=torus_frac, data_folder=data_folder, executable=executable,
-                                command_params_full=command_params_full,
-                                command_params_1=command_params_1, command_params_2=command_params_2,
-                                parameter_file=parameter_file, prev_files=prev_files, use_param_file=use_param_file,
-                                verbose=verbose, eic=eic)
+    result = -0.5 * chi_squared(
+        params,
+        v_data,
+        vFv_data,
+        err_data,
+        name_stem=name_stem,
+        theta=theta,
+        redshift=redshift,
+        min_freq=min_freq,
+        max_freq=max_freq,
+        torus_temp=torus_temp,
+        torus_luminosity=torus_luminosity,
+        torus_frac=torus_frac,
+        data_folder=data_folder,
+        executable=executable,
+        command_params_full=command_params_full,
+        command_params_1=command_params_1,
+        command_params_2=command_params_2,
+        parameter_file=parameter_file,
+        prev_files=prev_files,
+        use_param_file=use_param_file,
+        verbose=verbose,
+        eic=eic,
+    )
     if use_param_file:
         os.remove(parameter_file)
 

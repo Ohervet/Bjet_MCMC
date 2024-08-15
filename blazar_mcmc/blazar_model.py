@@ -52,9 +52,27 @@ from scipy import interpolate
 from blazar_properties import *
 
 
-def make_SED(params, name_stem=None, theta=None, redshift=None, min_freq=None, max_freq=None, torus_temp=None,
-             torus_luminosity=None, torus_frac=None, data_folder=None, executable=None, command_params_full=None,
-             command_params_1=None, command_params_2=None, prev_files=False, verbose=False, eic=False, folder=None):
+
+def make_SED(
+    params,
+    name_stem=None,
+    theta=None,
+    redshift=None,
+    min_freq=None,
+    max_freq=None,
+    torus_temp=None,
+    torus_luminosity=None,
+    torus_frac=None,
+    data_folder=None,
+    executable=None,
+    command_params_full=None,
+    command_params_1=None,
+    command_params_2=None,
+    prev_files=False,
+    verbose=False,
+    eic=False,
+    folder=None,
+):
     """
     Arguments:
         params: 1D np array of NUM_DIM floats
@@ -109,16 +127,26 @@ def make_SED(params, name_stem=None, theta=None, redshift=None, min_freq=None, m
         executable = CPP_FOLDER + "/" + EXECUTABLE
 
     if command_params_full is None:
-        params = params_log_to_linear(params, param_is_log=modelProperties(eic).PARAM_IS_LOG)
+        params = params_log_to_linear(
+            params, param_is_log=modelProperties(eic).PARAM_IS_LOG
+        )
         # if substrings are not provided
         if command_params_1 is None or command_params_2 is None:
-            command_params_1, command_params_2 = command_line_sub_strings(name_stem=name_stem, theta=theta,
-                                                                          redshift=redshift, min_freq=min_freq,
-                                                                          max_freq=max_freq, data_folder=data_folder,
-                                                                          prev_files=prev_files, eic=eic)
+            command_params_1, command_params_2 = command_line_sub_strings(
+                name_stem=name_stem,
+                theta=theta,
+                redshift=redshift,
+                min_freq=min_freq,
+                max_freq=max_freq,
+                data_folder=data_folder,
+                prev_files=prev_files,
+                eic=eic,
+            )
         # now create the params from the substrings
         if not eic:
-            command_params_full = command_params_1 + [str(val) for val in params] + command_params_2
+            command_params_full = (
+                command_params_1 + [str(val) for val in params] + command_params_2
+            )
         else:
             if torus_temp is None:
                 torus_temp = "2.0e+4"
@@ -134,32 +162,55 @@ def make_SED(params, name_stem=None, theta=None, redshift=None, min_freq=None, m
                 torus_frac = str(torus_frac)
 
             # this gives you the settings commands (command_params_1), the initial 9 parameters + length of emitting region (spherical) + absorption by EBL = yes, blob distance
-            command_params_full = command_params_1 + [str(val) for val in params[:9]] + command_params_2[:2] + [
-                str(params[-1])]
+            command_params_full = (
+                command_params_1
+                + [str(val) for val in params[:9]]
+                + command_params_2[:2]
+                + [str(params[-1])]
+            )
             # add eic parameter values
-            command_params_full = command_params_full + [str(params[9]), torus_temp, str(params[10]), str(params[11]),
-                                                         torus_luminosity, torus_frac]
-            
+            command_params_full = command_params_full + [
+                str(params[9]),
+                torus_temp,
+                str(params[10]),
+                str(params[11]),
+                torus_luminosity,
+                torus_frac,
+            ]
+
             # add numerical params (min/max freq, number of pts)
             command_params_full = command_params_full + command_params_2[3:]
 
     # command_params_full have been set now
 
     if not verbose:
-        subprocess.run([BASE_PATH + executable, *command_params_full], stderr=open(os.devnull, 'wb'),
-                       stdout=open(os.devnull, 'wb'))
+        subprocess.run(
+            [BASE_PATH + executable, *command_params_full],
+            stderr=open(os.devnull, "wb"),
+            stdout=open(os.devnull, "wb"),
+        )
     else:
-        result = subprocess.run([BASE_PATH + executable, *command_params_full],  capture_output = True, text = True)
+        result = subprocess.run(
+            [BASE_PATH + executable, *command_params_full],
+            capture_output=True,
+            text=True,
+        )
         print("params", params)
         print(command_params_full)
-        
-        #write log file and print
+
+        # write log file and print
         print(result.stderr)
-        with open(FOLDER_PATH + folder + "/bjet.log", 'w') as f:
+        with open(FOLDER_PATH + folder + "/bjet.log", "w") as f:
             f.write(result.stderr)
 
 
-def file_make_SED(parameter_file=None, data_folder=None, executable=None, prev_files=False, verbose=False):
+def file_make_SED(
+    parameter_file=None,
+    data_folder=None,
+    executable=None,
+    prev_files=False,
+    verbose=False,
+):
     """
     Calls the C++ code to generate the SED.
     Compton model data is saved to <home directory>/DATA_FOLDER/<file prefix>_cs.dat
@@ -195,14 +246,25 @@ def file_make_SED(parameter_file=None, data_folder=None, executable=None, prev_f
     # input mode, data file
     settings_params = [p, BASE_PATH + data_folder]
     if verbose:
-        subprocess.run([BASE_PATH + executable, *settings_params, BASE_PATH + parameter_file])
+        subprocess.run(
+            [BASE_PATH + executable, *settings_params, BASE_PATH + parameter_file]
+        )
     else:
-        subprocess.run([BASE_PATH + executable, *settings_params, BASE_PATH + parameter_file],
-                       stderr=open(os.devnull, 'wb'),
-                       stdout=open(os.devnull, 'wb'))
+        subprocess.run(
+            [BASE_PATH + executable, *settings_params, BASE_PATH + parameter_file],
+            stderr=open(os.devnull, "wb"),
+            stdout=open(os.devnull, "wb"),
+        )
 
 
-def add_data(current_data, new_data=None, file_suffix=None, name_stem=None, data_folder=None, cols=(0, 2)):
+def add_data(
+    current_data,
+    new_data=None,
+    file_suffix=None,
+    name_stem=None,
+    data_folder=None,
+    cols=(0, 2),
+):
     if name_stem is None:
         name_stem = NAME_STEM
     if data_folder is None:
@@ -213,11 +275,21 @@ def add_data(current_data, new_data=None, file_suffix=None, name_stem=None, data
         model_logv, model_logvFv, model_v, model_vFv = new_data
     elif file_suffix is not None:
         try:
-            model_data = np.loadtxt(BASE_PATH + data_folder + "/" + name_stem + "_" + file_suffix + ".dat",
-                                    delimiter=' ')
+            model_data = np.loadtxt(
+                BASE_PATH + data_folder + "/" + name_stem + "_" + file_suffix + ".dat",
+                delimiter=" ",
+            )
         except IOError:
             raise IOError(
-                "add_data: " + BASE_PATH + data_folder + "/" + name_stem + "_" + file_suffix + ".dat cannot be read")
+                "add_data: "
+                + BASE_PATH
+                + data_folder
+                + "/"
+                + name_stem
+                + "_"
+                + file_suffix
+                + ".dat cannot be read"
+            )
 
         if name_stem == "F_jet":
             model_logv = model_data[:, 3]
@@ -237,7 +309,9 @@ def add_data(current_data, new_data=None, file_suffix=None, name_stem=None, data
     new_higher = np.where(model_logv > current_logv[-1])[0]
 
     logv = np.concatenate((model_logv[new_lower], current_logv, model_logv[new_higher]))
-    logvFv = np.concatenate((model_logvFv[new_lower], current_logvFv, model_logvFv[new_higher]))
+    logvFv = np.concatenate(
+        (model_logvFv[new_lower], current_logvFv, model_logvFv[new_higher])
+    )
     vFv = np.power(10, logvFv)
 
     overlap_start = np.where(logv >= max(model_logv[0], current_logv[0]))[0][0]
@@ -245,8 +319,13 @@ def add_data(current_data, new_data=None, file_suffix=None, name_stem=None, data
 
     interpolation = interpolate.interp1d(model_logv, model_vFv)
 
-    new_vFv = np.concatenate((np.zeros(overlap_start), interpolation(logv[overlap_start:overlap_end + 1]),
-                              np.zeros(len(logv) - overlap_end - 1)))
+    new_vFv = np.concatenate(
+        (
+            np.zeros(overlap_start),
+            interpolation(logv[overlap_start : overlap_end + 1]),
+            np.zeros(len(logv) - overlap_end - 1),
+        )
+    )
 
     vFv = vFv + new_vFv
     logvFv = np.log10(vFv)
@@ -254,7 +333,9 @@ def add_data(current_data, new_data=None, file_suffix=None, name_stem=None, data
     return logv, logvFv, v, vFv
 
 
-def process_model(name_stem=None, data_folder=None, verbose=False, eic=False, additional_suffixes=None):
+def process_model(
+    name_stem=None, data_folder=None, verbose=False, eic=False, additional_suffixes=None
+):
     """
     Read a model from data files and returns arrays of frequencies and
         energy flux.
@@ -305,9 +386,18 @@ def process_model(name_stem=None, data_folder=None, verbose=False, eic=False, ad
     # model.
     # Data is read into a numpy 2D array
     try:
-        synchrotron_model = np.loadtxt(BASE_PATH + data_folder + "/" + name_stem + "_ss.dat", delimiter=' ')
+        synchrotron_model = np.loadtxt(
+            BASE_PATH + data_folder + "/" + name_stem + "_ss.dat", delimiter=" "
+        )
     except IOError:
-        raise IOError("process_model: " + BASE_PATH + data_folder + "/" + name_stem + "_*.dat cannot be read")
+        raise IOError(
+            "process_model: "
+            + BASE_PATH
+            + data_folder
+            + "/"
+            + name_stem
+            + "_*.dat cannot be read"
+        )
 
     # extract data used - only use frequency and energy flux, which are the 1st
     # and 3rd columns
@@ -316,31 +406,62 @@ def process_model(name_stem=None, data_folder=None, verbose=False, eic=False, ad
     v_synchrotron = np.power(10, logv_synchrotron)
     vFv_synchrotron = np.power(10, logvFv_synchrotron)
 
-    logv, logvFv, v, vFv = add_data((logv_synchrotron, logvFv_synchrotron, v_synchrotron, vFv_synchrotron),
-                                    file_suffix='cs', name_stem=name_stem, data_folder=data_folder)
-    logv, logvFv, v, vFv = add_data((logv, logvFv, v, vFv), file_suffix='cs2', name_stem=name_stem,
-                                    data_folder=data_folder)
+    logv, logvFv, v, vFv = add_data(
+        (logv_synchrotron, logvFv_synchrotron, v_synchrotron, vFv_synchrotron),
+        file_suffix="cs",
+        name_stem=name_stem,
+        data_folder=data_folder,
+    )
+    logv, logvFv, v, vFv = add_data(
+        (logv, logvFv, v, vFv),
+        file_suffix="cs2",
+        name_stem=name_stem,
+        data_folder=data_folder,
+    )
     # Total energy flux is determined by summing the flux from the compton and
     # synchrotron models.
 
     if eic:
         if additional_suffixes is None:
-            additional_suffixes = ['ecs', 'nuc']
+            additional_suffixes = ["ecs", "nuc"]
         if verbose:
             print("process_model EIC mode: ss cs", *additional_suffixes, "read")
         for s in additional_suffixes:
-            logv, logvFv, v, vFv = add_data((logv, logvFv, v, vFv), file_suffix=s, name_stem=name_stem,
-                                            data_folder=data_folder)
+            logv, logvFv, v, vFv = add_data(
+                (logv, logvFv, v, vFv),
+                file_suffix=s,
+                name_stem=name_stem,
+                data_folder=data_folder,
+            )
     elif verbose:
         print("process_model SSC mode")
 
     return logv, logvFv, v, vFv
 
 
-def make_model(params, name_stem=None, theta=None, redshift=None, min_freq=None, max_freq=None, torus_temp=None,
-               torus_luminosity=None, torus_frac=None, data_folder=None, executable=None, command_params_full=None,
-               command_params_1=None, command_params_2=None, parameter_file=None, prev_files=False,
-               use_param_file=False, verbose=False, eic=False, fixed_params=None, folder=None):
+def make_model(
+    params,
+    name_stem=None,
+    theta=None,
+    redshift=None,
+    min_freq=None,
+    max_freq=None,
+    torus_temp=None,
+    torus_luminosity=None,
+    torus_frac=None,
+    data_folder=None,
+    executable=None,
+    command_params_full=None,
+    command_params_1=None,
+    command_params_2=None,
+    parameter_file=None,
+    prev_files=False,
+    use_param_file=False,
+    verbose=False,
+    eic=False,
+    fixed_params=None,
+    folder=None,
+):
     """
     Given parameters, returns v and vFv for the corresponding model.
 
@@ -381,22 +502,54 @@ def make_model(params, name_stem=None, theta=None, redshift=None, min_freq=None,
     if use_param_file:
         if eic:
             raise ValueError("EIC mode cannot be used with parameter file")
-        create_params_file(params, name_stem, parameter_file, theta=theta, redshift=redshift, min_freq=min_freq,
-                           max_freq=max_freq, verbose=verbose)
-    #reimplement fixed parameters for the model computation
+        create_params_file(
+            params,
+            name_stem,
+            parameter_file,
+            theta=theta,
+            redshift=redshift,
+            min_freq=min_freq,
+            max_freq=max_freq,
+            verbose=verbose,
+        )
+    # reimplement fixed parameters for the model computation
     if fixed_params:
         for i in range(len(fixed_params)):
-            if fixed_params[i]!= -np.inf:
+            if fixed_params[i] != -np.inf:
                 params = np.insert(params, i, fixed_params[i])
-    make_SED(params, name_stem=name_stem, theta=theta, redshift=redshift, min_freq=min_freq, max_freq=max_freq,
-             torus_temp=torus_temp, torus_luminosity=torus_luminosity, torus_frac=torus_frac, data_folder=data_folder,
-             executable=executable, command_params_full=command_params_full, command_params_1=command_params_1,
-             command_params_2=command_params_2, prev_files=prev_files, verbose=verbose, eic=eic, folder=folder)
+    make_SED(
+        params,
+        name_stem=name_stem,
+        theta=theta,
+        redshift=redshift,
+        min_freq=min_freq,
+        max_freq=max_freq,
+        torus_temp=torus_temp,
+        torus_luminosity=torus_luminosity,
+        torus_frac=torus_frac,
+        data_folder=data_folder,
+        executable=executable,
+        command_params_full=command_params_full,
+        command_params_1=command_params_1,
+        command_params_2=command_params_2,
+        prev_files=prev_files,
+        verbose=verbose,
+        eic=eic,
+        folder=folder,
+    )
     return process_model(name_stem=name_stem, data_folder=data_folder, eic=eic)
 
 
-def command_line_sub_strings(name_stem=None, theta=None, redshift=None, min_freq=None, max_freq=None, data_folder=None,
-                             prev_files=False, eic=False):
+def command_line_sub_strings(
+    name_stem=None,
+    theta=None,
+    redshift=None,
+    min_freq=None,
+    max_freq=None,
+    data_folder=None,
+    prev_files=False,
+    eic=False,
+):
     if name_stem is None:
         name_stem = NAME_STEM
     if theta is None:
@@ -405,9 +558,9 @@ def command_line_sub_strings(name_stem=None, theta=None, redshift=None, min_freq
         print("here in command_line_sub_strings")
         pass
     if min_freq is None:
-        min_freq = 1.0e+08
+        min_freq = 1.0e08
     if max_freq is None:
-        max_freq = 1.0e+28
+        max_freq = 1.0e28
     if data_folder is None:
         data_folder = DATA_FOLDER
     if prev_files:
@@ -420,16 +573,39 @@ def command_line_sub_strings(name_stem=None, theta=None, redshift=None, min_freq
         model_type = "1"
     else:
         model_type = "0"
-    settings_and_transformation = [p, BASE_PATH + data_folder, model_type, str(redshift), "69.6", str(theta)]
+    settings_and_transformation = [
+        p,
+        BASE_PATH + data_folder,
+        model_type,
+        str(redshift),
+        "69.6",
+        str(theta),
+    ]
 
     # length of emitting region, absorption by EBL, distance of blob (host galaxy frame)
     # number of spectral points, minimal frequency, maximal frequency, file name prefix
-    constant_and_numerical = ["0", "1", "9.0e+17", "99", str(min_freq), str(max_freq), name_stem]
+    constant_and_numerical = [
+        "0",
+        "1",
+        "9.0e+17",
+        "99",
+        str(min_freq),
+        str(max_freq),
+        name_stem,
+    ]
     return settings_and_transformation, constant_and_numerical
 
 
-def create_params_file(params, name_stem=None, parameter_file=None, theta=None, redshift=None,
-                       min_freq=None, max_freq=None, verbose=False):
+def create_params_file(
+    params,
+    name_stem=None,
+    parameter_file=None,
+    theta=None,
+    redshift=None,
+    min_freq=None,
+    max_freq=None,
+    verbose=False,
+):
     """
     NOTE: Cannot be used with EIC
     Given parameters and a file, put the data in the file in the format
@@ -471,15 +647,24 @@ def create_params_file(params, name_stem=None, parameter_file=None, theta=None, 
     if redshift is None:
         redshift = 0.143
     if min_freq is None:
-        min_freq = 5.0e+7
+        min_freq = 5.0e7
     if max_freq is None:
-        max_freq = 1.0e+29
+        max_freq = 1.0e29
     if verbose:
         print(params)
 
     # Set parameters from list, convert those in log space to linear space
-    doppler_param, K_param, n1_param, n2_param, gamma_min_param, gamma_max_param, gamma_break_param, B_param, R_param = params_log_to_linear(
-        params, eic=False)
+    (
+        doppler_param,
+        K_param,
+        n1_param,
+        n2_param,
+        gamma_min_param,
+        gamma_max_param,
+        gamma_break_param,
+        B_param,
+        R_param,
+    ) = params_log_to_linear(params, eic=False)
 
     if verbose:
         print("z (fixed) =", redshift)
@@ -498,61 +683,136 @@ def create_params_file(params, name_stem=None, parameter_file=None, theta=None, 
     # into the given address for parameter_files
     try:
         with open(BASE_PATH + parameter_file, "w") as file:
-            file.write("------------------------------------------------------------------------------ \n")
+            file.write(
+                "------------------------------------------------------------------------------ \n"
+            )
             file.write("Transformation_parameters \n")
-            file.write("------------------------------------------------------------------------------ \n")
+            file.write(
+                "------------------------------------------------------------------------------ \n"
+            )
             file.write(str(redshift) + "          redshift \n")
-            file.write("69.6           Hubble_constant______________________________________[km/(sMpc)] \n")
-            file.write(str(theta) + "            angle_to_the_line_of_sight___________________________[degrees] \n")
-            file.write("------------------------------------------------------------------------------ \n")
+            file.write(
+                "69.6           Hubble_constant______________________________________[km/(sMpc)] \n"
+            )
+            file.write(
+                str(theta)
+                + "            angle_to_the_line_of_sight___________________________[degrees] \n"
+            )
+            file.write(
+                "------------------------------------------------------------------------------ \n"
+            )
             file.write("Blob_parameters \n")
-            file.write("------------------------------------------------------------------------------ \n")
+            file.write(
+                "------------------------------------------------------------------------------ \n"
+            )
             file.write(str(doppler_param) + "             Doppler_factor \n")
-            file.write(str(K_param) + "        Particle_density_____________________________________[1/cm^3] \n")
-            file.write(str(n1_param) + "            First_slope_of_particle_energy_spectrum \n")
-            file.write(str(n2_param) + "            Second_slope_of_particle_energy_spectrum \n")
+            file.write(
+                str(K_param)
+                + "        Particle_density_____________________________________[1/cm^3] \n"
+            )
+            file.write(
+                str(n1_param) + "            First_slope_of_particle_energy_spectrum \n"
+            )
+            file.write(
+                str(n2_param)
+                + "            Second_slope_of_particle_energy_spectrum \n"
+            )
             file.write(str(gamma_min_param) + "            Minimum_electrons_energy \n")
             file.write(str(gamma_max_param) + "          Maximum_electrons_energy \n")
-            file.write(str(gamma_break_param) + "        Break_in_electrons_energy_spectrum \n")
-            file.write(str(B_param) + "            Magnetic_field_______________________________________[G] \n")
-            file.write(str(R_param) + "        Radius_of_emitting_region____________________________[cm] \n")
-            file.write("0              length_of_emitting_region_(0_for_spherical_geometry)_[cm] \n")
+            file.write(
+                str(gamma_break_param) + "        Break_in_electrons_energy_spectrum \n"
+            )
+            file.write(
+                str(B_param)
+                + "            Magnetic_field_______________________________________[G] \n"
+            )
+            file.write(
+                str(R_param)
+                + "        Radius_of_emitting_region____________________________[cm] \n"
+            )
+            file.write(
+                "0              length_of_emitting_region_(0_for_spherical_geometry)_[cm] \n"
+            )
             file.write("1              absorption_by_EBL_(0=NO___1=YES) \n")
-            file.write("9.0e+17        distance_blob_SMBH_(host_galaxy_frame)_______________[cm] \n")
-            file.write("------------------------------------------------------------------------------ \n")
+            file.write(
+                "9.0e+17        distance_blob_SMBH_(host_galaxy_frame)_______________[cm] \n"
+            )
+            file.write(
+                "------------------------------------------------------------------------------ \n"
+            )
             file.write("Extern_Inverse_Compton_parameter \n")
-            file.write("------------------------------------------------------------------------------ \n")
+            file.write(
+                "------------------------------------------------------------------------------ \n"
+            )
             file.write("0              compute_EIC_(0=NO___1=YES) \n")
             file.write("0              compute_X_corona_(0=NO___1=YES) \n")
-            file.write("4.0e+4         Disk_black_body_temperature__________________________[K] \n")
-            file.write("2.0e+4         Torus_black_body_temperature_________________________[K] \n")
-            file.write("3.0e+43        Luminosity_of_the_disk_______________________________[erg/s] \n")
-            file.write("9.0e-5         Tau___fraction_of_L_disk_reprocessed_isotropically \n")
-            file.write("5.5e+20        Luminosity_of_the_torus______________________________[erg/s] \n")
-            file.write("9.0e-5         Tau___fraction_of_L_tor_reprocessed_isotropically \n")
-            file.write("------------------------------------------------------------------------------ \n")
+            file.write(
+                "4.0e+4         Disk_black_body_temperature__________________________[K] \n"
+            )
+            file.write(
+                "2.0e+4         Torus_black_body_temperature_________________________[K] \n"
+            )
+            file.write(
+                "3.0e+43        Luminosity_of_the_disk_______________________________[erg/s] \n"
+            )
+            file.write(
+                "9.0e-5         Tau___fraction_of_L_disk_reprocessed_isotropically \n"
+            )
+            file.write(
+                "5.5e+20        Luminosity_of_the_torus______________________________[erg/s] \n"
+            )
+            file.write(
+                "9.0e-5         Tau___fraction_of_L_tor_reprocessed_isotropically \n"
+            )
+            file.write(
+                "------------------------------------------------------------------------------ \n"
+            )
             file.write("Jet_parameters  \n")
-            file.write("------------------------------------------------------------------------------ \n")
+            file.write(
+                "------------------------------------------------------------------------------ \n"
+            )
             file.write("0              compute_JET_(0=NO___1=YES) \n")
             file.write("3.0            Doppler_factor \n")
-            file.write("1.0e+2         Initial_particle_density_____________________________[1/cm^3] \n")
+            file.write(
+                "1.0e+2         Initial_particle_density_____________________________[1/cm^3] \n"
+            )
             file.write("2.1            Slope_of_particle_energy_spectrum \n")
             file.write("1.0e+3         Minimum_electrons_energy \n")
             file.write("2.0e+4         Maximum_electrons_energy \n")
-            file.write("0.08           Initial_magnetic_field_______________________________[G] \n")
-            file.write("1.2e+17        Inner_radius_(host_galaxy_frame)_____________________[cm] \n")
-            file.write("300            Jet_length_(host_galaxy_frame)_______________________[pc] \n")
-            file.write("1.0            Half-opening_angle_of_jet_(host_galaxy_frame)________[deg] \n")
+            file.write(
+                "0.08           Initial_magnetic_field_______________________________[G] \n"
+            )
+            file.write(
+                "1.2e+17        Inner_radius_(host_galaxy_frame)_____________________[cm] \n"
+            )
+            file.write(
+                "300            Jet_length_(host_galaxy_frame)_______________________[pc] \n"
+            )
+            file.write(
+                "1.0            Half-opening_angle_of_jet_(host_galaxy_frame)________[deg] \n"
+            )
             file.write("50             number_of_slices \n")
-            file.write("------------------------------------------------------------------------------ \n")
+            file.write(
+                "------------------------------------------------------------------------------ \n"
+            )
             file.write("Numerical_parameters \n")
-            file.write("------------------------------------------------------------------------------ \n")
+            file.write(
+                "------------------------------------------------------------------------------ \n"
+            )
             file.write("99             number_of_spectral_points \n")
-            file.write(str(min_freq) + "        minimal_frequency____________________________________[Hz] \n")
-            file.write(str(max_freq) + "        maximal_frequency____________________________________[Hz] \n")
+            file.write(
+                str(min_freq)
+                + "        minimal_frequency____________________________________[Hz] \n"
+            )
+            file.write(
+                str(max_freq)
+                + "        maximal_frequency____________________________________[Hz] \n"
+            )
             file.write(name_stem + "        prefix_of_file_names \n")
     except IOError:
-        raise IOError("create_params_file: " + parameter_file + " could not be written to")
+        raise IOError(
+            "create_params_file: " + parameter_file + " could not be written to"
+        )
 
 
 def params_log_to_linear(params, param_is_log=None, eic=False):
