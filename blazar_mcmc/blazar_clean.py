@@ -8,7 +8,9 @@ params.txt.
 """
 import os
 
-from blazar_properties import *
+from blazar_mcmc.blazar_properties import *
+
+__all__ = ["blazar_clean"]
 
 
 def clean(data=True, data_folder=None, parameter_files=True, parameter_folder=None):

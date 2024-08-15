@@ -19,7 +19,10 @@ import blazar_model
 import blazar_report
 import blazar_utils
 import blazar_plots
-from blazar_properties import *
+from blazar_mcmc.blazar_properties import *
+
+__all__ = ["e_to_v", "v_to_e"]
+
 cmap = plt.get_cmap("tab10")
 filled_markers = ("o", "^", "<", ">", "8", "s", "p", "*", "h", "H", "D", "d", "P", "X")
 marker_size = 4

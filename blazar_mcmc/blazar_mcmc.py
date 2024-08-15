@@ -4,9 +4,9 @@ import shutil
 
 import emcee
 
-import blazar_utils
-import blazar_report
-import blazar_properties
+from blazar_mcmc import blazar_utils
+from blazar_mcmc import blazar_report
+from blazar_mcmc import blazar_properties
 
 import glob
 import numpy as np
@@ -15,6 +15,33 @@ import subprocess
 import os
 import random
 from scipy import interpolate
+
+__all__ = [
+    "PROGRAM_NAME",
+    "RESULTS_FOLDER",
+    "DATA_FOLDER",
+    "EXECUTABLE",
+    "BASE_PATH",
+    "configs",
+    "EIC",
+    "DIM",
+    "redshift",
+    "use_variability",
+    "tau",
+    "alpha2_limits",
+    "model_type",
+    "settings_and_transformation",
+    "constant_and_numerical",
+    "param_min_vals",
+    "param_max_vals",
+    "param_min_vals",
+    "param_max_vals",
+    "make_model",
+    "log_prior",
+    "random_params",
+    "log_prob",
+    "mcmc",
+]
 
 PROGRAM_NAME = "Bjet_MCMC"
 RESULTS_FOLDER = "local_results"

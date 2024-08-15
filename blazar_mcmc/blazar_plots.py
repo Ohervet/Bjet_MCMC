@@ -35,9 +35,33 @@ from matplotlib import pyplot as plt
 from scipy import interpolate
 from scipy import stats
 
-import blazar_model
-from blazar_properties import *
-import blazar_utils
+from blazar_mcmc import blazar_model
+from blazar_mcmc.blazar_properties import *
+from blazar_mcmc import blazar_utils
+
+__all__ = [
+    "cooling_time_Thomson",
+    "corner_plot",
+    "get_min_max_per_point",
+    "get_params_1sigma_ranges",
+    "N_e_BknPowLaw",
+    "plot_1sigma",
+    "plot_1sigma_plots",
+    "plot_chain",
+    "plot_chi_squared",
+    "plot_cooling_times",
+    "plot_data",
+    "plot_likelihood_profiles",
+    "plot_model",
+    "plot_model_and_data",
+    "plot_particle_spectrum",
+    "residual_plot",
+    "scale_to_values",
+    "sig_T",
+    "m_e",
+    "c",
+]
+
 cmap = plt.get_cmap("tab10")
 image_type = "svg"
 plt.ioff()

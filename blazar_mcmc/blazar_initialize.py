@@ -25,8 +25,9 @@ import os
 import shutil
 import subprocess
 
-from blazar_properties import *
+from blazar_mcmc.blazar_properties import *
 
+__all__ = ["make_dirs", "compile_bjet", "initialize"]
 
 
 def make_dirs(

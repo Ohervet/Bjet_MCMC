@@ -118,8 +118,25 @@ import re
 import numpy as np
 from scipy import interpolate
 from astropy.io import ascii
-import blazar_model
-from blazar_properties import *
+from blazar_mcmc import blazar_model
+from blazar_mcmc.blazar_properties import *
+
+__all__ = [
+    "chi_squared",
+    "chi_squared_from_model",
+    "chi_squared_Limit_to_err",
+    "e_to_v",
+    "get_random_parameters",
+    "log_prior",
+    "log_prob_from_model",
+    "log_probability",
+    "min_max_parameters",
+    "random_defaults",
+    "random_eic_from_std",
+    "read_configs",
+    "read_data",
+    "v_to_e",
+]
 
 # ev Hz conversion
 h = 4.135667662e-15
