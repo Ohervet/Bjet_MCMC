@@ -1,0 +1,23 @@
+[project]
+name = "blazar_mcmc"
+version = "1.0.0"
+description = "BJet-MCMC Python module"
+readme = "README.md"
+classifiers = ["Programming Language :: Python :: 3",
+    "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+    "Operating System :: Unix", ]
+
+[project.urls]
+Homepage = "https://bjet-mcmc.readthedocs.io/en/latest/"
+Issues = "https://github.com/Ohervet/Bjet_MCMC/issues"
+
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["blazar_mcmc","bj_core"]
+
+[tool.setuptools.package-data]
+blazar_mcmc = ["*.sh"]
+bjet_core = ["*.txt","*.i"]
