@@ -15,11 +15,11 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy import interpolate
 
-import blazar_model
-import blazar_report
-import blazar_utils
-import blazar_plots
-from blazar_mcmc.blazar_properties import *
+from bjet_mcmc import blazar_model
+from bjet_mcmc import blazar_report
+from bjet_mcmc import blazar_utils
+from bjet_mcmc import blazar_plots
+from bjet_mcmc.blazar_properties import *
 
 __all__ = ["e_to_v", "v_to_e"]
 

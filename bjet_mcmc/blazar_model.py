@@ -44,11 +44,12 @@ add_data(current_data, new_data=None, file_suffix=None, name_stem=None, data_fol
 FUNCTIONS
 """
 import os
+import subprocess
 
 import numpy as np
 from scipy import interpolate
 
-from blazar_mcmc.blazar_properties import *
+from bjet_mcmc.blazar_properties import *
 from bjet_core import bj_core
 
 __all__ = [

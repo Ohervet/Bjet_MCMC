@@ -47,13 +47,13 @@ import shutil
 import numpy as np
 import emcee
 
-from blazar_mcmc import blazar_model
-from blazar_mcmc import blazar_report
-from blazar_mcmc import blazar_utils
-from blazar_mcmc import blazar_clean
-from blazar_mcmc import blazar_initialize
+from bjet_mcmc import blazar_model
+from bjet_mcmc import blazar_report
+from bjet_mcmc import blazar_utils
+from bjet_mcmc import blazar_clean
+from bjet_mcmc import blazar_initialize
 
-from blazar_mcmc.blazar_properties import *
+from bjet_mcmc.blazar_properties import *
 
 __all__ = ["run_mcmc", "mcmc"]
 

@@ -35,9 +35,9 @@ from matplotlib import pyplot as plt
 from scipy import interpolate
 from scipy import stats
 
-from blazar_mcmc import blazar_model
-from blazar_mcmc.blazar_properties import *
-from blazar_mcmc import blazar_utils
+from bjet_mcmc import blazar_model
+from bjet_mcmc.blazar_properties import *
+from bjet_mcmc import blazar_utils
 
 __all__ = [
     "cooling_time_Thomson",

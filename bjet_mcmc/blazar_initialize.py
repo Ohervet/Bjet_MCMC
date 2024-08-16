@@ -25,7 +25,7 @@ import os
 import shutil
 import subprocess
 
-from blazar_mcmc.blazar_properties import *
+from bjet_mcmc.blazar_properties import *
 
 __all__ = ["make_dirs", "compile_bjet", "initialize"]
 
@@ -78,7 +78,7 @@ def initialize(
     parameter_file=False,
     bjet_folder=None,
     executable=None,
-    run_compile=False,
+    run_compile=True,
 ):
     make_dirs(
         data_folder=data_folder,

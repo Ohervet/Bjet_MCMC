@@ -6,14 +6,15 @@ import shutil
 
 import emcee
 
-from blazar_mcmc import blazar_utils
-from blazar_mcmc import blazar_report
-from blazar_mcmc import blazar_properties
+from bjet_mcmc import blazar_utils
+from bjet_mcmc import blazar_report
+from bjet_mcmc import blazar_properties
 from bjet_core import bj_core
 
 import glob
 import numpy as np
 import pathlib
+import subprocess
 import os
 import random
 from scipy import interpolate

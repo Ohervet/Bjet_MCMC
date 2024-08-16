@@ -37,10 +37,10 @@ __all__ = [
     "SSC_PARAM_IS_LOG",
 ]
 
-# PROGRAM_NAME = "/blazar_mcmc"
+PROGRAM_NAME = "/bjet_mcmc"
 TMP = False
 INITIALIZE = False
-MAIN_FOLDER = "blazars-mcmc"
+MAIN_FOLDER = "bjet_mcmc"
 DATA_FOLDER = "sed_calculations"
 RESULTS_FOLDER = "local_results"
 PARAMETER_FOLDER = "parameter_files"
@@ -190,14 +190,13 @@ def modelProperties(is_eic=False, fixed_params=None):
 # TODO Implement a different scheme for saving output files. Do not place in program install location but in a user
 #  defined analysis directory.
 def _get_path():
-    return f"{os.environ['HOME']}/Documents/"
-
-    # base_path = str(os.path.dirname(__file__))
-    # # base_path = str(pathlib.Path().resolve())
-    # stop = base_path.find(PROGRAM_NAME)
-    # if stop == -1:
-    #     raise Exception(PROGRAM_NAME + " is not in file path")
-    # return base_path[: -len(MAIN_FOLDER)] + "/"
+    base_path = str(os.path.dirname(__file__))
+    base_path = f"{base_path[: base_path.find('Bjet_MCMC')]}Bjet_MCMC/bjet_mcmc"
+    # base_path = str(pathlib.Path().resolve())
+    stop = base_path.find(PROGRAM_NAME)
+    if stop == -1:
+        raise Exception(PROGRAM_NAME + " is not in file path")
+    return base_path[: -len(MAIN_FOLDER)] + "/"
 
 
 if TMP:

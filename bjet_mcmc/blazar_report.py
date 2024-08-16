@@ -40,10 +40,10 @@ import emcee
 import numpy as np
 from scipy import stats
 
-from blazar_mcmc import blazar_model
-from blazar_mcmc import blazar_plots
-from blazar_mcmc import blazar_utils
-from blazar_mcmc.blazar_properties import *
+from bjet_mcmc import blazar_model
+from bjet_mcmc import blazar_plots
+from bjet_mcmc import blazar_utils
+from bjet_mcmc.blazar_properties import *
 
 __all__ = [
     "get_best_log_prob_and_params",

@@ -118,8 +118,8 @@ import re
 import numpy as np
 from scipy import interpolate
 from astropy.io import ascii
-from blazar_mcmc import blazar_model
-from blazar_mcmc.blazar_properties import *
+from bjet_mcmc import blazar_model
+from bjet_mcmc.blazar_properties import *
 
 __all__ = [
     "chi_squared",

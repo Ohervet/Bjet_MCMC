@@ -8,7 +8,7 @@ params.txt.
 """
 import os
 
-from blazar_mcmc.blazar_properties import *
+from bjet_mcmc.blazar_properties import *
 
 __all__ = ["blazar_clean"]
 

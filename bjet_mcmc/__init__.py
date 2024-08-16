@@ -9,5 +9,5 @@ __all__ = [
     "blazar_utils",
 ]
 
-from blazar_mcmc.blazar_run_mcmc import mcmc
+from bjet_mcmc.blazar_run_mcmc import mcmc
 from bjet_core import bj_core

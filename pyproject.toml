@@ -1,5 +1,5 @@
 [project]
-name = "blazar_mcmc"
+name = "BJet-MCMC" #This is the name of the package to install/uninstall with pip
 version = "1.0.0"
 description = "BJet-MCMC Python module"
 readme = "README.md"
@@ -12,15 +12,15 @@ Homepage = "https://bjet-mcmc.readthedocs.io/en/latest/"
 Issues = "https://github.com/Ohervet/Bjet_MCMC/issues"
 
 [project.scripts]
-blazar_run_mcmc = "blazar_mcmc.blazar_run_mcmc:main_cli"
-blazar_mcmc = "blazar_mcmc.blazar_mcmc:main_cli"
-blazar_clean = "blazar_mcmc.blazar_clean:clean"
-blazar_initialize = "blazar_mcmc.blazar_initialize:initialize"
+blazar_run_mcmc = "bjet_mcmc.blazar_run_mcmc:main_cli"
+blazar_mcmc = "bjet_mcmc.blazar_mcmc:main_cli"
+blazar_clean = "bjet_mcmc.blazar_clean:clean"
+blazar_initialize = "bjet_mcmc.blazar_initialize:initialize"
 
 [build-system]
 requires = ["setuptools>=61.0.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools.package-data]
-blazar_mcmc = ["*.sh"]
-bjet_core = ["*.txt","*.i"]
+bjet_mcmc  = ["*.sh"]
+bjet_core = ["*"]
