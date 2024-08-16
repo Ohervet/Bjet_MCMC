@@ -980,13 +980,14 @@ def plot_likelihood_profiles(flat_samples, flat_log_probs, best_params, min_1sig
                 prob_tmp.append(sorted_log_probs[i])
             else:
                 if len(prob_tmp) == 0:
-                    prob_tmp.append(0)
+                    prob_tmp.append(-np.inf)
                 prob_max.append(np.exp(max(prob_tmp)))
                 ln_prob_max.append(max(prob_tmp))
                 param_binned_mid.append(bin_min + binsize/2.)
                 prob_tmp = []
                 bin_min += binsize
                 bin_max += binsize
+                
                 
         figure_name = "likelihood_"+param_names[j]
         plt.figure(figure_name)
