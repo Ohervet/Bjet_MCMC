@@ -104,6 +104,19 @@ param_max_vals = np.array(param_max_vals)
 
 
 def make_model(params, name_stem="run"):
+    """
+    Args:
+        params (float[]): The parameters used for the model.
+        name_stem (str): The name stem of the output files.
+
+    Returns:
+        tuple: A tuple containing the following elements:
+            - logv (float[]): The logarithm of the frequency values.
+            - logvFv (float[]): The logarithm of the flux values.
+            - v (float[]): The frequency values.
+            - vFv (float[]): The flux values.
+
+    """
     # convert to log
     # TODO rewrite this entire method using bj_core methods and without building a command string.
     params = params * 1.0
@@ -184,6 +197,23 @@ def make_model(params, name_stem="run"):
 
 
 def log_prior(params):
+    """
+    Args:
+        params (tuple): A tuple containing the following parameters:
+            - delta (float): The value of delta.
+            - K (float): The value of K.
+            - n1 (float): The value of n1.
+            - n2 (float): The value of n2.
+            - gamma_min (float): The value of gamma_min.
+            - gamma_max (float): The value of gamma_max.
+            - gamma_break (float): The value of gamma_break.
+            - B (float): The value of B.
+            - R (float): The value of R.
+            - other_params (tuple): Optional additional parameters.
+
+    Returns:
+        float: The log prior value. If any of the parameters violate the constraints, it returns negative infinity (-inf). Otherwise, it returns 0.
+    """
     delta, K, n1, n2, gamma_min, gamma_max, gamma_break, B, R, *other_params = params
     if (
         n1 > n2
@@ -207,6 +237,19 @@ def log_prior(params):
 
 
 def random_params():
+    """
+    Generates random parameters within given range and checks if they have finite log prior values.
+
+    Returns:
+        numpy.ndarray: Array of random parameters.
+
+    Raises:
+        None.
+
+    Examples:
+        >>> random_params()
+        array([0.5, 1.2, 0.8])
+    """
     parameter_size = param_max_vals - param_min_vals
     parameters = param_min_vals + parameter_size * np.random.rand(DIM)
     while not np.isfinite(log_prior(parameters)):
@@ -215,6 +258,13 @@ def random_params():
 
 
 def log_prob(params):
+    """
+    Args:
+        params (tuple): The parameters for the log_prob function. The tuple contains delta, K, n1, n2, gamma_min, gamma_max, gamma_break, B, R, and other_params.
+
+    Returns:
+        float: The log probability value calculated based on the given parameters. If any of the parameters do not satisfy the constraints, -inf is returned.
+    """
     name_stem = "run_" + str(random.getrandbits(60))
 
     # prior
@@ -252,6 +302,13 @@ def log_prob(params):
 
 
 def mcmc(p0=None):
+    """
+    Args:
+        p0 (Optional[ndarray]): The initial parameter values for each walker. If not provided, random parameter values will be generated.
+
+    Returns:
+        Tuple[emcee.EnsembleSampler, str]: The sampler object and the directory where the results are saved.
+    """
     if p0 is not None:
         print(p0[0])
     if "folder_label" in configs:
@@ -338,10 +395,15 @@ def mcmc(p0=None):
 
 def main_cli():
     """
-    p0_file = "local_results/3C66A_b6_eic_2022-06-08-20:17:26/backend.h5"
-    reader = emcee.backends.HDFBackend(BASE_PATH + p0_file, read_only=True)
-    p0 = reader.get_last_sample().coords
+    This method is the main command line interface for the application.
+
+    Returns:
+        None
+
     """
+    # p0_file = "local_results/3C66A_b6_eic_2022-06-08-20:17:26/backend.h5"
+    # reader = emcee.backends.HDFBackend(BASE_PATH + p0_file, read_only=True)
+    # p0 = reader.get_last_sample().coords
     p0 = None
     sampler, directory = mcmc(p0=p0)
     if blazar_properties.TMP:

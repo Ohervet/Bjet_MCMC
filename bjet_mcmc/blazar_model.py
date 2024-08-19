@@ -278,6 +278,24 @@ def add_data(
     data_folder=None,
     cols=(0, 2),
 ):
+    """
+    Add new data to the current data.
+
+    Args:
+        current_data (tuple): Tuple containing arrays of current data (current_logv, current_logvFv, current_v, current_vFv).
+        new_data (tuple, optional): Tuple containing arrays of new data (model_logv, model_logvFv, model_v, model_vFv). Defaults to None.
+        file_suffix (str, optional): File suffix for loading new data. Defaults to None.
+        name_stem (str, optional): Name stem for loading new data. Defaults to None.
+        data_folder (str, optional): Folder path for loading new data. Defaults to None.
+        cols (tuple, optional): Column indices to extract from the loaded data. Defaults to (0, 2).
+
+    Returns:
+        tuple: Tuple containing arrays of merged data (logv, logvFv, v, vFv).
+
+    Raises:
+        IOError: If the specified data file cannot be read.
+        ValueError: If neither new data nor file suffix is provided.
+    """
     if name_stem is None:
         name_stem = NAME_STEM
     if data_folder is None:
@@ -563,6 +581,20 @@ def command_line_sub_strings(
     prev_files=False,
     eic=False,
 ):
+    """
+    Args:
+        name_stem (str): The file name prefix. Defaults to None.
+        theta (float): The angle value. Defaults to None.
+        redshift (float): The redshift value. Defaults to None.
+        min_freq (float): The minimal frequency value. Defaults to None.
+        max_freq (float): The maximal frequency value. Defaults to None.
+        data_folder (str): The data folder. Defaults to None.
+        prev_files (bool): Whether to enable previous files or not. Defaults to False.
+        eic (bool): Whether to enable EIC or not. Defaults to False.
+
+    Returns:
+        tuple: A tuple containing two lists. The first list contains settings and transformation information and the second list contains constant and numerical information.
+    """
     if name_stem is None:
         name_stem = NAME_STEM
     if theta is None:
@@ -829,6 +861,15 @@ def create_params_file(
 
 
 def params_log_to_linear(params, param_is_log=None, eic=False):
+    """
+    Args:
+        params (list): A list of parameters.
+        param_is_log (list, optional): A list indicating whether each parameter is in log scale. If not provided, it will be obtained from `modelProperties`. Defaults to None.
+        eic (bool, optional): A flag indicating if the model uses EIC. Defaults to False.
+
+    Returns:
+        list: A new list of parameters converted from log scale to linear scale if necessary.
+    """
     if param_is_log is None:
         param_is_log = modelProperties(eic).PARAM_IS_LOG
 
@@ -840,6 +881,19 @@ def params_log_to_linear(params, param_is_log=None, eic=False):
 
 
 def params_linear_to_log(params, param_is_log=None, eic=False):
+    """
+    Args:
+        params (list): The linearized parameters.
+        param_is_log (list, optional): A list indicating whether each parameter should be converted to log scale. If not provided, defaults to None.
+        eic (bool, optional): A flag indicating whether the model properties are based on EIC. Defaults to False.
+
+    Returns:
+        list: The converted parameters.
+
+    Note:
+        - If `param_is_log` is not provided, it will be inferred from the model properties based on `eic`.
+        - The conversion to log scale is performed using the base 10 logarithm (np.log10).
+    """
     if param_is_log is None:
         param_is_log = modelProperties(eic).PARAM_IS_LOG
 

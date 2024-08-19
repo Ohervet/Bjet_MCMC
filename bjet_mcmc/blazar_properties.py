@@ -50,6 +50,21 @@ NAME_STEM = "run"
 
 
 class BlazarProperties(object):
+    """
+    Class representing properties of a blazar.
+
+    Attributes:
+        NUM_DIM (int): The number of dimensions of the blazar.
+        PARAM_NAMES (list): List of parameter names.
+        FORMATTED_PARAM_NAMES (list): List of formatted parameter names.
+        DETAILED_PARAM_NAMES (list): List of detailed parameter names.
+        PARAM_IS_LOG (list): List of boolean values indicating whether each parameter is logged.
+
+    Raises:
+        Exception: If the dimensions of the arrays conflict.
+
+    """
+
     def __init__(
         self,
         num_dim,
@@ -74,6 +89,15 @@ class BlazarProperties(object):
 
 
 def modelProperties(is_eic=False, fixed_params=None):
+    """
+    Args:
+        is_eic (bool): Determines whether to use EIC properties or SSC properties. Defaults to False.
+        fixed_params (list): List of fixed parameters. Defaults to None.
+
+    Returns:
+        BlazarProperties: Object containing the properties of the selected model.
+
+    """
     sscProperties = BlazarProperties(
         9,
         ["delta", "K", "n_1", "n_2", "gamma_min", "gamma_max", "gamma_break", "B", "R"],
@@ -190,6 +214,20 @@ def modelProperties(is_eic=False, fixed_params=None):
 # TODO Implement a different scheme for saving output files. Do not place in program install location but in a user
 #  defined analysis directory.
 def _get_path():
+    """
+
+    This method, '_get_path()', returns the base path of the file containing the method.
+
+    Parameters:
+        None.
+
+    Returns:
+        str: The base path of the file.
+
+    Raises:
+        Exception: If the PROGRAM_NAME is not found in the file path.
+
+    """
     base_path = str(os.path.dirname(__file__))
     base_path = f"{base_path[: base_path.find('Bjet_MCMC')]}Bjet_MCMC/bjet_mcmc"
     # base_path = str(pathlib.Path().resolve())

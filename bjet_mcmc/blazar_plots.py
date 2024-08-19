@@ -539,6 +539,16 @@ def plot_chain(
     show=True,
     eic=False,
 ):
+    """
+    Args:
+        chain (numpy.ndarray): The chain of samples to plot, usually a 3-dimensional array.
+        param_names (list[str], optional): List of parameter names corresponding to the dimensions of the chain. Defaults to None.
+        file_name (str, optional): The name of the file to save the plot as. Defaults to "chain.svg".
+        save (bool, optional): Whether to save the plot as an image file. Defaults to False.
+        show (bool, optional): Whether to display the plot. Defaults to True.
+        eic (bool, optional): Whether to use EIC (electrochemical impedance spectroscopy) properties. Defaults to False.
+
+    """
     if param_names is None:
         param_names = modelProperties(eic).FORMATTED_PARAM_NAMES
     fig, axes = plt.subplots(modelProperties(eic).NUM_DIM, sharex="all")
@@ -566,6 +576,20 @@ def plot_chi_squared(
     show=True,
     clear_plot=True,
 ):
+    """
+    Args:
+        values (np.ndarray): The values of the chi-squared statistic.
+        discard_number (int): The number of steps to discard from the values.
+        use_log_probs (bool): Whether to use logarithmic values for the chi-squared statistic. Defaults to True.
+        plot_type (str): The type of plot to generate. Must be one of "med", "best", or "all". Defaults to "med".
+        title (str): The title of the plot. If not provided, a default title will be used depending on the plot_type.
+        no_title (bool): Whether to show a title on the plot. Defaults to False.
+        fmt (str): The format string for the plot lines. Defaults to an empty string.
+        file_name (str): The name of the file to save the plot as. Defaults to "med_chi_squared_plot.svg", where image_type should be replaced with the desired image type.
+        save (bool): Whether to save the plot as an image file. Defaults to False.
+        show (bool): Whether to display the plot. Defaults to True.
+        clear_plot (bool): Whether to clear the plot before generating the new plot. Defaults to True.
+    """
     if plot_type not in ["med", "best", "all"]:
         raise ValueError(plot_type + " is not a valid plot type")
 
@@ -654,14 +678,51 @@ def plot_1sigma(
     verbose=False,
 ):
     """
-    TODO what happens when folder is None??
-    The parameters within 1 sigma that have the biggest and smallest values for
-    each parameter are found, resulting in 2 arrays of dimension NUM_DIM * NUM_DIM.
-    Models are created from these, and for each frequency value,
-    the minimum and the maximum are found.
-    The graph is made by filling in the space between the minimum and maximum
-    for each frequency value.
-    The best model and the actual data with error bars are plotted on top of this.
+    Args:
+        v_data : The observed values of the independent variable.
+        vFv_data : The observed values of the dependent variable.
+        err_data : The error values associated with the observed dependent variable.
+        indices_within_1sigma : The indices of the models within 1 sigma range.
+        flat_samples : The flat samples obtained from the MCMC algorithm.
+        min_chi_squared_index : The index of the model with minimum chi-squared value.
+        both : Boolean value indicating whether both extreme and random models should be plotted. Default is False.
+        extreme : Boolean value indicating whether extreme models should be plotted. Default is True.
+        title : The title of the plot. If None, a default title will be used.
+        no_title : Boolean value indicating whether to hide the title. Default is False.
+        folder : The folder path where the plot will be saved. If None, the plot will not be saved.
+        file : The file name to save the plot. If None, a default file name will be used.
+        save : Boolean value indicating whether to save the plot. Default is False.
+        show : Boolean value indicating whether to display the plot. Default is True.
+        serialize : Boolean value indicating whether to serialize the plot using pickle. Default is False.
+        lower_adjust_multiplier : The lower adjustment multiplier for scaling the y-axis. If None, the minimum y-value of the observed dependent variable will be used.
+        upper_adjust_multiplier : The upper adjustment multiplier for scaling the y-axis. Default is 1.02.
+        max_num_lines_to_graph : The maximum number of lines to graph for random models. Default is 1000.
+        dims : The number of dimensions in the model.
+        eic : Boolean value indicating whether to include the EIC parameter. Default is False.
+        theta : The theta parameter for the model.
+        redshift : The redshift parameter for the model.
+        min_freq : The minimum frequency parameter for the model.
+        max_freq : The maximum frequency parameter for the model.
+        executable : The executable path for the model.
+        data_folder : The data folder path for the model.
+        name_stem : The name stem for the model.
+        command_params_full : The command parameters for the full model.
+        command_params_1 : The command parameters for the first model.
+        command_params_2 : The command parameters for the second model.
+        torus_temp : The torus temperature parameter for the model.
+        torus_luminosity : The torus luminosity parameter for the model.
+        torus_frac : The torus fraction parameter for the model.
+        verbose : Boolean value indicating whether to display verbose output during model creation. Default is False.
+
+    Notes:
+        TODO what happens when folder is None??
+        The parameters within 1 sigma that have the biggest and smallest values for
+        each parameter are found, resulting in 2 arrays of dimension NUM_DIM * NUM_DIM.
+        Models are created from these, and for each frequency value,
+        the minimum and the maximum are found.
+        The graph is made by filling in the space between the minimum and maximum
+        for each frequency value.
+        The best model and the actual data with error bars are plotted on top of this.
     """
     if both:
         descriptor = ""
@@ -838,14 +899,55 @@ def plot_1sigma_plots(
     verbose=False,
 ):
     """
-    TODO what happens when folder is None??
-    The parameters within 1 sigma that have the biggest and smallest values for
-    each parameter are found, resulting in 2 arrays of dimension NUM_DIM * NUM_DIM.
-    Models are created from these, and for each frequency value,
-    the minimum and the maximum are found.
-    The graph is made by filling in the space between the minimum and maximum
-    for each frequency value.
-    The best model and the actual data with error bars are plotted on top of this.
+    Args:
+        v_data : The observed velocities data.
+        vFv_data : The observed flux data.
+        err_data : The error in the observed flux data.
+        indices_within_1sigma : The indices of models within 1 sigma.
+        flat_samples : The samples from the MCMC chains.
+        min_chi_squared_index : The index of the minimum chi-squared value in the samples.
+        both : A flag indicating whether to plot both extreme and random models within 1 sigma. Default is False.
+        extreme : A flag indicating whether to plot extreme models within 1 sigma. Default is True.
+        title : The title of the plot. If not provided, a default title will be used.
+        no_title : A flag indicating whether to display a title in the plot. Default is False.
+        folder : The folder to save the plot. If not provided, the plot will not be saved.
+        file : The file name of the saved plot. If not provided, a default name will be used.
+        save : A flag indicating whether to save the plot. Default is False.
+        show : A flag indicating whether to display the plot. Default is True.
+        serialize : A flag indicating whether to serialize the plot. Default is False.
+        lower_adjust_multiplier : The lower adjust multiplier for scaling the y-axis. If not provided, a default value will be used.
+        upper_adjust_multiplier : The upper adjust multiplier for scaling the y-axis. Default is 1.02.
+        max_num_lines_to_graph : The maximum number of lines to graph. Default is 1000.
+        dims : The dimensions of the model. If not provided, the dimensions will be determined based on the model properties.
+        eic : A flag indicating whether the model is an EIC model. Default is False.
+        return_models : A flag indicating whether to return the generated models. Default is False.
+        theta : The theta parameter of the model.
+        redshift : The redshift parameter of the model.
+        min_freq : The minimum frequency parameter of the model.
+        max_freq : The maximum frequency parameter of the model.
+        executable : The path to the executable file for the model.
+        data_folder : The folder containing the data files.
+        command_params_full : The full command parameters of the model.
+        command_params_1 : The first set of command parameters of the model.
+        command_params_2 : The second set of command parameters of the model.
+        name_stem : The name stem of the generated models. If not provided, a random name stem will be used.
+        torus_temp : The temperature of the torus component of the model.
+        torus_luminosity : The luminosity of the torus component of the model.
+        torus_frac : The fraction of the torus component of the model.
+        verbose : A flag indicating whether to display verbose output. Default is False.
+
+    Returns:
+        The generated models if return_models is True, otherwise None.
+
+    Notes:
+        TODO what happens when folder is None??
+        The parameters within 1 sigma that have the biggest and smallest values for
+        each parameter are found, resulting in 2 arrays of dimension NUM_DIM * NUM_DIM.
+        Models are created from these, and for each frequency value,
+        the minimum and the maximum are found.
+        The graph is made by filling in the space between the minimum and maximum
+        for each frequency value.
+        The best model and the actual data with error bars are plotted on top of this.
     """
     if both:
         descriptor = ""
@@ -1012,6 +1114,17 @@ def plot_1sigma_plots(
 
 # utils ----------------------------------------------------------------------------------------------------------------
 def scale_to_values(values, upper_adjust_multiplier=None, lower_adjust_multiplier=None):
+    """
+    Scales the given values to new minimum and maximum values based on the upper and lower adjust multipliers.
+
+    Args:
+        values (array-like): The values to be scaled.
+        upper_adjust_multiplier (float, optional): The multiplier to adjust the upper limit of the scaled values. By default, it is set to 5.
+        lower_adjust_multiplier (float, optional): The multiplier to adjust the lower limit of the scaled values. By default, it is set to 5.
+
+    Returns:
+        tuple: A tuple containing the new minimum and maximum scaled values.
+    """
     if upper_adjust_multiplier is None:
         upper_adjust_multiplier = 5
     if lower_adjust_multiplier is None:
@@ -1084,6 +1197,30 @@ def get_min_max_per_point(
     eic=False,
     fixed_params=None,
 ):
+    """
+    Args:
+        v_vals (array-like): The array of values at which the model will be computed.
+        model_params_list (list): The list of model parameter arrays.
+        name_stem (str, optional): The name stem for the output files. If not provided, a random stem will be generated. Defaults to None.
+        theta (float, optional): The viewing angle. Defaults to None.
+        redshift (float, optional): The redshift of the source. Defaults to None.
+        min_freq (float, optional): The minimum frequency for the plot. Defaults to None.
+        max_freq (float, optional): The maximum frequency for the plot. Defaults to None.
+        torus_temp (float, optional): The temperature of the torus. Defaults to None.
+        torus_luminosity (float, optional): The luminosity of the torus. Defaults to None.
+        torus_frac (float, optional): The fraction of the torus emission. Defaults to None.
+        data_folder (str, optional): The folder where the output files will be saved. Defaults to None.
+        executable (str, optional): The path to the executable file for computing the model. Defaults to None.
+        command_params_full (str, optional): The command parameters for the full model computation. Defaults to None.
+        command_params_1 (str, optional): The command parameters for the first model computation. Defaults to None.
+        command_params_2 (str, optional): The command parameters for the second model computation. Defaults to None.
+        verbose (bool, optional): Whether to print verbose output. Defaults to False.
+        eic (bool, optional): Whether to use effective index of refraction correction. Defaults to False.
+        fixed_params (array-like, optional): The array of fixed parameters. Defaults to None.
+
+    Returns:
+        tuple: A tuple containing the lowest and highest interpolated values for each point.
+    """
     num_points = len(v_vals)
     lowest_per_point = np.array([np.inf for _ in range(num_points)])
     highest_per_point = np.array([-np.inf for _ in range(num_points)])
@@ -1137,6 +1274,21 @@ def get_min_max_per_point(
 
 
 def residual_plot(data, best_model, lowest_per_point, highest_per_point):
+    """
+    Args:
+        data (tuple): A tuple containing data for the residual plot. It should have the following elements:
+            - data[0] (array-like): Frequencies (Hz) for the plot.
+            - data[1] (array-like): Residual values for the plot.
+            - data[2] (array-like): Errors for the residual values.
+
+        best_model (tuple): A tuple containing data for the best model. It should have the following elements:
+            - best_model[2] (array-like): Frequencies (Hz) for the best model.
+            - best_model[3] (array-like): Predicted values for the best model.
+
+        lowest_per_point (array-like): Per-point values for the lowest range of the shaded area.
+
+        highest_per_point (array-like): Per-point values for the highest range of the shaded area.
+    """
     f_best = interpolate.interp1d(best_model[2], best_model[3])
     f_low = interpolate.interp1d(best_model[2], np.power(10, lowest_per_point))
     f_high = interpolate.interp1d(best_model[2], np.power(10, highest_per_point))
@@ -1157,6 +1309,18 @@ def residual_plot(data, best_model, lowest_per_point, highest_per_point):
 
 
 def N_e_BknPowLaw(gamma, K, n_1, n_2, gamma_break):
+    """
+    Args:
+        gamma (float): The value of gamma parameter.
+        K (int): The value of K parameter.
+        n_1 (int): The value of n_1 parameter.
+        n_2 (int): The value of n_2 parameter.
+        gamma_break (float): The value of gamma_break parameter.
+
+    Returns:
+        float: The calculated value of N_e using the broken power law formula.
+
+    """
     K = 10**K
     gamma_break = 10**gamma_break
     K2 = K * gamma_break ** (n_2 - n_1)
@@ -1303,6 +1467,17 @@ c = 2.997924 * 1.0e10  # [cm / s]
 
 
 def cooling_time_Thomson(gamma, U_B, U_syn, U_blr):
+    """
+    Args:
+        gamma (float): Lorentz factor of the particle.
+        U_B (float): Energy density of the magnetic field.
+        U_syn (float): Energy density of the synchrotron radiation.
+        U_blr (float): Energy density of the broad-line region radiation.
+
+    Returns:
+        float: The cooling time of the particle according to Thomson scattering.
+
+    """
     # see e.g. Inoue & Takahara 1996
     return 3 * m_e * c / (4 * (U_B + U_syn + U_blr) * sig_T * gamma)
 
@@ -1317,7 +1492,18 @@ def plot_cooling_times(
     eic=False,
     redshift=None,
 ):
+    """
+    Args:
+        logfile (str): The name of the log file.
+        best_params (tuple): A tuple containing the best parameters.
+        fixed_params (tuple): A tuple containing the fixed parameters.
+        file_name (str, optional): The name of the file to save the plot. Defaults to RESULTS_FOLDER + "/cooling_times.svg".
+        save (bool, optional): Whether to save the plot. Defaults to False.
+        show (bool, optional): Whether to show the plot. Defaults to True.
+        eic (bool, optional): Whether to include the energy density of the BLR. Defaults to False.
+        redshift (float, optional): The redshift of the object. Defaults to None.
 
+    """
     # retrieve the energy densities from bjet.log
     grep = subprocess.run(
         ["grep", "(U_B)", BASE_PATH + logfile], capture_output=True, text=True
@@ -1363,6 +1549,20 @@ def plot_likelihood_profiles(
     eic=False,
     folder_path=BASE_PATH + RESULTS_FOLDER,
 ):
+    """
+    Args:
+        flat_samples (numpy.ndarray): The flattened samples of the free parameters from the MCMC run.
+        flat_log_probs (numpy.ndarray): The flattened log probabilities corresponding to the flat_samples.
+        best_params (numpy.ndarray): The best-fit parameter values.
+        min_1sigma_params (numpy.ndarray): The parameter values at the lower 1-sigma confidence level.
+        max_1sigma_params (numpy.ndarray): The parameter values at the upper 1-sigma confidence level.
+        save (bool, optional): Whether to save the plot. Default is False.
+        show (bool, optional): Whether to display the plot. Default is True.
+        fixed_params (dict, optional): A dictionary of fixed parameter values. Default is None.
+        eic (bool, optional): Whether to include extra inelastic channels. Default is False.
+        folder_path (str, optional): The folder path to save the plot. Default is BASE_PATH + RESULTS_FOLDER.
+
+    """
     # plot posterior likelihood profiles for all free parameters.
 
     param_names = modelProperties(eic, fixed_params=fixed_params).PARAM_NAMES

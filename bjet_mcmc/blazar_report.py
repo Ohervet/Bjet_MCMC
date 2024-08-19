@@ -64,11 +64,15 @@ def get_indices_within_1sigma(
     values, use_log_probs=True, alpha=0.318, eic=False, ndim=1
 ):
     """
-    Arguments:
-    values (2D np array, _ rows, NUM_DIM columns): flat samples
-    dimensions:
-    use_log_probs:
-    alpha:
+    Args:
+        values: An array of values for which chi-squared values will be calculated.
+        use_log_probs: A boolean indicating whether to use log probabilities for calculating chi-squared values. Defaults to True.
+        alpha: The significance level used for calculating delta chi-squared. Defaults to 0.318.
+        eic: A boolean indicating whether to use modelProperties(eic).NUM_DIM for calculating delta chi-squared. Defaults to False.
+        ndim: The number of dimensions used for calculating delta chi-squared. Defaults to 1.
+
+    Returns:
+        indices_within_1sigma: An array containing the indices of values that lie within 1 sigma (delta chi-squared) of the minimum chi-squared value.
     """
     if use_log_probs:
         chi_squared = -2 * values
@@ -84,6 +88,17 @@ def get_indices_within_1sigma(
 
 
 def min_max_params_1sigma(flat_data, flat_log_probs, eic=False, ndim=1):
+    """
+    Args:
+        flat_data (List[List[float]]): A list of data points, where each data point is a list of floats.
+        flat_log_probs (List[float]): A list of log probabilities corresponding to each data point in flat_data.
+        eic (bool, optional): Whether to consider events inside the 1-sigma contour. Default is False.
+        ndim (int, optional): Number of dimensions of the data points. Default is 1.
+
+    Returns:
+        Tuple[List[float], List[float]]: A tuple containing the minimum values and maximum values within the 1-sigma contour.
+
+    """
     n_dim = len(flat_data[0])
     indices_within_1sigma = get_indices_within_1sigma(
         flat_log_probs, eic=eic, ndim=ndim
@@ -108,6 +123,23 @@ def get_best_log_prob_and_params(
     discard=None,
     fixed_params=None,
 ):
+    """
+    Args:
+        configs (dict, optional): Configuration options. Default is None.
+        sampler (object, optional): The sampler object. Default is None.
+        log_probs (array-like, optional): Array of log probabilities. Default is None.
+        flat_chain (array-like, optional): Array of parameter samples. Default is None.
+        discard (int, optional): The number of discarded samples. Default is None.
+        fixed_params (array-like, optional): Array of fixed parameter values. Default is None.
+
+    Returns:
+        tuple: A tuple containing the maximum log probability and the corresponding best parameters.
+
+    Raises:
+        ValueError: If either the sampler is not provided or both log_probs and flat_chain are not provided.
+        ValueError: If the sampler is provided but either the configs or discard is not provided.
+
+    """
     if (sampler is None) and (log_probs is None or flat_chain is None):
         raise ValueError("sampler or log_probs+chain not provided")
     if sampler is not None:
@@ -145,6 +177,24 @@ def make_text_file(
     eic=False,
     fixed_params=None,
 ):
+    """
+    Args:
+        output_file (str): The name of the output file to write the text report to.
+        configs (dict): A dictionary containing the configurations for the analysis.
+        data_points ():
+        backend_file (str): The name of the backend file to read the samples from. Default is None.
+        reader (): The reader object to use for reading the samples. Default is None.
+        sampler (): The sampler object to use for sampling the model parameters. Default is None.
+        use_sampler (bool): Whether to use the provided sampler object. Default is False.
+        samples (): The samples to write to the output file. Default is None.
+        use_samples (bool): Whether to use the provided samples. Default is False.
+        description (): The description for the text report. Default is None.
+        time (): The time for the text report. Default is None.
+        p0_source (): The source of the initial parameters for the text report. Default is None.
+        acceptance_frac (): The acceptance fraction for the samples. Default is None.
+        eic (bool): Whether to use EIC (Effective Information Criteria) for min/max params calculation. Default is False.
+        fixed_params (): The fixed parameters for the model. Default is None.
+    """
     if use_samples and (samples is not None):
         samples, flat_chain, _, log_probs = samples
     # note that samplers and readers both have the functions needed
@@ -242,6 +292,24 @@ def text_report(
     eic=False,
     fixed_params=None,
 ):
+    """
+    Generates a text report based on the given parameters.
+
+    Args:
+        best ():
+        min_1sigma ():
+        max_1sigma ():
+        min_1sigma_SED ():
+        max_1sigma_SED ():
+        best_chi_sq ():
+        data_points ():
+        param_names ():
+        eic ():
+        fixed_params ():
+
+    Returns:
+        str: The generated text report.
+    """
     if param_names is None:
         param_names = modelProperties(eic, fixed_params=fixed_params).PARAM_NAMES
     log = modelProperties(eic).PARAM_IS_LOG
@@ -293,6 +361,16 @@ def text_report(
 
 
 def show_results(sampler, time, configs=None, discard=None):
+    """
+    This method displays results from an MCMC sampler.
+
+    Args:
+        sampler (): The MCMC sampler object.
+        time (): The total duration of the sampling process.
+        configs (): Optional configuration parameters for the sampler. Default is None.
+        discard (): Optional number of discarded samples. Default is None.
+
+    """
     if configs is None and discard is None:
         raise ValueError("Neither configs nor discard provided")
     if discard is None:
@@ -342,6 +420,39 @@ def save_plots_and_info(
     verbose=False,
     eic=False,
 ):
+    """
+    Args:
+        configs ():
+        data ():
+        param_min_vals ():
+        param_max_vals ():
+        folder ():
+        parent_folder ():
+        backend_file ():
+        reader ():
+        sampler ():
+        use_sampler ():
+        samples ():
+        use_samples ():
+        description ():
+        time ():
+        p0_source ():
+        acceptance_frac ():
+        theta ():
+        redshift ():
+        min_freq ():
+        max_freq ():
+        executable ():
+        data_folder ():
+        command_params_full ():
+        command_params_1 ():
+        command_params_2 ():
+        torus_temp ():
+        torus_luminosity ():
+        torus_frac ():
+        verbose ():
+        eic ():
+    """
     if (
         backend_file is None
         and reader is None
@@ -522,6 +633,22 @@ def save_plots_and_info(
 
 
 def parse_info_doc(info_doc, info=None):
+    """
+    Args:
+        info_doc (str): The filename of the info documentation file.
+        info (dict, optional): Additional information dictionary to populate. Defaults to None.
+
+    Returns:
+        dict: Populated information dictionary.
+
+    Description:
+    This method parses the content of an info documentation file and extracts relevant information into a dictionary. The parsed information can include the folder name, report description, time, p0 label, configurations, reduced chi squared, best parameters, minimum 1 sigma parameters, maximum 1 sigma parameters, acceptance fraction, tau average, config file, and previous files.
+
+    To use this method, provide the filename of the info documentation file as the info_doc parameter. Optionally, you can provide an existing dictionary to populate or leave it as None to create a new one. The method returns the populated information dictionary.
+
+    Example Usage:
+        info = parse_info_doc("info.txt")
+    """
     if info is None:
         info = {}
 
@@ -632,6 +759,34 @@ def save(
     eic=False,
     fixed_params=None,
 ):
+    """
+    Args:
+        folder (str): The folder where the data and plots will be saved.
+        description (str): The description of the data.
+        time (str): The time of the data.
+        p0_source (str): The p0 label of the data.
+        acceptance_frac (str): The acceptance fraction of the data.
+        data_file (str): The path to the data file.
+        configs (dict): The configurations for the data.
+        text_file_name (str): The name of the text file to be generated.
+        text_only (bool): If True, only a text file will be generated.
+        theta (float): The theta value.
+        redshift (float): The redshift value.
+        min_freq (float): The minimum frequency value.
+        max_freq (float): The maximum frequency value.
+        torus_temp (float): The torus temperature value.
+        torus_luminosity (float): The torus luminosity value.
+        torus_frac (float): The torus fraction value.
+        data_folder (str): The folder where the data is stored.
+        executable (str): The path to the executable file.
+        command_params_full (str): The full command parameters.
+        command_params_1 (str): The first command parameters.
+        command_params_2 (str): The second command parameters.
+        verbose (bool): If True, additional information will be displayed.
+        eic (bool): If True, additional EIC information will be considered.
+        fixed_params (dict): The fixed parameters for the data.
+
+    """
     # WILL USE CURRENT CONFIGURATIONS IF NONE FOUND
     info = {}
     if os.path.exists(BASE_PATH + folder + "/info.txt"):
@@ -707,6 +862,15 @@ def save(
 
 
 def load_from_backend(folder, flat=False):
+    """
+    Args:
+        folder (str): The name of the folder containing the backend file.
+        flat (bool, optional): If True, flatten the chain and log probability arrays.
+            Defaults to False.
+
+    Returns:
+        tuple: A tuple containing the chain and log probability arrays.
+    """
     reader = emcee.backends.HDFBackend(
         BASE_PATH + RESULTS_FOLDER + "/" + folder + "/backend.h5"
     )

@@ -33,6 +33,14 @@ __all__ = ["make_dirs", "compile_bjet", "initialize"]
 def make_dirs(
     data_folder=None, results_folder=None, parameter_folder=None, parameter_file=False
 ):
+    """
+    Args:
+        data_folder (str): Path to the data folder. If None, it defaults to the value of DATA_FOLDER.
+        results_folder (str): Path to the results folder. If None, it defaults to the value of RESULTS_FOLDER.
+        parameter_folder (str): Path to the parameter folder. If None and parameter_file is True, it defaults to the value of PARAMETER_FOLDER. If None and parameter_file is False, the parameter folder will not be created.
+        parameter_file (bool): Flag indicating whether a parameter file is present or not. Default is False.
+
+    """
     if data_folder is None:
         data_folder = DATA_FOLDER
     if results_folder is None:
@@ -52,6 +60,13 @@ def make_dirs(
 
 
 def compile_bjet(bjet_folder=None, executable=None, verbose=False):
+    """
+    Args:
+        bjet_folder (optional[str]): The folder path where the BJET files are located. If not provided, the default CPP folder path will be used.
+        executable (optional[str]): The name of the executable file. If not provided, the default executable name will be used.
+        verbose (bool): If True, the make process will display verbose output. If False, the make process will run silently.
+
+    """
     if bjet_folder is None:
         bjet_folder = CPP_FOLDER
     if executable is None:
@@ -80,6 +95,18 @@ def initialize(
     executable=None,
     run_compile=True,
 ):
+    """
+    Initializes the program by creating necessary directories and compiling the bjet executable.
+
+    Args:
+        data_folder (str): Path to the data folder.
+        results_folder (str): Path to the results folder.
+        parameter_folder (str): Path to the parameter folder.
+        parameter_file (bool): Indicates whether a parameter file is present.
+        bjet_folder (str): Path to the bjet folder.
+        executable (str): Name of the executable file.
+        run_compile (bool, optional): Indicates whether to compile the bjet executable. Defaults to True.
+    """
     make_dirs(
         data_folder=data_folder,
         results_folder=results_folder,
