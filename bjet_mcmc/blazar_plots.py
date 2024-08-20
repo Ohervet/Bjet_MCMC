@@ -1590,7 +1590,7 @@ def plot_likelihood_profiles(
                 prob_tmp.append(sorted_log_probs[i])
             else:
                 if len(prob_tmp) == 0:
-                    prob_tmp.append(0)
+                    prob_tmp.append(-np.inf)
                 prob_max.append(np.exp(max(prob_tmp)))
                 ln_prob_max.append(max(prob_tmp))
                 param_binned_mid.append(bin_min + binsize / 2.0)
