@@ -1,5 +1,5 @@
 [project]
-name = "BJet-MCMC" #This is the name of the package to install/uninstall with pip
+name = "Bjet-MCMC" #This is the name of the package to install/uninstall with pip
 version = "1.0.0"
 description = "BJet-MCMC Python module"
 readme = "README.md"
