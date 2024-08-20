@@ -37,7 +37,7 @@ __all__ = [
     "SSC_PARAM_IS_LOG",
 ]
 
-PROGRAM_NAME = "/bjet_mcmc"
+PROGRAM_NAME = "/Bjet_MCMC"
 TMP = False
 INITIALIZE = False
 MAIN_FOLDER = "bjet_mcmc"
@@ -191,7 +191,6 @@ def modelProperties(is_eic=False, fixed_params=None):
 #  defined analysis directory.
 def _get_path():
     base_path = str(os.path.dirname(__file__))
-    base_path = f"{base_path[: base_path.find('Bjet_MCMC')]}Bjet_MCMC/bjet_mcmc"
     # base_path = str(pathlib.Path().resolve())
     stop = base_path.find(PROGRAM_NAME)
     if stop == -1:
