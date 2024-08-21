@@ -25,10 +25,14 @@ import os
 import shutil
 import subprocess
 
-from blazar_properties import *
+from bjet_mcmc.blazar_properties import *
+
+__all__ = ["make_dirs", "compile_bjet", "initialize"]
 
 
-def make_dirs(data_folder=None, results_folder=None, parameter_folder=None, parameter_file=False):
+def make_dirs(
+    data_folder=None, results_folder=None, parameter_folder=None, parameter_file=False
+):
     if data_folder is None:
         data_folder = DATA_FOLDER
     if results_folder is None:
@@ -42,7 +46,9 @@ def make_dirs(data_folder=None, results_folder=None, parameter_folder=None, para
             if not os.path.exists(BASE_PATH + folder):
                 os.mkdir(BASE_PATH + folder)
         if folder == results_folder and not os.path.exists(FOLDER_PATH + folder):
-            os.mkdir(FOLDER_PATH + folder)  # want results directory in both tmp and main if tmp
+            os.mkdir(
+                FOLDER_PATH + folder
+            )  # want results directory in both tmp and main if tmp
 
 
 def compile_bjet(bjet_folder=None, executable=None, verbose=False):
@@ -60,21 +66,36 @@ def compile_bjet(bjet_folder=None, executable=None, verbose=False):
     if verbose:
         subprocess.run("make", executable)
     else:
-        subprocess.run("make", stderr=open(os.devnull, 'wb'),
-                       stdout=open(os.devnull, 'wb'))
+        subprocess.run(
+            "make", stderr=open(os.devnull, "wb"), stdout=open(os.devnull, "wb")
+        )
 
 
-def initialize(data_folder=None, results_folder=None, parameter_folder=None, parameter_file=False,
-               bjet_folder=None, executable=None, run_compile=True):
-    make_dirs(data_folder=data_folder, results_folder=results_folder, parameter_folder=parameter_folder,
-              parameter_file=parameter_file)
+def initialize(
+    data_folder=None,
+    results_folder=None,
+    parameter_folder=None,
+    parameter_file=False,
+    bjet_folder=None,
+    executable=None,
+    run_compile=True,
+):
+    make_dirs(
+        data_folder=data_folder,
+        results_folder=results_folder,
+        parameter_folder=parameter_folder,
+        parameter_file=parameter_file,
+    )
     if run_compile:
         compile_bjet(bjet_folder=bjet_folder, executable=executable)
     if TMP:
         if not os.path.exists(BASE_PATH + bjet_folder):
             os.mkdir(BASE_PATH + bjet_folder)
-            shutil.copy(FOLDER_PATH + bjet_folder + "/" + executable, BASE_PATH + bjet_folder + "/" + executable)
+            shutil.copy(
+                FOLDER_PATH + bjet_folder + "/" + executable,
+                BASE_PATH + bjet_folder + "/" + executable,
+            )
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     initialize()

@@ -47,6 +47,7 @@ dependencies:
   - readline=8.1.2
   - scipy=1.8.0
   - setuptools=61.2.0
+  - swig=4.0.2
   - six=1.16.0
   - sqlite=3.39.2
   - tk=8.6.12

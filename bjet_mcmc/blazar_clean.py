@@ -8,7 +8,9 @@ params.txt.
 """
 import os
 
-from blazar_properties import *
+from bjet_mcmc.blazar_properties import *
+
+__all__ = ["blazar_clean"]
 
 
 def clean(data=True, data_folder=None, parameter_files=True, parameter_folder=None):
@@ -35,7 +37,9 @@ def clean(data=True, data_folder=None, parameter_files=True, parameter_folder=No
         if data_folder is None:
             data_folder = DATA_FOLDER
         if os.path.exists(BASE_PATH + data_folder):
-            files = [f for f in os.listdir(BASE_PATH + data_folder) if f.endswith(".dat")]
+            files = [
+                f for f in os.listdir(BASE_PATH + data_folder) if f.endswith(".dat")
+            ]
             for f in files:
                 os.remove(BASE_PATH + data_folder + "/" + f)
         else:
@@ -45,7 +49,11 @@ def clean(data=True, data_folder=None, parameter_files=True, parameter_folder=No
         if parameter_folder is None:
             parameter_folder = PARAMETER_FOLDER
         if os.path.exists(BASE_PATH + parameter_folder):
-            files = [f for f in os.listdir(BASE_PATH + parameter_folder) if f.endswith(".txt")]
+            files = [
+                f
+                for f in os.listdir(BASE_PATH + parameter_folder)
+                if f.endswith(".txt")
+            ]
             for f in files:
                 if f != "params.txt":
                     os.remove(BASE_PATH + parameter_folder + "/" + f)
@@ -54,5 +62,5 @@ def clean(data=True, data_folder=None, parameter_files=True, parameter_folder=No
     return success
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     clean()
