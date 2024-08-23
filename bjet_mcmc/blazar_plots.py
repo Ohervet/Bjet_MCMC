@@ -1544,7 +1544,7 @@ def plot_particle_spectrum(
          - Blob radius [cm]
          - Log
 
-     Additional params for EIC
+    Additional params for EIC
 
     .. list-table::
        :header-rows: 1
