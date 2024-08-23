@@ -892,7 +892,7 @@ def save(
     :type configs: dict
     :param text_file_name: The name of the text file to be generated.
     :type text_file_name: str
-    :param text_only:If True, only a text file will be generated. If False, plots and info will also be saved.
+    :param text_only: If True, only a text file will be generated. If False, plots and info will also be saved.
     :type text_only: bool
     :param theta: The theta value.
     :type theta: float
@@ -920,7 +920,7 @@ def save(
     :type command_params_2: str
     :param verbose: If True, additional information will be printed during the execution. If False, no additional information will be printed.
     :type verbose: bool
-    :param eic: If True, additional EIC information will be considered.. If False, EIC is disabled.
+    :param eic: If True, additional EIC information will be considered. If False, EIC is disabled.
     :type eic: bool
     :param fixed_params: The fixed parameters.
     :type fixed_params: dict
