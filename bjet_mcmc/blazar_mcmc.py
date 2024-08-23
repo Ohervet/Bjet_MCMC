@@ -105,16 +105,7 @@ param_max_vals = np.array(param_max_vals)
 
 def make_model(params, name_stem="run"):
     """
-    Args:
-        params (float[]): The parameters used for the model.
-        name_stem (str): The name stem of the output files.
-
-    Returns:
-        tuple: A tuple containing the following elements:
-            - logv (float[]): The logarithm of the frequency values.
-            - logvFv (float[]): The logarithm of the flux values.
-            - v (float[]): The frequency values.
-            - vFv (float[]): The flux values.
+    This function builds a model based on the provided parameters and name stem. It converts the parameters to logarithmic values where necessary. The model is built by executing a command using subprocess.run() and the output is saved to a file. The logarithmic wavelength and flux values are then extracted from the file and converted to linear values. Additional components are added to the model based on the name stem. Lastly, the built model is interpolated and combined with the existing model.
 
     :param params: The parameters for building the model.
     :type params: list[float]
@@ -122,10 +113,13 @@ def make_model(params, name_stem="run"):
     :type name_stem: str
     :return: The logarithmic wavelength values, logarithmic flux values, linear wavelength values, and linear flux values.
     :rtype: tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]
+    A tuple containing the following elements:
+            - logv (float[]): The logarithm of the frequency values.
+            - logvFv (float[]): The logarithm of the flux values.
+            - v (float[]): The frequency values.
+            - vFv (float[]): The flux values.
 
-    This function builds a model based on the provided parameters and name stem. It converts the parameters to logarithmic values where necessary. The model is built by executing a command using subprocess.run() and the output is saved to a file. The logarithmic wavelength and flux values are then extracted from the file and converted to linear values. Additional components are added to the model based on the name stem. Lastly, the built model is interpolated and combined with the existing model.
-
-    Note: This implementation uses outdated methods and should be rewritten in the future.
+    .. note:: This implementation uses subprocess.popen and should be rewritten in the future with bj_core.py methods.
     """
     # convert to log
     # TODO rewrite this entire method using bj_core methods and without building a command string.
@@ -283,24 +277,26 @@ def log_prob(params):
 
     This function calculates the log probability for a given set of parameters.
 
-    :param params: A list of parameters. It should contain the following elements in order:
-        - delta: A float representing a prior value
-        - K: An integer representing a prior value
-        - n1: An integer representing a prior value
-        - n2: An integer representing a prior value
-        - gamma_min: A float representing a prior value
-        - gamma_max: A float representing a prior value
-        - gamma_break: A float representing a prior value
-        - B: A float representing a prior value
-        - R: A float representing a prior value
-        - *other_params: Additional parameters (optional)
+    The array should contain the following elements in order:
+        - **delta**: A float representing a prior value
+        - **K**: An integer representing a prior value
+        - **n1**: An integer representing a prior value
+        - **n2**: An integer representing a prior value
+        - **gamma_min**: A float representing a prior value
+        - **gamma_max**: A float representing a prior value
+        - **gamma_break**: A float representing a prior value
+        - **B**: A float representing a prior value
+        - **R**: A float representing a prior value
+        - **\*other_params**: Additional parameters (optional)
 
+    :param params: A list of parameters.
     :type params: list
     :return: The log probability for the given parameters. It returns -inf if any of the following conditions are met:
-        - n1 > n2
-        - gamma_min > gamma_max
-        - gamma_break < gamma_min
-        - gamma_break > gamma_max
+
+        - **n1 > n2**
+        - **gamma_min > gamma_max**
+        - **gamma_break < gamma_min**
+        - **gamma_break > gamma_max**
         - Any parameter falls outside the specified range (param_min_vals and param_max_vals)
 
     :rtype: float
