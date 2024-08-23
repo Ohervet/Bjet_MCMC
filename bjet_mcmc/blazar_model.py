@@ -16,7 +16,7 @@ Parameters are always listed in the following order:
 [delta, K, n1, n2, gamma_min, gamma_max, gamma_break, B, R]
 The additional parameters for EIC are bb_temp, l_nuc, tau, blob_dist, in that order.
 All parameters are the logarithm of the true value except for delta, n1, and n2
----------------------------------------------------
+
 delta       doppler factor                  linear
 K           particle density [cm^-3]        log
 n1          alpha_1 (first index)           linear
