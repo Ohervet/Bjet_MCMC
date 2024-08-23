@@ -1,8 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-file name: blazar_clean.py
-
 The clean function removes all data files and removes parameter files not named
 params.txt.
 """
@@ -10,24 +8,12 @@ import os
 
 from bjet_mcmc.blazar_properties import *
 
-__all__ = ["blazar_clean"]
+__all__ = ["clean"]
 
 
 def clean(data=True, data_folder=None, parameter_files=True, parameter_folder=None):
     """
     Clean function documentation. Remove data files and remove parameter files not named params.txt
-
-    Args:
-        data (optional): bool
-            Specifies if data files should be deleted; default is True
-        data_folder (optional): str
-            Relative path to data folder; default is None, will be set to DATA_FOLDER
-        parameter_files (optional): bool
-            Specifies if parameter files should be deleted; default is True
-        parameter_folder (optional): str
-            Relative path to parameter folder; default is None, will be set to
-            PARAMETER_FOLDER
-
 
     :param data: A boolean indicating whether to clean data files. Default is True.
     :type data: bool
