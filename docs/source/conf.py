@@ -1,41 +1,49 @@
 # Configuration file for the Sphinx documentation builder.
 
 # -- Project information
+import os, sys
 
-project = 'Bjet_MCMC'
-copyright = '2024, Olivier Hervet'
-author = 'Olivier Hervet'
+sys.path.insert(
+    0, os.path.abspath("../../bjet_mcmc")
+)  # Source code dir relative to this file
+sys.path.insert(
+    0, os.path.abspath("../../bjet_core")
+)  # Source code dir relative to this file
+print(sys.path)
 
-release = '0.2'
-version = '0.2.1'
+release = "0.2"
+version = "0.2.1"
 
 # -- General configuration
 
 extensions = [
-    'sphinx.ext.duration',
-    'sphinx.ext.doctest',
-    'sphinx.ext.autodoc',
-    'sphinx.ext.autosummary',
-    'sphinx.ext.intersphinx',
+    "sphinx.ext.duration",
+    "sphinx.ext.doctest",
+    "sphinx.ext.autodoc",
+    "sphinx.ext.autosummary",
+    "sphinx.ext.intersphinx",
 ]
+autosummary_generate = True  # Turn on sphinx.ext.autosummary
 
 intersphinx_mapping = {
-    'python': ('https://docs.python.org/3/', None),
-    'sphinx': ('https://www.sphinx-doc.org/en/master/', None),
+    "python": ("https://docs.python.org/3/", None),
+    "sphinx": ("https://www.sphinx-doc.org/en/master/", None),
 }
-intersphinx_disabled_domains = ['std']
+intersphinx_disabled_domains = ["std"]
+pygments_style = "sphinx"
 
-templates_path = ['_templates']
+templates_path = ["_templates"]
+exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 
 # -- Options for HTML output
 
-html_theme = 'sphinx_rtd_theme'
-html_static_path = ['_static']
+html_theme = "sphinx_rtd_theme"
+html_static_path = ["_static"]
 html_logo = "../../logo/Bjet_MCMC_logo_small_v2.png"
 html_theme_options = {
-    'logo_only': True,
-    'display_version': False,
+    "logo_only": True,
+    "display_version": False,
 }
 
 # -- Options for EPUB output
-epub_show_urls = 'footnote'
+epub_show_urls = "footnote"

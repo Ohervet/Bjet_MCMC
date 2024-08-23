@@ -1506,8 +1506,7 @@ def plot_particle_spectrum(
     Plot the broken power-law particle spectrum with 1sigma contour based on Bjet_MCMC outputs
 
     Array of best parameters found by the MCMC fit.
-    For simple SSC without fixed parameters, the order is:
-        [delta, K, n_1, n_2, gamma_min, gamma_max, gamma_break, B, R]
+    For simple SSC without fixed parameters, the order is: [delta, K, n_1, n_2, gamma_min, gamma_max, gamma_break, B, R]
     Additional description:
 
     .. list-table::

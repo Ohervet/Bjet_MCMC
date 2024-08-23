@@ -9,10 +9,10 @@ creates a written text report, and creates all necessary plots.
 
 Functions:
 Function save_plots_and_info (given the configurations, the data, and the minima/maxima for the parameters, and a source of MCMC data) creates a folder with an info.txt file and plots
-    - Corner plot
-    - Plots of chi squared (med, best, all by step)
-    - Plots of the best model with data and models within 1 sigma (random  models, extreme models, and a combination of both)
-    - Plot of the chain
+- Corner plot
+- Plots of chi squared (med, best, all by step)
+- Plots of the best model with data and models within 1 sigma (random  models, extreme models, and a combination of both)
+- Plot of the chain
 
 Parameters are always listed in the following order:
 [delta, K, n1, n2, gamma_min, gamma_max, gamma_break, B, R]

@@ -67,15 +67,15 @@ def run_mcmc(
     =================       ===================================================
     Key (str)               Value
     =================       ===================================================
-    data_file             (str) relative path to data
-    n_steps               (int) number of num to run
-    n_walkers             (int) number of walkers
-    discard               (int) how many num are discarded before analysis
-    parallel              (bool) whether parallel processing will be used
-    cores                 (int) NOT PRESENT IF PARALLEL IS FALSE; # of cores
+    data_file               (str) relative path to data
+    n_steps                 (int) number of num to run
+    n_walkers               (int) number of walkers
+    discard                 (int) how many num are discarded before analysis
+    parallel                (bool) whether parallel processing will be used
+    cores                   (int) NOT PRESENT IF PARALLEL IS FALSE; # of cores
                             if absent and parallel TRUE,
                             (# cores on machine - 1) used
-    tau_variability       (float) time in hours for variability constraint
+    tau_variability         (float) time in hours for variability constraint
     =================       ===================================================
 
 

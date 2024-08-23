@@ -349,12 +349,10 @@ def read_data(data_file, cols=(0, 1, 4), use_E=True, verbose=False, instrument=F
     """
     Read the data for the SED (energy data, vFv, flux). By default, the
     data file satisfies the following:
-    - Frequency or energy data in column 0, vFv data in column 1, and vFv error
-        data in column 4
+    - Frequency or energy data in column 0, vFv data in column 1, and vFv error data in column 4
     - Space-separated (not changeable)
     - First row is a header (data not read from first row)
-    - The first (#0) column has energy data in eV (which is then
-        converted into frequency)
+    - The first (#0) column has energy data in eV (which is then converted into frequency)
 
     :param data_file: relative path of the file w/ the data
     :type data_file: str
@@ -679,8 +677,7 @@ def log_prior(
 ):
     """
     Using a uniform prior distribution. Return whether input params are valid.
-    list parameters with eic: ["delta", "K", "n_1", "n_2", "gamma_min", "gamma_max", "gamma_break", "B", "R",
-     "bb_temp", "l_nuc", "tau", "blob_dist"]
+    list parameters with eic: ["delta", "K", "n_1", "n_2", "gamma_min", "gamma_max", "gamma_break", "B", "R", "bb_temp", "l_nuc", "tau", "blob_dist"]
 
     :param params: The parameter values.
     :type params: numpy.ndarray

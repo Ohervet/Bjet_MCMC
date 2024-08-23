@@ -558,8 +558,7 @@ def make_model(
         logv_all: a 1D numpy array of the log of all frequencies
         logvFv_all: a 1D numpy array of the log of all the energy flux
         v_all: a 1D numpy array of all frequencies in the data
-        vFv_all: a 1D numpy array of corresponding energy fluxes for the
-            frequencies
+        vFv_all: a 1D numpy array of corresponding energy fluxes for the frequencies
 
     :raises IOError: if parameter_files cannot be written to (likely, a folder in the path does not exist)
 
