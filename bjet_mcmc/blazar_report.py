@@ -890,7 +890,7 @@ def save(
     :type data_file: str
     :param configs: The configurations for the data.
     :type configs: dict
-    :param text_file_name: The name of the text file to be generated..
+    :param text_file_name: The name of the text file to be generated.
     :type text_file_name: str
     :param text_only:If True, only a text file will be generated. If False, plots and info will also be saved.
     :type text_only: bool
