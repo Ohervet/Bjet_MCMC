@@ -5,24 +5,6 @@ file name: blazar_initialize.py
 
 Purpose: Implement functions to make necessary directories and compile the c++ code
 
-Contains:
-
-FUNCTIONS:
-
-make_dirs
-
-compile_bjet
-
-initialize
-
-make_dirs(data_folder=None, results_folder=None, parameter_folder=None, parameter_file=False)
-    Creates data folder, results folder, and parameter folder. Folders can be
-    specified. Others, folders specified in blazar_properties.py will be used.
-compile_bjet(bjet_folder=None, executable=None, verbose=False)
-    Compile c++ code
-initialize(data_folder=None, results_folder=None, parameter_folder=None, parameter_file=False,bjet_folder=None, executable=None, run_compile=True)
-    Calls make_dirs and compile_bjet. If code is to be run in the temp directory, the executable
-    of the C++ code is copied into the temp directory.
 """
 import os
 import shutil
@@ -48,10 +30,7 @@ def make_dirs(
     Note: This function relies on the presence of certain constants (e.g. DATA_FOLDER, RESULTS_FOLDER, PARAMETER_FOLDER, BASE_PATH, FOLDER_PATH), but these constants are not defined or included in this documentation.
 
     Example usage:
-    make_dirs(data_folder='data', results_folder='results', parameter_folder='parameters', parameter_file=True)
-
-     It has the following parameters:
-
+        make_dirs(data_folder='data', results_folder='results', parameter_folder='parameters', parameter_file=True)
 
     :param data_folder: The folder to store data files. Defaults to DATA_FOLDER.
     :type data_folder: str
@@ -87,6 +66,7 @@ def make_dirs(
 def compile_bjet(bjet_folder=None, executable=None, verbose=False):
     """
     Compiles the specified BJET folder using the specified executable.
+
     :param bjet_folder: The folder containing the BJET files to be compiled. If not provided, the default CPP_FOLDER will be used.
     :type bjet_folder: str
     :param executable: The name of the executable file to be generated. If not provided, the default EXECUTABLE will be used.
