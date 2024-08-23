@@ -1544,6 +1544,27 @@ def plot_particle_spectrum(
          - Blob radius [cm]
          - Log
 
+     Additional params for EIC
+
+    .. list-table::
+       :header-rows: 1
+
+       * - Parameter
+         - Description
+         - Scale
+       * - ``bb_temp``
+         - Black body temp of disk [K]
+         - Log
+       * - ``l_nuc``
+         - Nucleus luminosity [ergs/s]
+         - Log
+       * - ``tau``
+         - Fraction of luminosity scattered
+         - Log
+       * - ``blob_dist``
+         - Distance of blob [cm]
+         - Log
+
     Note the errors of gamma_min and gamma_max are not included in the contour
 
 
