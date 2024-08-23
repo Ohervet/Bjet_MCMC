@@ -1,6 +1,6 @@
 """
 This gets the path to .../blazars-mcmc, which then allows for function calls
-to use the absolute path."
+to use the absolute path.
 """
 
 import os
@@ -51,17 +51,12 @@ NAME_STEM = "run"
 
 class BlazarProperties(object):
     """
-    Class representing properties of a blazar.
+    Module: BlazarProperties
 
-    Attributes:
-        NUM_DIM (int): The number of dimensions of the blazar.
-        PARAM_NAMES (list): List of parameter names.
-        FORMATTED_PARAM_NAMES (list): List of formatted parameter names.
-        DETAILED_PARAM_NAMES (list): List of detailed parameter names.
-        PARAM_IS_LOG (list): List of boolean values indicating whether each parameter is logged.
+    This module contains the definition of the BlazarProperties class, which is used to store properties related to blazar objects.
 
-    Raises:
-        Exception: If the dimensions of the arrays conflict.
+    Classes:
+        BlazarProperties: A class used to store properties related to blazar objects.
 
     """
 
@@ -73,6 +68,22 @@ class BlazarProperties(object):
         detailed_param_names,
         param_is_log,
     ):
+        """
+        Class representing Blazar Properties.
+
+        :param num_dim: number of dimensions
+        :type num_dim: int
+        :param param_names: list of parameter names
+        :type param_names: list[str]
+        :param formatted_param_names: list of formatted parameter names
+        :type formatted_param_names: list[str]
+        :param detailed_param_names: list of detailed parameter names
+        :type detailed_param_names: list[str]
+        :param param_is_log: list indicating whether parameters are logarithmic
+        :type param_is_log: list[bool]
+
+        :raises Exception: if dimensions of arrays conflict in blazar_properties
+        """
         self.NUM_DIM = num_dim
         self.PARAM_NAMES = param_names
         self.FORMATTED_PARAM_NAMES = formatted_param_names
@@ -90,13 +101,12 @@ class BlazarProperties(object):
 
 def modelProperties(is_eic=False, fixed_params=None):
     """
-    Args:
-        is_eic (bool): Determines whether to use EIC properties or SSC properties. Defaults to False.
-        fixed_params (list): List of fixed parameters. Defaults to None.
-
-    Returns:
-        BlazarProperties: Object containing the properties of the selected model.
-
+    :param is_eic: a boolean indicating whether the properties are for the EIC model (default is False)
+    :type is_eic: bool
+    :param fixed_params: a list of fixed parameter values to remove from the properties (default is None)
+    :type fixed_params: list or None
+    :return: the properties object with specified modifications
+    :rtype: BlazarProperties
     """
     sscProperties = BlazarProperties(
         9,
@@ -215,18 +225,12 @@ def modelProperties(is_eic=False, fixed_params=None):
 #  defined analysis directory.
 def _get_path():
     """
+    This function retrieves the base path of the current file and returns the path up to the main folder.
 
-    This method, '_get_path()', returns the base path of the file containing the method.
+    .. note:: This method should return __file__ from the location of the Bjet-MCMC repository root, and not the python install location in `site-packages`.
 
-    Parameters:
-        None.
-
-    Returns:
-        str: The base path of the file.
-
-    Raises:
-        Exception: If the PROGRAM_NAME is not found in the file path.
-
+    :return: The base path up to the main folder.
+    :rtype: str
     """
     base_path = str(os.path.dirname(__file__))
     # base_path = str(pathlib.Path().resolve())
