@@ -2,45 +2,77 @@
 # -*- coding: utf-8 -*-
 """
 file name: blazar_model.py
-
-Contains functions to interact with the c++ code to create the SED models. In
-separate functions, it creates the necessary parameter file, calls the c++ code,
-reads the data saved by the c++ code, and processes the model data into a
+Contains functions to interact with the C++ code to create the SED models. In
+separate functions, it creates the necessary parameter file, calls the C++ code,
+reads the data saved by the C++ code, and processes the model data into a
 usable format.
-Then, function make_model does all of this when called with parameters, which is
+
+Then, the function ``make_model`` does all of this when called with parameters, which is
 the function that is used by the rest of the code.
 
-Note: All file paths are relative to blazars-mcmc
+.. note::
+    All file paths are relative to blazars-mcmc
 
 Parameters are always listed in the following order:
-[delta, K, n1, n2, gamma_min, gamma_max, gamma_break, B, R]
-The additional parameters for EIC are bb_temp, l_nuc, tau, blob_dist, in that order.
-All parameters are the logarithm of the true value except for delta, n1, and n2
+``[delta, K, n1, n2, gamma_min, gamma_max, gamma_break, B, R]``
 
-delta       doppler factor                  linear
-K           particle density [cm^-3]        log
-n1          alpha_1 (first index)           linear
-n2          alpha_2 (second index)          linear
-gamma_min   low-energy cutoff               log
-gamma_max   high-energy cutoff              log
-gamma_break energy break                    log
-B           magnetic field strength [G]     log
-R           blob radius [cm]                log
+The additional parameters for EIC are ``bb_temp, l_nuc, tau, blob_dist``, in that order.
+All parameters are the logarithm of the true value except for delta, n1, and n2.
+
+.. list-table::
+   :header-rows: 1
+
+   * - Parameter
+     - Description
+     - Scale
+   * - ``delta``
+     - Doppler factor
+     - Linear
+   * - ``K``
+     - Particle density [cm^-3]
+     - Log
+   * - ``n1``
+     - alpha_1 (first index)
+     - Linear
+   * - ``n2``
+     - alpha_2 (second index)
+     - Linear
+   * - ``gamma_min``
+     - Low-energy cutoff
+     - Log
+   * - ``gamma_max``
+     - High-energy cutoff
+     - Log
+   * - ``gamma_break``
+     - Energy break
+     - Log
+   * - ``B``
+     - Magnetic field strength [G]
+     - Log
+   * - ``R``
+     - Blob radius [cm]
+     - Log
 
 Additional params for EIC
-bb_temp     Black body temp of disk [K]     log
-l_nuc       Nucleus luminosity [ergs/s]     log
-tau         Frac of luminosity scattered    log
-blob_dist   Distance of blob [cm]           log
 
-Contains:
-make_SED(params, name_stem=None, theta=None, redshift=None, min_freq=None, max_freq=None, torus_temp=None,
-             torus_luminosity=None, torus_frac=None, data_folder=None, executable=None, command_params_full=None,
-             command_params_1=None, command_params_2=None, prev_files=False, verbose=False, eic=False)
-file_make_SED(parameter_file=None, data_folder=None, executable=None, prev_files=False, verbose=False)
-add_data(current_data, new_data=None, file_suffix=None, name_stem=None, data_folder=None, cols=(0, 2))
+.. list-table::
+   :header-rows: 1
 
-FUNCTIONS
+   * - Parameter
+     - Description
+     - Scale
+   * - ``bb_temp``
+     - Black body temp of disk [K]
+     - Log
+   * - ``l_nuc``
+     - Nucleus luminosity [ergs/s]
+     - Log
+   * - ``tau``
+     - Fraction of luminosity scattered
+     - Log
+   * - ``blob_dist``
+     - Distance of blob [cm]
+     - Log
 
 """
 import os
@@ -86,43 +118,42 @@ def make_SED(
     folder=None,
 ):
     """
-    Arguments:
-        :param params: 1D numpy array of NUM_DIM floats
-        :type params: numpy.ndarray
-        :param name_stem: Name stem for make_model. Default is None; will then be set to default.
-        :type name_stem: str, optional
-        :param theta: Angle from the line of sight. Default is None, and it will be set to the default value of 0.57.
-        :type theta: float, optional
-        :param redshift: Redshift value; default is None, so the log_prior function will use the default, which is 0.143 (the value for J1010).
-        :type redshift: float, optional
-        :param min_freq: Minimum frequency for the SED model. Default is None, where it will be set to the default value of 5.0e+7 in blazar_model.process_model.
-        :type min_freq: float, optional
-        :param max_freq: Maximum frequency for the SED model. Default is None, where it will be set to the default value of 1.0e+29 in blazar_model.process_model.
-        :type max_freq: float, optional
-        :param torus_temp: Value for the torus temperature. Default is None, and it will be set to the default of 2.0e+4.
-        :type torus_temp: float, optional
-        :param torus_luminosity: Value for the torus luminosity. Default is None, and it will be set to the default of 5.5e+20.
-        :type torus_luminosity: float, optional
-        :param torus_frac: Value for the fraction of the torus luminosity reprocessed isotropically. Default is None, and it will be set to the default of 9.0e-5.
-        :type torus_frac: float, optional
-        :param data_folder: Relative path to the folder where data will be saved to.
-        :type data_folder: str, optional
-        :param executable: Where the bjet executable is located.
-        :type executable: str, optional
-        :param command_params_full: Full set of parameters to pass to the bjet exec--see the README for information. Should be length 22, 23, 28, or 29.
-        :type command_params_full: numpy.ndarray, optional
-        :param command_params_1: The settings and transformation parameters: [prev files flag, data folder, model type, redshift, hubble constant, theta].
-        :type command_params_1: numpy.ndarray, optional
-        :param command_params_2: The constant and numerical parameters: [length of the emitting region, absorption by EBL, blob distance, # of spectral points, min freq, max freq, file name prefix].
-        :type command_params_2: numpy.ndarray, optional
-        :param prev_files: Whether bjet should create _prev files after each run; default is False.
-        :type prev_files: bool, optional
-        :param verbose: Whether information on the model should be displayed; default is False.
-        :type verbose: bool, optional
-        :param eic: States whether the run is eic or std; default is False (std).
-        :type eic: bool
-        :param folder: Additional folder information; default is None.
-        :type folder: str, optional
+    :param params: 1D numpy array of NUM_DIM floats
+    :type params: numpy.ndarray
+    :param name_stem: Name stem for make_model. Default is None; will then be set to default.
+    :type name_stem: str, optional
+    :param theta: Angle from the line of sight. Default is None, and it will be set to the default value of 0.57.
+    :type theta: float, optional
+    :param redshift: Redshift value; default is None, so the log_prior function will use the default, which is 0.143 (the value for J1010).
+    :type redshift: float, optional
+    :param min_freq: Minimum frequency for the SED model. Default is None, where it will be set to the default value of 5.0e+7 in blazar_model.process_model.
+    :type min_freq: float, optional
+    :param max_freq: Maximum frequency for the SED model. Default is None, where it will be set to the default value of 1.0e+29 in blazar_model.process_model.
+    :type max_freq: float, optional
+    :param torus_temp: Value for the torus temperature. Default is None, and it will be set to the default of 2.0e+4.
+    :type torus_temp: float, optional
+    :param torus_luminosity: Value for the torus luminosity. Default is None, and it will be set to the default of 5.5e+20.
+    :type torus_luminosity: float, optional
+    :param torus_frac: Value for the fraction of the torus luminosity reprocessed isotropically. Default is None, and it will be set to the default of 9.0e-5.
+    :type torus_frac: float, optional
+    :param data_folder: Relative path to the folder where data will be saved to.
+    :type data_folder: str, optional
+    :param executable: Where the bjet executable is located.
+    :type executable: str, optional
+    :param command_params_full: Full set of parameters to pass to the bjet exec--see the README for information. Should be length 22, 23, 28, or 29.
+    :type command_params_full: numpy.ndarray, optional
+    :param command_params_1: The settings and transformation parameters: [prev files flag, data folder, model type, redshift, hubble constant, theta].
+    :type command_params_1: numpy.ndarray, optional
+    :param command_params_2: The constant and numerical parameters: [length of the emitting region, absorption by EBL, blob distance, # of spectral points, min freq, max freq, file name prefix].
+    :type command_params_2: numpy.ndarray, optional
+    :param prev_files: Whether bjet should create _prev files after each run; default is False.
+    :type prev_files: bool, optional
+    :param verbose: Whether information on the model should be displayed; default is False.
+    :type verbose: bool, optional
+    :param eic: States whether the run is eic or std; default is False (std).
+    :type eic: bool
+    :param folder: Additional folder information; default is None.
+    :type folder: str, optional
     """
     # TODO rewrite this entire method using bj_core methods and without building a command string.
     if executable is None:
@@ -241,7 +272,7 @@ def file_make_SED(
 
     If verbose is True, the C++ code is called with verbose output. If verbose is False, the C++ code is called without displaying the output.
 
-    Note: This method uses older implementation and it is recommended to rewrite the method using bj_core methods, avoiding building a command string.
+    .. note:: This method uses older implementation and it is recommended to rewrite the method using bj_core methods, avoiding building a command string.
     """
     # TODO rewrite this entire method using bj_core methods and without building a command string.
     if parameter_file is None:
@@ -282,12 +313,8 @@ def add_data(
     """
     Add new data to the current data.
 
-    Returns:
-        tuple: Tuple containing arrays of merged data (logv, logvFv, v, vFv).
-
-    Raises:
-        IOError: If the specified data file cannot be read.
-        ValueError: If neither new data nor file suffix is provided.
+    :raises IOError: If the specified data file cannot be read.
+    :raises ValueError: If neither new data nor file suffix is provided.
 
     :param current_data: Tuple containing current data of the format (current_logv, current_logvFv, current_v, current_vFv).
     :type current_data: tuple
@@ -376,46 +403,29 @@ def process_model(
     name_stem=None, data_folder=None, verbose=False, eic=False, additional_suffixes=None
 ):
     """
-    Read a model from data files and returns arrays of frequencies and
-        energy flux.
-    This model only uses data from the *compton model* and the *synchrotron
-        model*.
-    The data we want are an array of frequencies (v) and an array of
-        corresponding flux energies (vFv). Flux energy is the sum of the flux
-        energy from the synchrotron model and that from the compton model when
-        there are data points for both of them.
+    Read a model from data files and returns arrays of frequencies and energy flux.
+    This model only uses data from the *compton model* and the *synchrotron model*.
+    The data we want are an array of frequencies (v) and an array of corresponding flux energies (vFv). Flux energy is the sum of the flux energy from the synchrotron model and that from the compton model when there are data points for both of them.
 
-    Requirements:
-        The SED model must have already been created (using make_SED above)
-            with the given name_stem.
-        By default, data is read from DATA_FOLDER/<name_stem>_*.dat, the location
-            that make_SED writes to.
-
-    Args:
-        name_stem (str): model data is saved in files named in the form
-            <name_stem>_*.dat, specify file name
-        data_folder (str): relative path to the folder containing the data files
+    .. warning::
+        Requirements:
+            - The SED model must have already been created (using `make_SED above`) with the given name_stem.
+            - By default, data is read from `DATA_FOLDER/<name_stem>_*.dat`, the location that make_SED writes to.
 
     Returns:
-        a tuple of 4 1D numpy arrays
+        - a tuple of 4 1D numpy arrays
+        - all arrays have the same length.
+        - logv_all, logvFv_all, v_all, vFv_all
+        - logv_all: a 1D numpy array of the log of all frequencies
+        - logvFv_all: a 1D numpy array of the log of all the energy flux
+        - v_all: a 1D numpy array of all frequencies in the data
+        - vFv_all: a 1D numpy array of corresponding energy fluxes for the frequencies
 
-        all arrays have the same length.
-        logv_all, logvFv_all, v_all, vFv_all
+    :raises IOError: when data cannot be read
 
-        logv_all: a 1D numpy array of the log of all frequencies
-        logvFv_all: a 1D numpy array of the log of all the energy flux
-        v_all: a 1D numpy array of all frequencies in the data
-        vFv_all: a 1D numpy array of corresponding energy fluxes for the
-            frequencies
+    .. note:: The frequency values used are the ones used in the synchrotron spectrum and the ones in the compton model greater than the max in the synchrotron. The frequency values present in the Compton model in the overlap are not used.
 
-    Raises:
-        IOError when data cannot be read
-
-    Note: The frequency values used are the ones used in the synchrotron spectrum
-    and the ones in the compton model greater than the max in the synchrotron. The
-    frequency values present in the Compton model in the overlap are not used.
-
-    :param name_stem: The stem name that will be used to construct the file names of the models. If not provided, it will use the default value `NAME_STEM`.
+    :param name_stem: The stem name that will be used to construct the file names of the models. If not provided, it will use the default value `NAME_STEM`. Model data is saved in files named in the form <name_stem>_*.dat, specify file name
     :type name_stem: str, optional
 
     :param data_folder: The folder where the model files are located. If not provided, it will use the default value `DATA_FOLDER`.
@@ -525,15 +535,12 @@ def make_model(
 
     Args:
         params (list of floats): a list of NUM_DIM floats which are the parameters
-        name_stem (str): data will be saved in files of the form
-            <name_stem>_*.dat
+        name_stem (str): data will be saved in files of the form `<name_stem>_*.dat`
         parameter_file (str): optional; relative path of the parameter file
         theta: optional; params is fixed for modeling
         redshift: optional; redshift is fixed for modeling
-        min_freq (float): optional; specifies min frequency model SEDs should use;
-            default value used if none provided, which is 5.0e+7.
-        max_freq (float): optional; specifies max frequency model SEDs should use;
-            default value used if none provided, which is 1.0e+29.
+        min_freq (float): optional; specifies min frequency model SEDs should use; default value used if none provided, which is 5.0e+7.
+        max_freq (float): optional; specifies max frequency model SEDs should use; default value used if none provided, which is 1.0e+29.
         executable (str): optional; where the bjet executable is located
         data_folder (str): relative path to the folder where data will be saved to
         use_param_file (bool): specifies if bjet should be called with parameter file or with command line args
@@ -554,10 +561,9 @@ def make_model(
         vFv_all: a 1D numpy array of corresponding energy fluxes for the
             frequencies
 
-    Raises:
-        IOError if parameter_files cannot be written to (likely, a folder in the path does not exist)
+    :raises IOError: if parameter_files cannot be written to (likely, a folder in the path does not exist)
 
-    :param params: The parameters for the model computation.
+    :param params: The parameters for the model computation. A list of NUM_DIM floats which are the parameters
     :type params: numpy.ndarray
     :param name_stem: The stem name for the model files.
     :type name_stem: str
@@ -654,18 +660,6 @@ def command_line_sub_strings(
     eic=False,
 ):
     """
-    Args:
-        name_stem (str): The file name prefix. Defaults to None.
-        theta (float): The angle value. Defaults to None.
-        redshift (float): The redshift value. Defaults to None.
-        min_freq (float): The minimal frequency value. Defaults to None.
-        max_freq (float): The maximal frequency value. Defaults to None.
-        data_folder (str): The data folder. Defaults to None.
-        prev_files (bool): Whether to enable previous files or not. Defaults to False.
-        eic (bool): Whether to enable EIC or not. Defaults to False.
-
-    Returns:
-        tuple: A tuple containing two lists. The first list contains settings and transformation information and the second list contains constant and numerical information.
 
     :param name_stem: The prefix for the file name. If not provided, it defaults to NAME_STEM.
     :type name_stem: str
@@ -683,8 +677,8 @@ def command_line_sub_strings(
     :type prev_files: bool
     :param eic: Flag indicating the model type. If set to True, it uses "1" as the value of model_type, otherwise it uses "0".
     :type eic: bool
-    :return: A tuple containing the settings and transformation values and the constant and numerical values.
-    :rtype: tuple
+    :return: A tuple containing the settings and transformation values, and the constant and numerical values.
+    :rtype: tuple, tuple
     """
     if name_stem is None:
         name_stem = NAME_STEM
@@ -743,55 +737,31 @@ def create_params_file(
     verbose=False,
 ):
     """
-    Creates a parameter file with the given parameters.
-    NOTE: Cannot be used with EIC
     Given parameters and a file, put the data in the file in the format
     understandable by the C++ code.
 
-    Args:
-        params: List of NUM_DIM floats
-            Form: [delta (linear), K (log), n1 (linear), n2 (linear), gamma_min (log),
-                gamma_max (log), gamma_break (log), B (log), R (log)]
-        name_stem: str
-            Data will be saved in files named <name_stem>_*.dat
-        parameter_file (optional): str
-            String with the relative path of the parameter file; default is None;
-            will be set to "<PARAMETER_FOLDER>/params.txt"
-        min_freq (optional): float
-            Specifies min frequency model SEDs should use; default is None;
-            will be set to 5.0e+7
-        max_freq (optional): float
-            Specifies max frequency model SEDs should use; default is None;
-            will be set to 1.0e+29
-        redshift (optional): float
-            Redshift is fixed for modeling; default is None; will be set to 0.57
-        theta (optional): float
-            params is fixed for modeling; default is None; will be set to 0.143
-        verbose (optional):
-            Specifies if parameters are shown; default is False
-    After function call:
-        parameter_files is over-written (and createed if necessary) with parameter information.
+    .. note:: Cannot be used with EIC
 
-    Raises:
-        IOError if parameter_files cannot be written to (likely, a folder in the path does not exist)
+    :raises IOError: if parameter_files cannot be written to (likely, a folder in the path does not exist)
 
     :param params: List of parameters
+        Form: [delta (linear), K (log), n1 (linear), n2 (linear), gamma_min (log), gamma_max (log), gamma_break (log), B (log), R (log)]
     :type params: list
-    :param name_stem: Name stem of the output file
+    :param name_stem: Name stem of the output file. Data will be saved in files named <name_stem>_*.dat
     :type name_stem: str
-    :param parameter_file: Output file name
+    :param parameter_file: Output file name. String with the relative path of the parameter file; default is None; will be set to "<PARAMETER_FOLDER>/params.txt"
     :type parameter_file: str
     :param theta: Angle to the line of sight
     :type theta: float
     :param redshift: Redshift
     :type redshift: float
-    :param min_freq: Minimal frequency
+    :param min_freq: Minimal frequency. Specifies min frequency model SEDs should use; default is None; will be set to 5.0e+7
     :type min_freq: float
-    :param max_freq: Maximal frequency
+    :param max_freq: Maximal frequency. Specifies max frequency model SEDs should use; default is None; will be set to 1.0e+29
     :type max_freq: float
     :param verbose: Verbose output flag
     :type verbose: bool
-    :return: None
+    :return: None parameter_files is over-written (and createed if necessary) with parameter information.
     :rtype: None
     """
     if parameter_file is None:
@@ -975,21 +945,13 @@ def params_log_to_linear(params, param_is_log=None, eic=False):
     """
     Converts parameters from logarithmic to linear scale.
 
-    Args:
-        params (list): A list of parameters.
-        param_is_log (list, optional): A list indicating whether each parameter is in log scale. If not provided, it will be obtained from `modelProperties`. Defaults to None.
-        eic (bool, optional): A flag indicating if the model uses EIC. Defaults to False.
-
-    Returns:
-        list: A new list of parameters converted from log scale to linear scale if necessary.
-
     :param params: The parameters to be converted.
     :type params: list[float]
     :param param_is_log: A list indicating whether each parameter is in logarithmic scale. If None, it is determined by modelProperties.
     :type param_is_log: list[bool]
-    :param eic: Whether to use EIC (External Input Control) for determining logarithmic scale. Default is False.
+    :param eic: Whether to use EIC for determining logarithmic scale. Default is False.
     :type eic: bool
-    :return: The converted parameters.
+    :return: A new list of parameters converted from log scale to linear scale if necessary.
     :rtype: list[float]
     """
     if param_is_log is None:
@@ -1005,23 +967,16 @@ def params_log_to_linear(params, param_is_log=None, eic=False):
 def params_linear_to_log(params, param_is_log=None, eic=False):
     """
     Converts linear scale parameters to logarithmic scale.
-    Args:
-        params (list): The linearized parameters.
-        param_is_log (list, optional): A list indicating whether each parameter should be converted to log scale. If not provided, defaults to None.
-        eic (bool, optional): A flag indicating whether the model properties are based on EIC. Defaults to False.
 
-    Returns:
-        list: The converted parameters.
-
-    Note:
+    .. note::
         - If `param_is_log` is not provided, it will be inferred from the model properties based on `eic`.
         - The conversion to log scale is performed using the base 10 logarithm (np.log10).
 
     :param params: The linear scale parameters to be converted.
     :type params: List or numpy array
-    :param param_is_log: Optional. A list or numpy array indicating whether each parameter is already in logarithmic scale. If not provided, it will be determined based on the model properties.
+    :param param_is_log: Optional. A list indicating whether each parameter should be converted to log scale. If not provided, it will be determined based on the model properties.
     :type param_is_log: List or numpy array, default None
-    :param eic: Optional. Boolean indicating whether EIC (electrode impedance compensation) is applied. If True, the model properties will be used to determine param_is_log. If False, param_is_log will be used as is.
+    :param eic: Optional. A flag indicating whether the model properties are based on EIC. Defaults to False. If True, the model properties will be used to determine param_is_log. If False, param_is_log will be used as is.
     :type eic: bool, default False
     :return: The parameters converted to logarithmic scale.
     :rtype: List or numpy array
