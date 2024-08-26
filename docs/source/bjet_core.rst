@@ -64,13 +64,13 @@ Order of parameters in command line:
  
 argc should be 22 or 23 depending on if data folder is listed
 
-- Model type 1:
+- Model type 1 [*]_:
 
 .. code-block:: console
 
     $ bj_core <0, 1, 2, 3> <data folder if applicable> 1 (model type) z, H_0, THETA, DOP_B, K1, N1, N2, GAMMA_MIN, GAMMA_MAX, GAMMA_BRK, B, R_src, L_src, IIR_level, D_b, T_BB, TBB_tor, L_nuc, tau, L_tor, tau, NU_DIM, NU_STR, NU_END, prefix
 
-*Note that tau is present twice, this is a slight error in the bjet code. The second tau value is not used for anything, but it must be inputted.
+.. [*] Note that tau is present twice, this is a slight error in the bjet code. The second tau value is not used for anything, but it must be inputted.
 
 argc should be 28 or 29 depending on if data folder is listed
 

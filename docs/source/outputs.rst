@@ -12,7 +12,8 @@ Text files
 ----------
 
 - ``basic_info.txt``
- Contains information from the configuations file, some paths and the running time.
+
+ Contains information from the configurations file, some paths and the running time.
  e.g. ::
 
   folder name: local_results/J1010_2023-07-04-23:03:45
@@ -99,13 +100,15 @@ Science plots
 :math:`\chi^2` plots are critical to assess the convergence of the MCMC chain. They provide insights to the user in taking longer/shorter chains or changing the number of free parameters.
 
 - ``chi_squared_plot_all.jpeg``
- :math:`\chi^2` of all individual walkers. 
+
+ :math:`\chi^2` of all individual walkers.
  e.g.
 
  .. image:: ../figures/chi_squared_plot_all.jpeg
    :width: 400
 
 - ``chi_squared_plot_best.svg``
+
  Best :math:`\chi^2` at each step.
  e.g.
 
@@ -113,6 +116,7 @@ Science plots
    :width: 400
 
 - ``chi_squared_plot_med.svg``
+
  Median of all walker's :math:`\chi^2` at each step.
  e.g.
 
