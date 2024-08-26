@@ -2,6 +2,7 @@
 Slightly modified version of bj02.h for use in MCMC code; modified by Sarah Youngquist in Feb 2022
 See bj_core.cpp for an explanation of the changes.
 */
+/** @file */
 
 #ifndef BLAZARS_MCMC_BJ02_COPY_H
 #define BLAZARS_MCMC_BJ02_COPY_H

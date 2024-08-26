@@ -1,6 +1,7 @@
 // Slightly modified version of processes_supp_core.cpp for use in MCMC code; modified by Sarah Youngquist, Feb 2022 (see below)
 // Only change is switching to using namespace bj_core02 and including bj_core.h instead of
 // bj02 and bj02.h
+/** @file */
 #include <iostream>
 #include <stdlib.h>
 #include <stdio.h>
@@ -93,24 +94,67 @@ double ENERGY50; // total energy in protons [10^50 erg]
   
  int          CASE_PION;
 
+/**
+ * Calculates the value of N_p_PowLawExpCutoff function for a given energy.
+ *
+ * This function takes the energy in electron volts (eV) as input and calculates
+ * the value of N_p_PowLawExpCutoff function. The N_p_PowLawExpCutoff function is
+ * defined as fNorm_prot multiplied by energy raised to the power of -NP and
+ * multiplied by the exponential of -energy divided by EPCUTOFF.
+ *
+ * @param energy The energy in eV for which to calculate the N_p_PowLawExpCutoff.
+ * @return The calculated value of N_p_PowLawExpCutoff for the given energy.
+ */
   double N_p_PowLawExpCutoff(double energy) { // energy in eV
     //return(Kp * pow(energy,-NP) * exp(-energy/EPCUTOFF));
     return(fNorm_prot * pow(energy,-NP) * exp(-energy/EPCUTOFF));
   }
   
   // Switch between different proton spectrum shapes
+/**
+ * Calculates the value of N_p function for a given energy.
+ *
+ * This function takes the energy in electron volts (eV) as input and calculates
+ * the value of the N_p function. The N_p function is defined as the result of
+ * the N_p_PowLawExpCutoff function.
+ *
+ * @param energy The energy in eV for which to calculate the N_p value.
+ * @return The calculated value of N_p for the given energy.
+ */
   double N_p(double energy){ // energy in eV
     double foo=0.;
     foo=N_p_PowLawExpCutoff(energy);
     return foo;
   }
 
+/**
+ * @brief Calculates the value of J_p_PowLawExpCutoff for a given energy.
+ *
+ * This function calculates the value of J_p_PowLawExpCutoff using the provided energy value. The energy is expected to be in electron volts (eV).
+ *
+ * @param energy The energy value for which to calculate the J_p_PowLawExpCutoff.
+ * @return The calculated value of J_p_PowLawExpCutoff.
+ *
+ * @pre The variables Kp, NP, and EPCUTOFF must be defined and have valid values.
+ */
   double J_p_PowLawExpCutoff(double energy) { // energy in eV
     //return(Kp * pow(energy,-NP) * exp(-energy/EPCUTOFF));
     return(Kp * pow(energy,-NP) * exp(-energy/EPCUTOFF));
   }
   
   // Switch between different proton spectrum shapes
+/**
+ * @brief Calculates the value of J_p for a given energy.
+ *
+ * This function calculates the value of J_p using the provided energy value. The energy is expected to be in electron volts (eV). The function internally calls J_p_PowLawExpCutoff to perform the calculation.
+ *
+ * @param energy The energy value for which to calculate the J_p.
+ * @return The calculated value of J_p.
+ *
+ * @see J_p_PowLawExpCutoff
+ *
+ * @pre The variables Kp, NP, and EPCUTOFF must be defined and have valid values.
+ */
   double J_p(double energy){ // energy in eV
     double foo=0.;
     foo=J_p_PowLawExpCutoff(energy);
@@ -127,6 +171,20 @@ double ENERGY50; // total energy in protons [10^50 erg]
 */
 
 
+/**
+ * @brief Modified Simpson Integration Routine
+ *
+ * This function calculates the integral of a given function using the Modified
+ * Simpson integration method.
+ *
+ * @param func Pointer to the array storing the function values
+ * @param ics Pointer to the array storing the x-values of the function
+ * @param res Length of the arrays func[] and ics[]
+ * @param start Index of the starting point in the arrays func[] and ics[]
+ * @param end Index of the ending point in the arrays func[] and ics[]
+ *
+ * @return The integral value calculated by the Modified Simpson integration method
+ */
 double Simpson(double func[], double ics[], int res, int start, int end){
   //ics[]: x, res: length x
 
@@ -168,7 +226,31 @@ double Simpson(double func[], double ics[], int res, int start, int end){
 *
 ********************************************************************************
 */
-
+/**
+ * \brief This function calculates the weights for a Gauss-Legendre integrating routine.
+ *
+ * The gauleg function calculates the weights for a Gauss-Legendre integrating routine
+ * using the specified lower and upper bounds, number of points, and arrays to store
+ * the calculated values. The weights are calculated using the Gauss-Legendre method.
+ *
+ * \param x1     The lower bound of the interval.
+ * \param x2     The upper bound of the interval.
+ * \param x      Pointer to the array to store the calculated points.
+ * \param w      Pointer to the array to store the calculated weights.
+ * \param n      The number of points to calculate.
+ *
+ * \return void
+ *
+ * \remark This function assumes that the arrays x and w have already been allocated
+ *         with enough memory to store the calculated values.
+ *
+ * \remark The calculated points and weights are stored in the arrays x and w respectively,
+ *         in the range from index 1 to n. The values at index 0 and index n+1 are not used.
+ *
+ * \remark The tolerance for convergence is set to EPS = 3.0e-11.
+ *         If the maximum absolute difference between z and z1 is smaller than EPS,
+ *         the iteration is considered to have converged and the loop is exited.
+ */
 void gauleg(double x1, double x2, double x[], double w[], int n) {
     int    m, j, i;
     double z1, z, xm, xl, pp, p3, p2, p1;
@@ -205,7 +287,32 @@ void gauleg(double x1, double x2, double x[], double w[], int n) {
 *
 ********************************************************************************
 */
-
+/**
+ * @brief This function calculates the integral of a given function using a combined integrating routine.
+ * The routine uses both the trapezoid rule and Gauss-Legendre integration.
+ *
+ * @param func A pointer to the function to be integrated.
+ * @param a The lower limit of integration.
+ * @param b The upper limit of integration.
+ * @param n The number of steps in the trapezoid rule.
+ * @param m The number of points in the Gauss-Legendre quadrature.
+ * @return The value of the integral.
+ *
+ * @details The function first checks if the lower limit 'a' is greater than or equal to the upper limit 'b'.
+ * If so, it returns 0 and prints an error message. Otherwise, it calculates the step size based on the number of steps 'n' and
+ * the logarithms of 'a' and 'b'.
+ *
+ * Then, it iterates from 1 to 'n-1' and calculates the lower and upper limits for each subinterval.
+ * The gauleg function is called to calculate the Gauss-Legendre points and weights for each subinterval.
+ * The function 'func' is evaluated at each point and multiplied by the corresponding weight.
+ * The evaluations are summed up and multiplied by the step size to calculate the integral for each subinterval.
+ * Finally, all the subinterval integrals are summed up to obtain the total integral, which is returned as the result.
+ *
+ * @note The function assumes that the provided function 'func' is continuous within the given limits 'a' and 'b'.
+ * The function 'gauleg' is used internally to calculate the Gauss-Legendre points and weights for each subinterval.
+ *
+ * @see gauleg
+ */
 double intgl(double (*func)(double), double a, double b, int n, int m) {
   //a: start, b: end, n: nb steps
       int i, j;
@@ -243,6 +350,27 @@ double intgl(double (*func)(double), double a, double b, int n, int m) {
 *
 ********************************************************************************
 */
+/**
+ * @brief Perform linear interpolation on a log-log array.
+ *
+ * @param x The value to interpolate at.
+ * @param xvec The array of x values to interpolate between.
+ * @param xdim The size of the xvec array.
+ * @param x_min The minimum x value in the xvec array.
+ * @param x_max The maximum x value in the xvec array.
+ *
+ * @return The interpolated value at x.
+ *
+ * This function performs linear interpolation on a log-log array. The x value provided is
+ * used to determine the interpolated value between two adjacent values in the xvec array.
+ * The x values in the xvec array must be sorted in ascending order. If the given x value is
+ * less than or equal to zero, it is replaced with the x_min value. If any input parameters
+ * are negative or if x_min is equal to x_max, an error message is displayed and the program exits.
+ * The interpolated value is calculated based on the provided x and xvec values by determining the
+ * position of x in the xvec array and using the surrounding values for interpolation. The interpolation
+ * is performed in logarithmic space if the loglog flag is set, otherwise it is performed in linear space.
+ * The resulting interpolated value is returned.
+ */
 double linint(double x,
 	     double xvec[],
 	     int xdim,
@@ -339,7 +467,7 @@ double linint(double x,
 *
 * SYNCHROTRON EMISSION COEFFICIENT
 *
-* elec_spec   - function which defines electrons energy spectrum 
+* elec_spec   - function which defines electrons energy spectrum
 * gamma_min   - minimal energy of electrons (Lorentz factor)
 * gamma_max   - maximal energy of electrons (Lorentz factor)
 * nu          - frequency for which spectrum will be calculated
@@ -349,7 +477,26 @@ double linint(double x,
 *
 ********************************************************************************
 */
-
+/**
+ * @brief Calculates the synchrotron emission coefficient.
+ *
+ * This function calculates the synchrotron emission coefficient based on the given parameters.
+ * It integrates over the electron energy spectrum defined by elec_spec and returns the result.
+ *
+ * @param elec_spec Function pointer to the electron energy spectrum function.
+ * @param gamma_min The minimal energy of electrons (Lorentz factor).
+ * @param gamma_max The maximal energy of electrons (Lorentz factor).
+ * @param nu The frequency for which the spectrum will be calculated.
+ * @param B The value of the magnetic field.
+ * @param prec1 The integration precision for trapezoid integration.
+ * @param prec2 The integration precision for Gauss-Legendre.
+ *
+ * @return The synchrotron emission coefficient.
+ *
+ * @note The function prints error messages and returns 0 if any of the input values are out of range.
+ *
+ * @see elec_spec
+ */
 double j_syn(double (*elec_spec)(double), 
              double gamma_min, 
 	     double gamma_max, 
@@ -450,7 +597,7 @@ double j_syn(double (*elec_spec)(double),
 *
 * ELECTRONS SELF-ABSORPTION COEFFICIENT
 *
-* elec_spec   - function which defines electrons energy spectrum 
+* elec_spec   - function which defines electrons energy spectrum
 * gamma_min   - minimal energy of electrons (Lorentz factor)
 * gamma_max   - maximal energy of electrons (Lorentz factor)
 * nu          - frequency for which spectrum will be calculated
@@ -460,7 +607,31 @@ double j_syn(double (*elec_spec)(double),
 *
 ********************************************************************************
 */
-
+/**
+ * @brief Calculate the electrons self-absorption coefficient.
+ *
+ * This function calculates the self-absorption coefficient of electrons for a given energy spectrum, frequency, and magnetic field.
+ * It performs numerical integration to compute the coefficient.
+ *
+ * @param elec_spec Pointer to the function that defines the electrons energy spectrum
+ * @param gamma_min Minimal energy of electrons (Lorentz factor)
+ * @param gamma_max Maximal energy of electrons (Lorentz factor)
+ * @param nu Frequency for which the spectrum will be calculated
+ * @param B Value of the magnetic field
+ * @param prec1 Integration precision for the trapezoid integration
+ * @param prec2 Integration precision for the Gauss-Legendre method
+ * @return The self-absorption coefficient
+ *
+ * @note Make sure to provide accurate and valid values for the parameters as specified.
+ * @note The integration precisions (prec1, prec2) should be between 3 and 1.0e+4.
+ * @note The gamma_min parameter should be between 1.0 and 1.0e+10.
+ * @note The gamma_max parameter should be between 1.0 and 1.0e+10 and should be greater than gamma_min.
+ * @note The nu parameter should be between MIN_FREQ and MAX_FREQ.
+ * @note The B parameter should be between 1.0e-10 and 1.0e+5.
+ * @note The elec_spec function should be defined to provide the electrons energy spectrum.
+ * @note The function uses several constants: MIN_FREQ, MAX_FREQ, e, m_e, c, C2, sig_T, C1, C3.
+ *        Make sure these constants are defined in the code.
+ */
 double k_esa(double (*elec_spec)(double), 
              double gamma_min, 
 	     double gamma_max, 
@@ -573,6 +744,17 @@ double k_esa(double (*elec_spec)(double),
 ********************************************************************************
 */
 
+/**
+ * @brief Calculates the inverse-Compton emissivity.
+ *
+ * This function calculates the inverse-Compton emissivity based on the given parameters.
+ *
+ * @param ec Energy of the electron
+ * @param gg Lorentz factor of the electron
+ * @param es Energy of the soft photon
+ *
+ * @return Computed inverse-Compton emissivity
+ */
 double Compton_kernel(double ec, double gg, double es) {
       double r_e;
       double k_p;
@@ -592,7 +774,7 @@ double Compton_kernel(double ec, double gg, double es) {
 *
 * INVERSE-COMPTON EMISSION COEFFICIENT (Inoue & Takahara 1996)
 *
-* elec_spec   - function which defines electrons energy spectrum 
+* elec_spec   - function which defines electrons energy spectrum
 * gamma_min   - minimal energy of electrons (Lorentz factor)
 * gamma_max   - maximal energy of electrons (Lorentz factor)
 * I_rad       - matrix which contains intensity of radiation field
@@ -605,7 +787,34 @@ double Compton_kernel(double ec, double gg, double es) {
 *
 ********************************************************************************
 */
-
+/**
+ * @brief Calculates the inverse Compton emission coefficient.
+ *
+ * This function calculates the inverse Compton emission coefficient using the Inoue & Takahara 1996 formula. Given the input parameters and the electron energy spectrum, it calculates the emission coefficient for a given frequency.
+ *
+ * @param elec_spec Function pointer to the electron energy spectrum function. The function should take a double as an argument and return a double.
+ * @param gamma_min Minimal energy of electrons (Lorentz factor).
+ * @param gamma_max Maximal energy of electrons (Lorentz factor).
+ * @param I_rad Array containing the intensity of the radiation field.
+ * @param nu_rad_min Minimum frequency of the radiation field photons.
+ * @param nu_rad_max Maximum frequency of the radiation field photons.
+ * @param nu_rad_dim Dimension of the matrix I_rad.
+ * @param nu Frequency for which the emission spectrum will be calculated.
+ * @param prec1 Integration precision for the trapezoid integration.
+ * @param prec2 Integration precision for the Gauss-Legendre.
+ * @return The inverse Compton emission coefficient as a double value.
+ *
+ * @note Before calling this function, make sure to define the following constants:
+ * - MIN_FREQ: Minimum frequency value (double)
+ * - MAX_FREQ: Maximum frequency value (double)
+ * - h: Planck's constant (double)
+ * - m_e: Electron mass (double)
+ * - c: Speed of light (double)
+ *
+ * @note The function uses Gauss-Legendre quadrature for numerical integration.
+ *
+ * @see The Inoue & Takahara 1996 paper for detailed information on the formula.
+ */
 double j_com(double (*elec_spec)(double), 
              double gamma_min, 
 	     double gamma_max, 
@@ -907,6 +1116,23 @@ double E_MAX = log10(5.0e+4); //  50 TeV
 
 const  int IDIM = 100;
 
+/**
+ * @brief Interpolates a value using bilinear interpolation.
+ *
+ * This function computes the interpolated value of a given point (ee, zz) using bilinear interpolation.
+ * It checks if the given point falls within the range of the provided data arrays E1 and Z1.
+ * If the point is within the range, it performs bilinear interpolation using the formula:
+ * t = a*ee*zz + b*zz + c*ee + d
+ *
+ * @param ee The x-coordinate of the point to be interpolated.
+ * @param zz The y-coordinate of the point to be interpolated.
+ * @param print_flag A flag indicating whether to print debug information.
+ *                   If set to 1, debug information will be printed to stderr.
+ *                   If set to 0, no debug information will be printed.
+ *
+ * @return The interpolated value of the given point (ee, zz).
+ *         If the point is outside the range of the data arrays, it returns 0.
+ */
 double Interpolate1(double ee, double zz, int print_flag) {
       int ei = 1, zi = 1;
       int col, row;
@@ -972,6 +1198,17 @@ double Interpolate1(double ee, double zz, int print_flag) {
       return t;
 }
 
+/**
+ * Interpolates a value using a bilinear interpolation method.
+ *
+ * This function takes an coordinate (ee, zz) and returns the interpolated value based on a bilinear interpolation method.
+ * The function checks if the coordinate lies within the valid range of the given datasets. If the coordinate is within the range, the interpolation is performed. Otherwise, the function returns 0.
+ *
+ * @param ee The E coordinate.
+ * @param zz The Z coordinate.
+ * @param print_flag Flag to indicate whether to print debug information.
+ * @return The interpolated value.
+ */
 double Interpolate2(double ee, double zz, int print_flag) {
       int ei = 1, zi = 1;
       int col, row;
@@ -1037,6 +1274,14 @@ double Interpolate2(double ee, double zz, int print_flag) {
       return t;
 }
 
+/**
+ * Calculates the optical depth tau based on the frequency nu, redshift zz, and range parameter.
+ *
+ * @param nu - the frequency in nu
+ * @param zz - the redshift in zz
+ * @param range - the range parameter
+ * @return the calculated optical depth tau
+ */
 double tau_IRA_Kneiske(double nu, double zz, int range) {
       double E_keV, E_GeV, E_TeV, tau;
       
@@ -1130,6 +1375,29 @@ double T3[MDIM_Franceschini] = {0.0000, 0.0000, 0.0000, 0.000000, 0.0000021,
 
 
 
+/**
+ * Interpolate3 function calculates the interpolated value for a given input E and z.
+ *
+ * @param ee - The input value for E.
+ * @param zz - The input value for z.
+ * @param print_flag - A flag indicating whether to print debug information.
+ * @return The interpolated value.
+ *
+ * The Interpolate3 function takes in two parameters ee (the input value for E) and zz (the input value for z), and calculates the interpolated value using the function:
+ * t = a * ee * zz + b * zz + c * ee + d
+ * The coefficients a, b, c, and d are calculated based on the surrounding data points and used to determine the interpolated value.
+ * If the input values ee and zz fall within the defined range of E and z values, the function will return the interpolated value. Otherwise, it returns 0.
+ *
+ * The function uses the following data arrays:
+ *
+ * E3 - An array of size EDIM_Franceschini containing the E values.
+ * EDIM_Franceschini - The size of the E3 array.
+ *
+ * Z3 - An array of size ZDIM_Franceschini containing the z values.
+ * ZDIM_Franceschini - The size of the Z3 array.
+ *
+ * Note: The values of E3, EDIM_Franceschini, Z3, and ZDIM_Franceschini are not shown in the generated documentation.
+ */
 double Interpolate3(double ee, double zz, int print_flag) {
       int ei = 1, zi = 1;
       int col, row;
@@ -1201,6 +1469,39 @@ zz, ee);
       return t;
 }
 
+/**
+ * Calculates the optical depth using the IRA Franseschini method.
+ *
+ * @param nu - The frequency in hertz.
+ * @param zz - The redshift.
+ * @return The optical depth.
+ *
+ * This function calculates the optical depth using the IRA Franseschini method. It takes in two parameters:
+ * - nu: The frequency in hertz.
+ * - zz: The redshift.
+ *
+ * It performs the following steps:
+ * 1. Convert the frequency from hertz to keV.
+ * 2. Convert the frequency from keV to GeV and TeV.
+ * 3. Interpolate the value of the optical depth using the Interpolate3 function.
+ *
+ * The function returns the calculated optical depth.
+ *
+ * Note: The function relies on the Interpolate3 function to perform the interpolation. The Interpolate3 function takes in two parameters ee (the input value for E) and zz (the input value for z), and calculates the interpolated value using the function:
+ * t = a * ee * zz + b * zz + c * ee + d
+ * The coefficients a, b, c, and d are calculated based on the surrounding data points and used to determine the interpolated value.
+ * If the input values ee and zz fall within the defined range of E and z values, the function will return the interpolated value. Otherwise, it returns 0.
+ *
+ * The Interpolate3 function uses the following data arrays:
+ *
+ * - E3: An array of size EDIM_Franceschini containing the E values.
+ * - EDIM_Franceschini: The size of the E3 array.
+ *
+ * - Z3: An array of size ZDIM_Franceschini containing the z values.
+ * - ZDIM_Franceschini: The size of the Z3 array.
+ *
+ * Note: The values of E3, EDIM_Franceschini, Z3, and ZDIM_Franceschini are not shown in the generated documentation.
+ */
 double tau_IRA_Franceschini(double nu, double zz) {
       double E_keV, E_GeV, E_TeV, tau;
       
@@ -1338,6 +1639,14 @@ double T4[MDIM_Finke] =
 } ;
 
 
+/**
+ * Interpolates a value using a 4-point interpolation algorithm.
+ *
+ * @param ee The input value for E.
+ * @param zz The input value for z.
+ * @param print_flag A flag indicating whether to print debug information.
+ * @return The interpolated value.
+ */
 double Interpolate4(double ee, double zz, int print_flag) {
       int ei = 1, zi = 1;
       int col, row;
@@ -1409,6 +1718,13 @@ zz, ee);
       return t;
 }
 
+/**
+ * Calculates the optical depth, tau, using the IRA_Finke interpolation method.
+ *
+ * @param nu The frequency in Hz
+ * @param zz The redshift value
+ * @return The calculated optical depth
+ */
 double tau_IRA_Finke(double nu, double zz) {
       double E_keV, E_GeV, E_TeV, tau;
       
@@ -1507,6 +1823,38 @@ double T5[MDIM_Franceschini17] =
 
 
 
+/**
+ * This function performs interpolation to estimate the value of a function at a given point (ee, zz).
+ * The function uses bilinear interpolation to estimate the value based on a 2D table of values.
+ * The interpolation is performed within a specific range defined by the input parameters.
+ *
+ * @param ee      The value of the first input parameter.
+ * @param zz      The value of the second input parameter.
+ * @param print_flag  Determines if additional debug information should be printed.
+ *                    Set to non-zero to enable printing, zero to disable printing.
+ * @return        The estimated value of the function at the given point (ee, zz).
+ *                If the inputs are outside the defined range, the function returns 0.
+ *
+ * Example usage:
+ *
+ * double result = Interpolate5(0.01, 0.5, 1);
+ *
+ * This function requires the following external variables to be defined:
+ *
+ * - E5          : An array representing the range of possible values for the first input parameter.
+ *                 Defined as double E5[EDIM_Franceschini17].
+ * - EDIM_Franceschini17    : The number of elements in the array E5. Defined as an integer constant.
+ * - Z5          : An array representing the range of possible values for the second input parameter.
+ *                 Defined as double Z5[ZDIM_Franceschini17].
+ * - ZDIM_Franceschini17    : The number of elements in the array Z5. Defined as an integer constant.
+ * - T5          : A 2D array representing the values of the function to be interpolated.
+ *                 Defined as double T5[EDIM_Franceschini17 * ZDIM_Franceschini17].
+ *                 The values in the array represent the function values at specific (ee, zz) coordinate pairs.
+ *                 The indexing of the array is as follows:
+ *                 - T5[ei][zi] represents the value at E5[ei] and Z5[zi].
+ *
+ * For correct usage, make sure to define the external variables before calling this function.
+ */
 double Interpolate5(double ee, double zz, int print_flag) {
       int ei = 1, zi = 1;
       int col, row;
@@ -1578,6 +1926,19 @@ zz, ee);
       return t;
 }
 
+/**
+ * Calculates the absorption coefficient (tau) for a given frequency (nu) and redshift (zz) using the IRA_Franceschini17 model.
+ * The absorption coefficient represents the amount of radiation that is absorbed as it travels through the universe.
+ * The function performs interpolation to estimate the value of tau based on a 2D table of function values.
+ *
+ * @param nu The frequency in Hz.
+ * @param zz The redshift.
+ * @return The absorption coefficient tau.
+ *
+ * Example usage:
+ *
+ * double tau = tau_IRA_Franceschini17(4.8e+14, 0.5);
+ */
 double tau_IRA_Franceschini17(double nu, double zz) {
       double E_keV, E_GeV, E_TeV, tau;
       
@@ -1601,7 +1962,14 @@ double tau_IRA_Franceschini17(double nu, double zz) {
 *
 ********************************************************************************
 */
-
+/**
+ * Calculates the absorption coefficient using the IIR model (Stecker & Jager 1998).
+ *
+ * @param i_i The index value to determine the row in the absorption coefficient matrix.
+ * @param z_i The value for which the absorption coefficient is calculated.
+ * @param level The radiation field level. Set to non-zero for a higher IR radiation field, and zero for a lower IR radiation field.
+ * @return The absorption coefficient for the given parameters.
+ */
 double a_i(int i_i, double z_i, int level) {
       int j;
       double a_ij[4][3];
@@ -1639,13 +2007,20 @@ double a_i(int i_i, double z_i, int level) {
 * ABSORPTION COEFFICIENT WHICH DESCRIBES ABSORPTION OF GAMMA-RAYS BY
 * INTERGALACTIC INFRARED MEDIUM (Stecker & Jager 1998)
 *
-* nu    - observed frequency 
+* nu    - observed frequency
 * z     - redshift
 * level - absorption level (1 - high, 0 -low)
 *
 ********************************************************************************
 */
-
+/**
+ * Calculates the absorption coefficient that describes the absorption of gamma-rays by the intergalactic infrared medium.
+ *
+ * @param nu The observed frequency of the gamma-ray.
+ * @param z The redshift value.
+ * @param level The absorption level. Use 1 for high absorption level and 0 for low absorption level.
+ * @return The absorption coefficient for the given parameters.
+ */
 double tau_IIR(double nu, double z, int level) {
 
       char name[32] = "tau_IIR";
@@ -1782,8 +2157,13 @@ double gg_abs_ssc(double (*elec_spec)(double),
 *
 ********************************************************************************
 */
-
-
+/**
+* Calculates the complete photon-photon cross-section according to the formula given by Aharonian et al. (2008)
+*
+* @param nu_s The target photon frequency
+* @param nu_c The High-Energy Photon Frequency
+* @return The cross-section value
+*/
 double sigma_gg(double nu_s, double nu_c){
   double eps_s, eps_c, s, sigma_gg;
 
@@ -1803,8 +2183,8 @@ double sigma_gg(double nu_s, double nu_c){
 /*
 ********************************************************************************
 *
-* ABSORPTION COEFFICIENT FOR PAIR PRODUCTION BETWEEN VHE GAMMA RAYS AND 
-* SYNCHROTRON RADIATION 
+* ABSORPTION COEFFICIENT FOR PAIR PRODUCTION BETWEEN VHE GAMMA RAYS AND
+* SYNCHROTRON RADIATION
 *
 * nu_c        - frequency for which coefficient will be calculated
 * I_c         - matrix which contains intensity of radiation field
@@ -1817,6 +2197,19 @@ double sigma_gg(double nu_s, double nu_c){
 ********************************************************************************
 */
 
+/**
+ * Calculates the absorption coefficient for pair production between VHE gamma rays
+ * and synchrotron radiation.
+ *
+ * @param nu_c     Frequency for which the coefficient will be calculated.
+ * @param I_c      Array which contains intensity of radiation field.
+ * @param nu_dim   Dimension of matrix I_rad.
+ * @param nu_min   Minimum frequency of radiation field photons.
+ * @param nu_max   Maximum frequency of radiation field photons.
+ * @param prec1    Integration precision for trapezoid integration.
+ * @param prec2    Integration precision for Gauss-Legendre.
+ * @return         The calculated absorption coefficient.
+ */
 double gg_abs(double nu_c, 
 		  double I_c[],
 		  int nu_dim,
@@ -2148,7 +2541,6 @@ double sig_gg(double nu_s, double nu_c,double NU[]){
 }
 */
 
-
 /*
 ********************************************************************************
 *
@@ -2160,7 +2552,15 @@ double sig_gg(double nu_s, double nu_c,double NU[]){
 *
 ********************************************************************************
 */
-
+/**
+ * Calculate the Planck function at a given frequency and temperature. Planck law, to take into account the external inverse compton. Radiation of the infrared photons reprocessed by the broad line regions
+ *
+ * @param nu_BB Frequency for which the Planck function will be calculated.
+ * @param T_BB  Temperature of the black body.
+ *
+ * @return The intensity of the black body radiation in erg/s/sr/m²/Hz.
+ *         Returns 0.0 if the input values are outside the valid range.
+ */
 double Planck(double nu_BB, double T_BB) {
   double I_BB = 0.0;
   
@@ -2187,17 +2587,33 @@ double Planck(double nu_BB, double T_BB) {
 /*
 ********************************************************************************
 *
-* ANALYTICAL SOLUTION OF THE TRANSFER EQUATION FOR CYLINDRICAL GEOMETRY 
+* ANALYTICAL SOLUTION OF THE TRANSFER EQUATION FOR CYLINDRICAL GEOMETRY
 * CONSTANT EMISSION AND ABSORPTION ALONG EMITTING REGION
 *
-* I_inp       - input intensity 
+* I_inp       - input intensity
 * jj          - emission coefficient
 * kk          - absorption coefficient
 * ll          - length of emitting region
 *
 ********************************************************************************
 */
-
+/**
+ * \brief Analytical solution of the transfer equation for cylindrical geometry with constant emission and absorption coefficients along the emitting region.
+ *
+ * \param I_inp The input intensity.
+ * \param jj The emission coefficient.
+ * \param kk The absorption coefficient.
+ * \param ll The length of the emitting region.
+ *
+ * \return The combined intensity after absorption and radiation.
+ *
+ * This function calculates the combined intensity after absorption and radiation for a given input intensity, emission coefficient, absorption coefficient, and length of the emitting region. It first calculates the optical depth using the length of the emitting region and the absorption coefficient. Based on the value of the optical depth, it calculates the absorbed intensity using the input intensity and the exponential decay factor. If the emission coefficient is greater than a very small threshold, it also calculates the radiated intensity using the emission and absorption coefficients.
+ *
+ * The implementation of this function accounts for three different cases depending on the value of the optical depth:
+ * - If the optical depth is below a very small threshold, the absorbed intensity is equal to the input intensity. In this case, the radiated intensity is not considered.
+ * - If the optical depth is above a large threshold, both the absorbed and radiated intensities are set to zero.
+ * - If the optical depth is between the two thresholds, the absorbed intensity is calculated by multiplying the input intensity with the exponential decay factor, and the radiated intensity is calculated using the emission and absorption coefficients.
+ */
 double CylTransfEquat(double I_inp, double jj, double kk, double ll) {
       double tau = 0.0, I_abs = 0.0, I_rad = 0.0;
       
@@ -2227,7 +2643,7 @@ double CylTransfEquat(double I_inp, double jj, double kk, double ll) {
 /*
 ********************************************************************************
 *
-* ANALYTICAL SOLUTION OF THE TRANSFER EQUATION FOR SPHERICAL GEOMETRY 
+* ANALYTICAL SOLUTION OF THE TRANSFER EQUATION FOR SPHERICAL GEOMETRY
 * CONSTANT EMISSION AND ABSORPTION ALONG EMITTING REGION
 *
 * jj          - emission coefficient
@@ -2236,7 +2652,34 @@ double CylTransfEquat(double I_inp, double jj, double kk, double ll) {
 *
 ********************************************************************************
 */
-
+/**
+ * @brief Analytical solution of the transfer equation for spherical geometry.
+ *
+ * This function calculates the intensity of radiation given the emission and absorption coefficients
+ * along with the length of the emitting region. The solution assumes constant emission and absorption
+ * along the emitting region.
+ *
+ * @param jj The emission coefficient.
+ * @param kk The absorption coefficient.
+ * @param ll The length of the emitting region.
+ * @return The intensity of radiation.
+ *
+ * @note The emission coefficient and absorption coefficient must be positive numbers.
+ *
+ * @warning The function does not handle cases where the emission coefficient is negative or zero,
+ * or where the absorption coefficient is zero.
+ *
+ * @remark The intensity of radiation is computed using the following conditions:
+ * - If the emission coefficient is less than 1.0e-300 or has a value of "-inf", "inf", or "nan",
+ *   the intensity is set to 0.0.
+ * - Otherwise, the intensity is calculated based on the length of the emitting region and the
+ *   absorption coefficient. If the length is very large (tau > 7.00e+2), the intensity is
+ *   set to jj divided by kk. If the length is very small (tau < 1.0e-4), the intensity is set
+ *   to (4/3) times the emission coefficient times the length. Otherwise, the intensity is
+ *   calculated using a formula that considers the relation between emission and absorption.
+ *
+ * @see SphTransfEquat2()
+ */
 double SphTransfEquat(double jj, double kk, double ll) {
       double tau, I_rad;
       char   stmp[36];
@@ -2275,8 +2718,33 @@ double SphTransfEquat(double jj, double kk, double ll) {
 * Hubble      - Hubble constant                                                 *
 *                                                                               *
 ********************************************************************************/
-
-
+/**
+ * Calculates the flux from the intensity based on given parameters.
+ *
+ * @param Intens The intensity.
+ * @param Radius The radius.
+ * @param Doppler The Doppler shift.
+ * @param z The redshift.
+ * @param Hubble The Hubble constant.
+ * @return The calculated flux.
+ *
+ * @pre The value of 'Radius' must be between 1.0 and 1.0e+100 (inclusive).
+ * @pre The value of 'Doppler' must be between 1.0 and 1.0e+2 (inclusive).
+ * @pre The value of 'z' must be greater than 0.0 and less than or equal to 5.0.
+ * @pre The value of 'Hubble' must be between 50.0 and 100.0 (inclusive).
+ *
+ * @post If the input parameters are outside the valid ranges, the function
+ *       prints an error message and returns 0.0.
+ *
+ * The following constants are referenced in the calculation:
+ * - c: The speed of light in centimeters per second.
+ *   Defined as: const double c = 2.997924 * 1.0e+10;
+ *
+ * The function calculates the Hubble constant H_0 by dividing 'Hubble' by 3.086
+ * and multiplying by 1.0e-19. It then calculates the luminosity distance D_L
+ * using the cosmological formula and the Hubble constant. Finally, it calculates
+ * the flux using the given formula and returns the result.
+ */
 double Intens2Flux(double Intens, double Radius, 
                    double Doppler, double z, double Hubble) {
 
@@ -2332,7 +2800,47 @@ double Intens2Flux(double Intens, double Radius,
 *                                                                               *
 ********************************************************************************/
 
-
+/**
+ * @brief Converts light intensity values to flux.
+ *
+ * This function takes the following parameters:
+ *  - Intens1: Light intensity value 1.
+ *  - Intens2: Light intensity value 2.
+ *  - Radius: Radius of the cylinder.
+ *  - Length: Length of the cylinder.
+ *  - Doppler: Doppler value.
+ *  - z: Redshift value.
+ *  - Hubble: Hubble constant value.
+ *  - Theta: Angle value in degrees.
+ *
+ * The function first validates the input parameters to ensure they fall within the expected ranges.
+ * It validates the Radius should be greater than or equal to 1.0 and less than or equal to 1.0e+100.
+ * It validates the Doppler should be greater than or equal to 1.0 and less than or equal to 1.0e+2.
+ * It validates the z should be greater than 0.0 and less than or equal to 5.0.
+ * It validates the Hubble should be greater than or equal to 50.0 and less than or equal to 100.0.
+ * It validates the Theta should be greater than or equal to 0.0 and less than or equal to 90.0.
+ *
+ * If any of the parameters fail the validation, an error message will be printed to the standard error output,
+ * and the function will return 0.0.
+ *
+ * If the parameters pass the validation, the function calculates the value of H_0 based on the Hubble constant,
+ * and D_L based on the redshift value. Then it calculates and returns the flux value using the input parameters
+ * and intermediate calculations.
+ *
+ * @param Intens1 Light intensity value 1.
+ * @param Intens2 Light intensity value 2.
+ * @param Radius Radius of the cylinder.
+ * @param Length Length of the cylinder.
+ * @param Doppler Doppler value.
+ * @param z Redshift value.
+ * @param Hubble Hubble constant value.
+ * @param Theta Angle value in degrees.
+ *
+ * @return The calculated flux based on the input parameters.
+ *
+ * @note The value of c is a constant equal to 2.997924 * 1.0e+10.
+ * @note The function assumes that the M_PI constant is defined and represents the value of pi.
+ */
 double CylIntens2Flux(double Intens1, double Intens2, double Radius, double Length,
                    double Doppler, double z, double Hubble, double Theta) {
 
@@ -2396,8 +2904,25 @@ double CylIntens2Flux(double Intens1, double Intens2, double Radius, double Leng
 *               parameters                                                      *
 *                                                                               *
 ********************************************************************************/
-
-
+/**
+ * @brief Convert ring intensity to flux.
+ *
+ * This function calculates the flux from a ring intensity based on various parameters.
+ *
+ * @param Intens The intensity of the ring.
+ * @param InnRadius The inner radius of the ring.
+ * @param OutRadius The outer radius of the ring.
+ * @param Doppler The Doppler value.
+ * @param z The redshift value.
+ * @param Hubble The Hubble value.
+ * @param check A flag indicating if error checking should be performed.
+ *
+ * @return The flux calculated from the given ring intensity.
+ *
+ * @note The function checks if the given values for InnRadius, OutRadius, Doppler, z, and Hubble are within valid ranges and outputs an error message if any of them are invalid.
+ *
+ * @see c
+ */
 double RingIntens2Flux(double Intens, double InnRadius, double OutRadius, 
                        double Doppler, double z, double Hubble, int check) {
 
@@ -2450,7 +2975,22 @@ double RingIntens2Flux(double Intens, double InnRadius, double OutRadius,
 *
 ********************************************************************************
 */
-
+/**
+ * @brief Perform frequency transformation from the source frame to the observer frame.
+ *
+ * This function takes the source frequency, Doppler factor, and redshift as input, and calculates the transformed frequency.
+ * The transformed frequency is obtained by multiplying the Doppler factor with the source frequency and dividing it by the sum of 1 and the redshift.
+ * If the input values do not fall within the specified range, an error message is printed and 0.0 is returned.
+ *
+ * @param nu The source frequency.
+ * @param Doppler The Doppler factor.
+ * @param z The redshift.
+ * @return The transformed frequency.
+ *
+ * @note The function assumes that the source frequency is in the range of 1.0e+5 to 1.0e+35.
+ * @note The function assumes that the Doppler factor is in the range of 0.0 to 1.0e+2.
+ * @note The function assumes that the redshift is in the range of 0.0 to 5.0.
+ */
 double FreqTransS2O(double nu, double Doppler, double z) {
 
       char name[32] = "FreqTransS2O";
@@ -2487,7 +3027,22 @@ double FreqTransS2O(double nu, double Doppler, double z) {
 *
 ********************************************************************************
 */
-
+/**
+ * @brief This function performs a frequency transformation from the observer frame to the source frame.
+ *
+ * The function takes in three parameters:
+ * - `nu` represents the source frequency.
+ * - `Doppler` is the Doppler factor.
+ * - `z` is the redshift.
+ *
+ * @param nu The source frequency.
+ * @param Doppler The Doppler factor.
+ * @param z The redshift.
+ *
+ * @return The transformed frequency in the source frame.
+ *
+ * @note The function expects `nu` to be in the range between 1.0e+5 and 1.0e+35, `Doppler` to be in the range between 1.0 and 1.0e+2, and `z` to be in the range between 0.0 and 5.0. If any of the parameters fall outside these ranges, an error message is printed to stderr and 0.0 is returned.
+ */
 double FreqTransO2S(double nu, double Doppler, double z) {
 
       char name[32] = "FreqTransO2S";
@@ -2514,12 +3069,28 @@ double FreqTransO2S(double nu, double Doppler, double z) {
 }
 
 
+/**
+ * Calculates the luminosity distance based on the redshift value.
+ *
+ * The calculation is based on the following formula:
+ *
+ * dl = c/H0 * ( z + (z*z*(1.-q0))/(1.+q0*z+sqrt(1.+2.*q0*z)) )
+ *
+ * where:
+ * - dl is the luminosity distance
+ * - c is the speed of light constant
+ * - H0 is the Hubble constant multiplied by the relevant conversion factors for distance units
+ * - z is the redshift value
+ * - q0 is the deceleration parameter
+ *
+ * @param z The redshift value
+ * @return The calculated luminosity distance
+ */
 double LuminDist(const double z){
   double dl = 0.;
   dl = c/H0 * ( z + (z*z*(1.-q0))/(1.+q0*z+sqrt(1.+2.*q0*z)) );
   return dl;
 }
-
 
 
 /*
@@ -2537,7 +3108,18 @@ double LuminDist(const double z){
 * return distance luminosity in cm
 ********************************************************************************
 */
-
+/**
+ * @brief Calculates the distance luminosity in cm.
+ *
+ * This function calculates the distance luminosity in centimeters based on the redshift (z),
+ * Hubble constant (H0), and Omega matter (WM). The function is adapted from a script by Ned Wright.
+ * https://www.astro.ucla.edu/~wright/CosmoCalc.html
+ *
+ * @param z The redshift.
+ * @param H0 The Hubble constant.
+ * @param WM The Omega matter.
+ * @return The distance luminosity in cm.
+ */
 double Distance_Luminosity(double z, double H0, double WM) {
 
     // initialize constants
@@ -2596,7 +3178,13 @@ double Distance_Luminosity(double z, double H0, double WM) {
 *
 ********************************************************************************
 */
-
+/**
+ * @brief This function sets the parameters for hadronic interactions, specifically for pion decay.
+ *
+ * The function calculates and sets various parameters needed for the hadronic interactions' calculations. It computes the energetics of electrons to normalize the proton spectrum, calculates the normalization of the proton spectrum from ENERGY50, and sets other related parameters.
+ *
+ * The function does not take any input parameters and does not return any values. It modifies the global variables ENERGY50, fEnergy_prot, fNorm_prot, and fNb_prot.
+ */
 void setHadronicParameters(){
 
 
@@ -2673,6 +3261,14 @@ void setHadronicParameters(){
 
 
 
+/**
+ * Calculates the flux of gamma ray spectra from the decay of pions.
+ * The calculations are based on equations from Kelner, Aharonian & Bugayov, PhRvD, 74, 034018, 2006.
+ * The function takes the energy of the gamma ray as input and returns the calculated flux.
+ *
+ * @param energy The energy of the gamma ray in eV.
+ * @return The flux of gamma ray spectra in erg cm<sup>-2</sup> s<sup>-1</sup>.
+ */
 double piondecay(double energy)
 {
   // All equations are taken from Kelner, Aharonian & Bugayov, PhRvD, 74, 034018, 2006: 2006PhRvD..74c4018K
@@ -2750,6 +3346,19 @@ double piondecay(double energy)
 
 
 
+/**
+ * Calculates the hadronic parameters for testing purposes.
+ *
+ * This function calculates the normalization of the proton spectrum and sets
+ * the values of the fNorm_prot and Kp variables. It performs an integration
+ * from 1 TeV to infinity to calculate the normalization. The integration is
+ * done using a step size of 1/(per_decade) and the result is stored in the
+ * fNorm_prot variable. The Kp variable is also set to the same value. The
+ * integration is done using the N_p function, which calculates the value of
+ * the N_p function for a given energy.
+ *
+ * @return None.
+ */
 void setHadronicParametersTest(){
 
   
@@ -2788,6 +3397,15 @@ void setHadronicParametersTest(){
 
 
 
+/**
+ * Calculates the decay test for a given energy.
+ *
+ * This function calculates the decay test for a given energy using equations from the paper "Kelner, Aharonian & Bugayov, PhRvD, 74, 034018, 2006: 2006PhRvD..74c4018K".
+ * The function takes the energy in electron volts (eV) as input and returns the result of the decay test.
+ *
+ * @param energy The energy in eV for which to calculate the decay test.
+ * @return The result of the decay test for the given energy.
+ */
 double piondecaytest(double energy)
 {
   // All equations are taken from Kelner, Aharonian & Bugayov, PhRvD, 74, 034018, 2006: 2006PhRvD..74c4018K
@@ -2866,6 +3484,17 @@ double piondecaytest(double energy)
 
 //-----------------------------------------------------------------------------
 
+/**
+ * Calculates the energy spectrum for electron emission from pion decay.
+ *
+ * This function calculates the energy spectrum for electron emission resulting
+ * from pion decay. The input energy parameter represents the electron energy in
+ * electron volts (eV). The output is the calculated energy spectrum for the
+ * given electron energy.
+ *
+ * @param energy The energy of the electrons in eV for which to calculate the energy spectrum.
+ * @return The calculated energy spectrum for the given electron energy.
+ */
 double piondecay_ahaprecise_electron(double energy)
 {
   double per_decade=100;
@@ -2915,6 +3544,15 @@ double piondecay_ahaprecise_electron(double energy)
 }
 
 
+/**
+ * Calculate the energetics of the system.
+ *
+ * This function calculates the energetics of the electrons and protons in the system. It computes various parameters
+ * such as the number of particles, energy density, equipartition parameter, mean energy, and total energy. It also
+ * prints out the derived parameters if the PRINT flag is set to 1.
+ *
+ * @return void
+ */
 void energetics(){
   double t,t1,t2,step,per_decade,interval,elecEnergyDensity,spec_e,number_e,power_e,gamma,magEnergyDensity,nbElectron,eB,meanElectronEnergy,totalElectronEnergy,spec_p,number_p,power_p,Volume,energy;
   per_decade=1.0e+03;

@@ -1,4 +1,4 @@
-
+/** @file */
 // SSC MODEL FOR SPHERICAL HOMOGENEOUS BLOB AND A STRATIFIED JET
 // AND EXTERNAL INVERSE COMPTON FROM A BLACKBODY RADIATION FIELD (HOT CORONA / ACCRETION DISK / DUST TORUS)
 // AND SSC OF SECOND ORDER
@@ -286,6 +286,14 @@ double I_JET	       = 0.0;
 
 // SUBROUTINES ******************************************************************
 
+    /**
+     * @brief Checks if a file exists.
+     *
+     * This function checks if the specified file exists on the system.
+     *
+     * @param fname A pointer to the name of the file to check.
+     * @return int Returns 1 if the file exists, 0 otherwise.
+     */
     int ifexist(char *fname) {
       FILE *stream;
       errno = 0;
@@ -299,6 +307,12 @@ double I_JET	       = 0.0;
     }
 
 // ELECTRON SPECTRUM BLOB
+/**
+ * Calculates the electron spectrum using a broken power-law model.
+ *
+ * @param gamma The gamma value for which the electron spectrum is calculated
+ * @return The electron spectrum value for the given gamma
+ */
     double N_e_BknPowLaw(double gamma) { // Broken power-law (possibly with exp cutoff at high energies)
       K2 = K1 * pow(GAMMA_BRK, N2 - N1);
 
@@ -312,17 +326,47 @@ double I_JET	       = 0.0;
       return 1.0e-100;
     }
 
+    /**
+     * Calculates the electron energy distribution function using a smooth broken power law with an exponential cutoff.
+     *
+     * The function is based on the equation described in the paper by Tavecchio et al. (2001), with an additional exponential
+     * cutoff at high energies.
+     *
+     * @param gamma The electron energy
+     * @return The value of the electron energy distribution function at the given energy
+     */
     double
     N_e_SmoothBknPowLaw(double gamma) { //cf. Tavecchio et al. 2001: 2001ApJ...554..725T, + exp cutoff at high energies
       return (K1 * pow(gamma, -N1) * pow((1. + gamma / GAMMA_BRK), (N1 - N2))) * exp(-gamma / GAMMA_MAX);
     }
 
+    /**
+     * Calculates the Pile Up factor (N_e) based on the given gamma value.
+     *
+     * The Pile Up factor is computed using the following formula:
+     * N_e = K1 * gamma^2 * exp(-2.0 * gamma / GAMMA_BRK)
+     *
+     * @param gamma The value of gamma.
+     * @return The calculated Pile Up factor.
+     */
     double N_e_PileUp(double gamma) {
       return (K1 * gamma * gamma * exp(-2.0 * gamma / GAMMA_BRK));
     }
 
 
 // Switch between different electron spectrum shapes
+/**
+ * @brief Calculates the number of electrons in the given electron spectrum shape.
+ *
+ * This function calculates the number of electrons in a given electron spectrum shape. It supports three different shapes: PileUp, SmoothBknPowLaw, and BknPowLaw.
+ *
+ * @param gamma The gamma value representing the energy of the electron.
+ * @return The number of electrons in the given electron spectrum shape.
+ *
+ * @see N_e_PileUp
+ * @see N_e_SmoothBknPowLaw
+ * @see N_e_BknPowLaw
+ */
     double N_e(double gamma) {
       double foo = 0.;
       //foo=N_e_PileUp(gamma);
@@ -333,10 +377,25 @@ double I_JET	       = 0.0;
 
 
 // ELECTRON SPECTRUM JET
+/**
+ * @brief Calculate the number density of electrons using a power law function.
+ *
+ * This function calculates the number density of electrons based on the provided gamma value using a power law function.
+ * The power law function is defined as N(e) = N_VAL[SL_CUR] * gamma^(-n_n).
+ *
+ * @param gamma The gamma value for which to calculate the number density of electrons.
+ * @return The number density of electrons calculated using the power law function.
+ */
     double N_e_PowLaw(double gamma) { //simple power law
       return N_VAL[SL_CUR] * pow(gamma, -n_n);
     }
 
+    /**
+     * Calculates the value of a power law distribution with an exponential cutoff.
+     *
+     * @param gamma The input parameter for the power law distribution.
+     * @return The calculated value of the power law distribution with exponential cutoff.
+     */
     double N_e_PowLawExpcut(double gamma) { //Power law with exponential cutoff
       return N_VAL[SL_CUR] * pow(gamma, -n_n) * exp(-gamma / GAMMA_MAX_0);
     }
@@ -348,6 +407,12 @@ double N_e_Jet(double gg) {
 }
 */
 // Switch between different electron spectrum shapes for the jet
+/**
+ * Switches between different electron spectrum shapes for the jet.
+ *
+ * @param gamma The value of gamma.
+ * @return The calculated value of foo.
+ */
     double N_e_Jet(double gamma) {
       double foo = 0.;
       if ((gamma >= GAMMA_MIN1) && (G_VAL[SL_CUR])) {
@@ -358,6 +423,16 @@ double N_e_Jet(double gg) {
     }
 
 
+    /**
+     * @brief Calculates the value of F multiplied by the power of DOP_JET raised to the third power,
+     *        and then multiplied by (1.0 + z).
+     *
+     * @param F The input value to be multiplied.
+     * @return The result of the calculations described above.
+     *
+     * @note It is important to ensure that DOP_JET and z are properly defined before calling this function.
+     * @note The result of the calculation may vary depending on the values of DOP_JET and z.
+     */
     double ftr(double F) {
       return F * pow(DOP_JET, 3) * (1.0 + z);
     }
@@ -365,6 +440,13 @@ double N_e_Jet(double gg) {
 //ANALYTICAL INTEGRATION OVER THE ELECTRON SPECTRUM = integral(Ne(E) dE) or integral(E*Ne(E) dE)
 
 // simple power law (jet)
+/**
+ * Calculate the integral spectrum using a power law (jet).
+ *
+ * @param N_0 The normalization factor
+ * @param a The power law parameter (use 1 for particle density, 2 for energy density)
+ * @return The calculated integral spectrum
+ */
     double int_spec_j(double N_0, int a) {
       //use a = 1 for particle density, a = 2 for energy density
       if (n_n == a) {
@@ -375,6 +457,12 @@ double N_e_Jet(double gg) {
     }
 
 // boken power-law (blob)
+/**
+ * Calculates the integral of a power-law function for a given input parameter for the blob.
+ *
+ * @param a The input parameter for the power-law function. Use 1 for particle density, 2 for energy density.
+ * @return The calculated integral of the power-law function.
+ */
     double int_spec_b(int a) {
       //use a = 1 for particle density, a = 2 for energy density
       if (N1 == a and N2 == a) {
@@ -394,7 +482,21 @@ double N_e_Jet(double gg) {
     }
 
 
-    // METHODS ========================================================================================================
+// METHODS ========================================================================================================
+    /**
+    * @brief This method provides a description of the code and the processes it simulates.
+    *
+    * This code computes the radiative output from a homogeneous blob and a stratified jet given their particle energy distribution.
+    * The processes accounted for are:
+    *
+    * - synchrotron radiation (blob and jet)
+    * - SSC radiation (blob and jet)
+    * - 2nd order SSC radiation (blob)
+    * - external inverse Compton & absoption on a disk, hot corona & BLR radiation field
+    * - external inverse Compton on the jet synchrotoron radiation field
+    *
+    * @see description()
+    */
     void description() {
     cout << "This code computes the radiative output from a homogeneous blob and a stratified jet given their particle energy distribution" << endl
         << "The processes accounted for are:" << endl
@@ -407,6 +509,17 @@ double N_e_Jet(double gg) {
         << endl;
     }
 
+    /**
+     * @brief Load parameters from a parameter file.
+     *
+     * This function loads parameters from a parameter file specified by the `name` parameter.
+     * The parameter file should be formatted in a specific way, with each parameter followed by its value.
+     * If any error occurs while reading the parameter file or if any of the parameter values are out of range,
+     * the function will return 0, indicating failure.
+     *
+     * @param name The name of the parameter file.
+     * @return Returns 1 if the parameters were successfully loaded, 0 otherwise.
+     */
     int load_params(char *name) {
       // from parameter file
       int DEBUG = 0;
@@ -794,6 +907,25 @@ double N_e_Jet(double gg) {
       return 0;
     }
 
+    /**
+     * Loads parameters from a string list.
+     *
+     * @param list The list of parameters as strings.
+     * @param model_type The type of the model.
+     * @param starting_index The starting index in the list.
+     * @param list_length The length of the list.
+     * @return 0 if there is an error in the parameters, otherwise 1.
+     *
+     * The function loads various parameters from a string list and assigns them to corresponding variables.
+     * It first reads transformation parameters such as redshift, Hubble constant, and angle.
+     * Then it reads blob parameters such as Doppler factor, particle density, slopes,
+     * gamma min and max values, gamma break, magnetic field strength, radius, emitting length,
+     * absorption level, and blob distance.
+     * Finally, if the model type is 1, it reads nucleus parameters such as disc black body temperature,
+     * tore black body temperature, nucleus luminosity, fraction of luminosity scattered/reprocessed isotropically, and tore luminosity.
+     *
+     * The function validates the loaded parameters and returns 0 if there is an error in any of the parameters.
+     */
     int load_params_from_list(char **list, int model_type, int starting_index, int list_length) {
       // start reading params
       double tmp[12];
@@ -1016,6 +1148,14 @@ double N_e_Jet(double gg) {
       return 1;
     }
 
+    /**
+     * @brief Executes the run_models function.
+     *
+     * The run_models function is responsible for running the models in the software. This function should be called
+     * to execute the models and obtain the desired output.
+     *
+     * @return void
+     */
     int run_models() {
       // returns 0 if succeeds
       // returns 1 if system command fails
