@@ -113,11 +113,12 @@ def make_model(params, name_stem="run"):
     :type name_stem: str
     :return: The logarithmic wavelength values, logarithmic flux values, linear wavelength values, and linear flux values.
     :rtype: tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]
+
     A tuple containing the following elements:
-            - logv (float[]): The logarithm of the frequency values.
-            - logvFv (float[]): The logarithm of the flux values.
-            - v (float[]): The frequency values.
-            - vFv (float[]): The flux values.
+        - logv (float[]): The logarithm of the frequency values.
+        - logvFv (float[]): The logarithm of the flux values.
+        - v (float[]): The frequency values.
+        - vFv (float[]): The flux values.
 
     .. note:: This implementation uses subprocess.popen and should be rewritten in the future with bj_core.py methods.
     """

@@ -443,19 +443,20 @@ def show_results(sampler, time, configs=None, discard=None):
 
     Example usage:
 
-    ```python
-    # Example 1: Minimum usage
-    show_results(sampler, 10.0)
+    .. code-block::
 
-    # Example 2: With additional configurations
-    configs = {"discard": 100}
-    show_results(sampler, 20.0, configs=configs)
+        # Example 1: Minimum usage
+        show_results(sampler, 10.0)
 
-    # Example 3: With discard only
-    show_results(sampler, 30.0, discard=200)
-    ```
+        # Example 2: With additional configurations
+        configs = {"discard": 100}
+        show_results(sampler, 20.0, configs=configs)
 
-    Note: The actual use of this function may vary based on the user's specific MCMC simulation and output requirements.
+        # Example 3: With discard only
+        show_results(sampler, 30.0, discard=200)
+
+
+    .. note:: The actual use of this function may vary based on the user's specific MCMC simulation and output requirements.
     """
     if configs is None and discard is None:
         raise ValueError("Neither configs nor discard provided")

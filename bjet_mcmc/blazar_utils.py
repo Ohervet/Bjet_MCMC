@@ -201,7 +201,7 @@ def read_configs(config_file=None, config_string=None, verbose=False):
 
     :param config_file: Absolute path to file with configurations; default is None, using the relative path to "mcmc_config.txt"
     :type config_file: str or None
-    :param config_string: This is a string of the form {'key': value, ...}. If a config_string is given, it will be parsed instead of reading from the file. This is useful when the values from a previous configuration dictionary are  read from a file.
+    :param config_string: This is a string of the form :code:`{'key': value, ...}`. If a config_string is given, it will be parsed instead of reading from the file. This is useful when the values from a previous configuration dictionary are  read from a file.
     :type config_string: str or None
     :param verbose: Controls whether values are shown; defaults to False
     :type verbose: bool
@@ -437,8 +437,8 @@ def get_random_parameters(
     :return: Randomly generated parameters.
     :rtype: numpy.array
 
-    .. note:: random parameters within the min/max bounds. They will be valid
-        (gamma min < gamma break < gamma max, etc.)
+    .. note:: random parameters within the min/max bounds. They will be valid (gamma min < gamma break < gamma max, etc.)
+
     The function first checks if param_min_vals and param_max_vals are provided. If not, it uses default_min_max.
     If param_min_vals is not provided, it assigns default_min_max[0] to param_min_vals.
     If param_max_vals is not provided, it assigns default_min_max[1] to param_max_vals.
@@ -557,8 +557,7 @@ def random_eic_from_std(
     This is used when an EIC run that starts with non-EIC values approximated
     is desired.
 
-    :param std_values: 2D np array with # of walkers rows and 9 columns
-            the current state for the std defaults
+    :param std_values: 2D np array with # of walkers rows and 9 columns the current state for the std defaults
     :type std_values: list of lists
     :param walkers: number of walkers (specifies how many defaults to generate)
     :type walkers: int
@@ -568,14 +567,11 @@ def random_eic_from_std(
     :type param_max_vals: list, optional
     :param redshift: redshift value; default is None, so the log_prior function will use the default, which is 0.143 (the value for J1010)
     :type redshift: float, optional
-    :param tau_var: time in hours for tau variability; default is None, so the log_prior
-            function will use the default, which is 24 hours.
+    :param tau_var: time in hours for tau variability; default is None, so the log_prior function will use the default, which is 24 hours.
     :type tau_var: float, optional
     :param use_variability: Determines whether to use variability in generating random parameters. Defaults to True.
     :type use_variability: bool, optional
-    :return:2D np array of floats with NUM_DIM rows (the NUM_DIM parameters) and <walkers> rows
-
-        default values for all NUM_DIM parameters for each walker
+    :return: 2D np array of floats with NUM_DIM rows (the NUM_DIM parameters) and <walkers> rows default values for all NUM_DIM parameters for each walker
     :rtype: numpy.ndarray
     :raises ValueError: If the length of std_values is not equal to the number of walkers or if the length of std_values[0] is not 9.
     :raises ValueError: If the length of param_min_vals is not 13.
@@ -627,7 +623,7 @@ def min_max_parameters(alpha2_limits=None, eic=False, fixed_params=None):
 
     :param alpha2_limits: A tuple of two values representing the lower and upper limits for the alpha2 parameter. Defaults to (1.5, 7.5).
     :type alpha2_limits: tuple
-    :param eic: A boolean value indicating whether or not to include extra parameters. Defaults to False.
+    :param eic: A boolean value indicating whether to include extra parameters. Defaults to False.
     :type eic: bool
     :param fixed_params: A list of fixed parameter values to be removed from the parameter list. Defaults to None.
     :type fixed_params: list or None
@@ -636,8 +632,8 @@ def min_max_parameters(alpha2_limits=None, eic=False, fixed_params=None):
 
     .. note::
         both returns are in the standard order:
-            - [delta, K, n1, n2, gamma_min, gamma_max, gamma_break, B, R]
-            - with eic:  ["delta", "K", "n_1", "n_2", "gamma_min", "gamma_max", "gamma_break", "B", "R", "bb_temp", "l_nuc", "tau", "blob_dist"]
+            - :code:`[delta, K, n1, n2, gamma_min, gamma_max, gamma_break, B, R]`
+            - with eic:  :code:`["delta", "K", "n_1", "n_2", "gamma_min", "gamma_max", "gamma_break", "B", "R", "bb_temp", "l_nuc", "tau", "blob_dist"]`
     """
     if alpha2_limits is None or len(alpha2_limits) != 2:
         alpha2_limits = (1.5, 7.5)
