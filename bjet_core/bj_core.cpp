@@ -1,25 +1,25 @@
-/** @file */
-// SSC MODEL FOR SPHERICAL HOMOGENEOUS BLOB AND A STRATIFIED JET
-// AND EXTERNAL INVERSE COMPTON FROM A BLACKBODY RADIATION FIELD (HOT CORONA / ACCRETION DISK / DUST TORUS)
-// AND SSC OF SECOND ORDER
-// AND A SELF CONSISTENT BLOB-JET INTERACTION
-//
-//        2024: Added: EIC from jet particles onto blob synchrotron emission. Edited: fixed issues with the jet SSC computation
-//        2021: Added: Consistent BLR absorption and implementing a BLR density profile based on Navelajko et al. 2014
-// Nov    2018: Added: Direct EIC from the blob on the disk radiation
-// August 2018: Added: IIR absorbption by Franceschini 2017
-// March  2016: Added: Consistent relativistic aberration for jet slices and blob emission in the jet
-//              BUT still fully consistent for the entire jet, advised to stay at THETA <~= PHI (half jet aperture) and THETA <~= 1/Lorentz jet
-// August 2013: Added: IIR absorbption by Franceschini 2008, an extended jet emission (synchrotron, SSC), EIC on jet
-// May    2010: Added: SSC 2nd order
-// July   2008: Added: IIR ABSORPTION BY KNEISKE ET AL 2004
+/** @file
+ SSC MODEL FOR SPHERICAL HOMOGENEOUS BLOB AND A STRATIFIED JET
+ AND EXTERNAL INVERSE COMPTON FROM A BLACKBODY RADIATION FIELD (HOT CORONA / ACCRETION DISK / DUST TORUS)
+ AND SSC OF SECOND ORDER
+ AND A SELF CONSISTENT BLOB-JET INTERACTION
 
-//Author: Olivier Hervet, SSC core of the code based on the work of Katarzynski et al. 2001
+        2024: Added: EIC from jet particles onto blob synchrotron emission. Edited: fixed issues with the jet SSC computation
+        2021: Added: Consistent BLR absorption and implementing a BLR density profile based on Navelajko et al. 2014
+ Nov    2018: Added: Direct EIC from the blob on the disk radiation
+ August 2018: Added: IIR absorbption by Franceschini 2017
+ March  2016: Added: Consistent relativistic aberration for jet slices and blob emission in the jet
+              BUT still fully consistent for the entire jet, advised to stay at THETA <~= PHI (half jet aperture) and THETA <~= 1/Lorentz jet
+ August 2013: Added: IIR absorbption by Franceschini 2008, an extended jet emission (synchrotron, SSC), EIC on jet
+ May    2010: Added: SSC 2nd order
+ July   2008: Added: IIR ABSORPTION BY KNEISKE ET AL 2004
 
-//If any comments or questions, please send a mail to ohervet@ucsc.edu
+Author: Olivier Hervet, SSC core of the code based on the work of Katarzynski et al. 2001
+
+If any comments or questions, please send a mail to ohervet@ucsc.edu
 
 
-/*
+
 Instructions:
 Calling the executable:
 - Usage 1: bj_core --help
@@ -67,7 +67,6 @@ Example:
  ./bj_core 3 /Users/sed_calculations 1 0.34 69.6 0.57 50.0 612.1 2.28 3.74 2816.9 1803000 44806 0.00236 5.94e+17 0 1 3.8e+15 2013 2.0e+4 1.7e+21 1.5e-10 5.5e+20 9.0e-5 99 50000000.0 1e+29 run
 
  ^ here, the 3 indicates that the data folder is specified and no prev file is made. 1 is the EIC model type. Then 0.34 is z (redshift) and then the rest of the parameters are enumerated.
-*/
 
 /*
 Changes to the code by Sarah Youngquist in Feb 2022:
@@ -84,6 +83,7 @@ Changes to the code by Sarah Youngquist in Feb 2022:
   - Most of main method moved into run_models
   - In main method, parse the input mode and set the input type, set data directory
      if applicable, parse model type if applicable, call either load_params or load_params_from_list
+*/
 */
 
 

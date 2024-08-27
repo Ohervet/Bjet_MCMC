@@ -1,7 +1,8 @@
-// Slightly modified version of processes_supp_core.cpp for use in MCMC code; modified by Sarah Youngquist, Feb 2022 (see below)
-// Only change is switching to using namespace bj_core02 and including bj_core.h instead of
-// bj02 and bj02.h
-/** @file */
+/** @file
+ Slightly modified version of processes_supp_core.cpp for use in MCMC code; modified by Sarah Youngquist, Feb 2022 (see below)
+ Only change is switching to using namespace bj_core02 and including bj_core.h instead of
+ bj02 and bj02.h
+ */
 #include <iostream>
 #include <stdlib.h>
 #include <stdio.h>
