@@ -68,7 +68,7 @@ Example:
 
  ^ here, the 3 indicates that the data folder is specified and no prev file is made. 1 is the EIC model type. Then 0.34 is z (redshift) and then the rest of the parameters are enumerated.
 
-/*
+
 Changes to the code by Sarah Youngquist in Feb 2022:
   - Allow for _prev files not to be created.
         Specified in the command line with the mode.
@@ -83,7 +83,7 @@ Changes to the code by Sarah Youngquist in Feb 2022:
   - Most of main method moved into run_models
   - In main method, parse the input mode and set the input type, set data directory
      if applicable, parse model type if applicable, call either load_params or load_params_from_list
-*/
+
 */
 
 
