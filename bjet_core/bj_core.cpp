@@ -104,14 +104,14 @@ using namespace std;
 using namespace bj_core02;
 
 namespace bj_core02 {
-    int INPUT_MODE = 0; // Sarah Youngquist added;
+    int INPUT_MODE = 0; /*!< Sarah Youngquist added;
     // 0 = normal
-    // 1 = no prev files
+    // 1 = no prev files */
     char DATA_DIRECTORY[254] = "output";
     int CASE_JET;
     int CASE_X;
     int CASE_EIC;
-    const int EBLFLAG = 3; // 0: Kneiske et al. (2002,2004), 1: Franceschini (2008), 2: Finke (2010), 3: Franceschini (2017)//
+    const int EBLFLAG = 3; //!< 0: Kneiske et al. (2002,2004), 1: Franceschini (2008), 2: Finke (2010), 3: Franceschini (2017)
 
 // TIME VARIABLES
 
@@ -121,14 +121,14 @@ namespace bj_core02 {
 // GLOBAL VARIABLES
 
 int    IIR_level    = 0;
-int    NU_DIM       = 50;      // CURRENT NUMBER OF SPECTRAL POINTS
-double NU_STR       = 0.0; // START FREQUENCY Obs frame
-double NU_END       = 0.0; // END FREQUENCY Obs frame
-double NU_STR_B     = 0.0; // START FREQUENCY Blob frame
-double NU_END_B     = 0.0; // END FREQUENCY Blob frame
+int    NU_DIM       = 50;      //!< CURRENT NUMBER OF SPECTRAL POINTS
+double NU_STR       = 0.0; //!< START FREQUENCY Obs frame
+double NU_END       = 0.0; //!< END FREQUENCY Obs frame
+double NU_STR_B     = 0.0; //!< START FREQUENCY Blob frame
+double NU_END_B     = 0.0; //!< END FREQUENCY Blob frame
 
 
-//double GAMMA_MIN1      = 200.0; //Minimal gamma for the jet particles
+//double GAMMA_MIN1      = 200.0; //!<Minimal gamma for the jet particles
 double Utot_e          = 0.0;
 double Utot_B          = 0.0;
 double Utot_p          = 0.0;
@@ -142,7 +142,7 @@ double I_JET	       = 0.0;
     double z;
     double H_0;
     double THETA, D_L;
-    double DOP_B, LOR_B, V_B, V_B_APP;//DOP_BB,
+    double DOP_B, LOR_B, V_B, V_B_APP;//!<DOP_BB,
     double R_src, R_blr;
     double L_src, L_nuc;
     double B;
@@ -154,8 +154,8 @@ double I_JET	       = 0.0;
     double GAMMA_BRK;
     double GAMMA_MAX;
     double T_BB;
-    double tau;  // fraction of L_nuc scattered/rerocessed isotropically (EIC)
-    double tau_tor;  // fraction of L_tor scattered/rerocessed isotropically (EIC)
+    double tau;  //!< fraction of L_nuc scattered/rerocessed isotropically (EIC)
+    double tau_tor;  //!< fraction of L_tor scattered/rerocessed isotropically (EIC)
     double B_0;
     double N_0;
     double n_n;
@@ -207,7 +207,7 @@ double I_JET	       = 0.0;
 
     double NU[NU_MAX + 1];
     double I_rad[NU_MAX + 1];
-    double I_rad1st[NU_MAX + 1]; // for 2nd order SSC
+    double I_rad1st[NU_MAX + 1]; //!< for 2nd order SSC
     double I_CMB[NU_MAX + 1];
 
     double X_VAL[SL_DIM_MAX + 2];

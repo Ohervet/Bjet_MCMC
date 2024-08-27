@@ -38,12 +38,12 @@ const double MAX_FREQ = 1.0e+40;//
 
 
 
-double fDistance; 		// in pc
-double fBtesla;		// in Tesla
-double Ksync;         //Facteur Ksync*E*E pour le calcul des pertes d'energie synchrotron
-double Kcompt;       //Facteur Kcompt*E*E pour le calcul des pertes d'energie ic
-double Kloss1;           //Facteur Kloss1*E*E pour le calcul des pertes totales en E*E  
-double Kbremss;      //Facteur Kbremss*E pour le calcul des pertes d'energie bremsstrahlung
+double fDistance; 		//!< in pc
+double fBtesla;		//!< in Tesla
+double Ksync;         //!<Facteur Ksync*E*E pour le calcul des pertes d'energie synchrotron
+double Kcompt;       //!<Facteur Kcompt*E*E pour le calcul des pertes d'energie ic
+double Kloss1;           //!<Facteur Kloss1*E*E pour le calcul des pertes totales en E*E
+double Kbremss;      //!<Facteur Kbremss*E pour le calcul des pertes d'energie bremsstrahlung
 
 //Characteristic quantities
 double Rcar;
@@ -52,46 +52,46 @@ double Vcar;
 double fVelocity;
 
 // electron spectra
-double fEmin;           // in eV
-double fEmax; 		// in eV
-double fEcut; 		// exp. cutoff in eV
-double fSlope;		// slope of the electronic distribution
-double fEnergy50;		// in 10^50 ergs
-double fNorm;			// spectrum normalization
-double fEnergy;		// average electron energy
-double fNbelec;			// no. of electrons
+double fEmin;           //!< in eV
+double fEmax; 		//!< in eV
+double fEcut; 		//!< exp. cutoff in eV
+double fSlope;		//!< slope of the electronic distribution
+double fEnergy50;		//!< in 10^50 ergs
+double fNorm;			//!< spectrum normalization
+double fEnergy;		//!< average electron energy
+double fNbelec;			//!< no. of electrons
 
 // proton spectra
-double fEnergy_prot;		// av. proton energy
-double fNb_prot;			// no. of protons
+double fEnergy_prot;		//!< av. proton energy
+double fNb_prot;			//!< no. of protons
 
-double fFluxfact;		// per m^2 1/(4*PI*fDistance^2)
+double fFluxfact;		//!< per m^2 1/(4*PI*fDistance^2)
 
-int NBSECONDARYELECTRONS; //fElectrons;//nb of secondary electrons for the synchrotron process
-double fEnergy_electrons[10000];//energy of the secondary electrons produced by pp interaction
-double fFlux_electrons[10000];//Flux of the secondary electrons produced by pp interaction
+int NBSECONDARYELECTRONS; //!<fElectrons; nb of secondary electrons for the synchrotron process
+double fEnergy_electrons[10000];//!<energy of the secondary electrons produced by pp interaction
+double fFlux_electrons[10000];//!<Flux of the secondary electrons produced by pp interaction
 
 
-double fPerDecade;              //Numbers of steps per decade used for the integration in energy for radiative process
+double fPerDecade;              //!<Numbers of steps per decade used for the integration in energy for radiative process
 
 //
 
 // PROTON SPECTRUM
 
-double Kp;       // Normalization of the proton spectrum, in terms of Lorentz factor [cm^-3]
-double ENERGY50; // total energy in protons [10^50 erg]
- double EPMIN;    // minimum proton energy [eV]
- double EPMAX;    // maximum proton energy [eV]
- double EPCUTOFF; // minimum proton energy [eV]
- double GAMMA_P_MAX; // maximum proton energy in terms of Lorentz factor [E/mp c^2]
- double SLOPEP;   // slope of proton energy spectrum
- double NP;       // slope of proton energy spectrum
- double ATOMICDENSITY; // atomic density of target protons [cm^-3]
- double SIZE; // radius of emitting zone [pc]
- double DISTANCE; // distance of the source [pc]
- double AGE; // Age of the source [s]
+double Kp;       //!< Normalization of the proton spectrum, in terms of Lorentz factor [cm^-3]
+double ENERGY50; //!< total energy in protons [10^50 erg]
+ double EPMIN;    //!< minimum proton energy [eV]
+ double EPMAX;    //!< maximum proton energy [eV]
+ double EPCUTOFF; //!< minimum proton energy [eV]
+ double GAMMA_P_MAX; //!< maximum proton energy in terms of Lorentz factor [E/mp c^2]
+ double SLOPEP;   //!< slope of proton energy spectrum
+ double NP;       //!< slope of proton energy spectrum
+ double ATOMICDENSITY; //!< atomic density of target protons [cm^-3]
+ double SIZE; //!< radius of emitting zone [pc]
+ double DISTANCE; //!< distance of the source [pc]
+ double AGE; //!< Age of the source [s]
  double fNorm_prot;
- double RATIO; // ratio proton over electron number (ratio of total number of particles)
+ double RATIO; //!< ratio proton over electron number (ratio of total number of particles)
   
  int          CASE_PION;
 
@@ -967,7 +967,7 @@ double j_com(double (*elec_spec)(double),
 // IR ABSORPTION ACCORDING TO KNEISKE et al. 2002, 2004
 
 const int LDIM = 51;
-const int MDIM = 2601; // 51x51;
+const int MDIM = 2601; //!< 51x51;
 
 double Z1[LDIM] = { 0.000,  0.002,  0.004,  0.006,  0.008,  0.010,  0.012, 
                     0.014,  0.016,  0.018,  0.020,  0.022,  0.024,  0.026,
@@ -1112,8 +1112,8 @@ double T2[MDIM] = {
 
 double Z_MIN = 0.0001;
 double Z_MAX = 0.0999;
-double E_MIN = log10(500);    // 500 GeV
-double E_MAX = log10(5.0e+4); //  50 TeV
+double E_MIN = log10(500);    //!< 500 GeV
+double E_MAX = log10(5.0e+4); //!<  50 TeV
 
 const  int IDIM = 100;
 
@@ -3125,20 +3125,20 @@ double Distance_Luminosity(double z, double H0, double WM) {
 
     // initialize constants
     
-      double WV = 1.-WM;    		// consider flat universe
+      double WV = 1.-WM;    		//!< consider flat universe
       double h = H0/100.;
-      double WR = 4.165E-5/(h*h);	// Omega(radiation), includes 3 massless neutrino species, T0 = 2.72528
-      double WK = 1-WM-WR-WV;		// Omega curvaturve = 1-Omega(total)
-      double c = 299792.458;		// velocity of light in km/sec
-      double DCMR = 0.0;     		// comoving radial distance in units of c/H0
-      double DA = 0.0;       		// angular size distance
-      double DL = 0.0;      		// luminosity distance
-      double DL_Mpc = 0.0;		// luminosity distance in Mpc
-      double a = 1.0;			// 1/(1+z), the scale factor of the Universe
+      double WR = 4.165E-5/(h*h);	//!< Omega(radiation), includes 3 massless neutrino species, T0 = 2.72528
+      double WK = 1-WM-WR-WV;		//!< Omega curvaturve = 1-Omega(total)
+      double c = 299792.458;		//!< velocity of light in km/sec
+      double DCMR = 0.0;     		//!< comoving radial distance in units of c/H0
+      double DA = 0.0;       		//!< angular size distance
+      double DL = 0.0;      		//!< luminosity distance
+      double DL_Mpc = 0.0;		//!< luminosity distance in Mpc
+      double a = 1.0;			//!< 1/(1+z), the scale factor of the Universe
       double az = 1.0/(1+1.0*z);
       double ratio = 1.0;
       double adot = 0.;
-      int n = 1000;        		// number of points in integrals
+      int n = 1000;        		//!< number of points in integrals
       int i = 0;
       double x,y,DCMT;
 
@@ -3274,17 +3274,17 @@ double piondecay(double energy)
 {
   // All equations are taken from Kelner, Aharonian & Bugayov, PhRvD, 74, 034018, 2006: 2006PhRvD..74c4018K
   
-  DISTANCE = LuminDist(z); // redshift -> cm
-  fFluxfact = 1./(4*M_PI)*pow(DISTANCE,-2.)*pow(DOP_B,4); // cm^-2
+  DISTANCE = LuminDist(z); //!< redshift -> cm
+  fFluxfact = 1./(4*M_PI)*pow(DISTANCE,-2.)*pow(DOP_B,4); //!< cm^-2
 
   // Energy unit: eV
-  double per_decade=1.0e+04; // number of steps in integration
+  double per_decade=1.0e+04; //!< number of steps in integration
   double step,interval,t_proton,t_pion,energy_pion,energy_used,energy_proton,x,L,nde,t1,t2,flux,sigmapp,fgamma,bgamma,betagamma,kgamma,xbeta,eseuil,fac;
   
   t1=log10(energy); t2=log10(EPMAX);
   step=1./per_decade;
   interval=pow(10.,step/2)-pow(10.,-step/2);
-  flux = 0; // flux=dNgamma/dEgamma
+  flux = 0; //!< flux=dNgamma/dEgamma
 
   double Kpi=0.17;
 
@@ -3368,7 +3368,7 @@ void setHadronicParametersTest(){
   double per_decade=1e06;
   double step,e,t1,t2,t,number,power,spec,interval;
   
-  t1=log10(1.0e12); t2=log10(EPMAX*1.e3); // integration from 1 TeV to infinity
+  t1=log10(1.0e12); t2=log10(EPMAX*1.e3); //!< integration from 1 TeV to infinity
   step=1./per_decade;
   interval=pow(10.,step/2)-pow(10.,-step/2);
   fNorm_prot=1.;
@@ -3387,7 +3387,7 @@ void setHadronicParametersTest(){
 
   
   double A=(1.0*ERG/eV)/power;
-  //double KpAndrea=107.; // cm^-3
+  //double KpAndrea=107.; //!< cm^-3
   fNorm_prot=A;
   Kp=A;
   cout << "DEBUG: A=" << A << endl;
