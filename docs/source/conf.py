@@ -2,6 +2,7 @@
 
 # -- Project information
 import os, sys
+import subprocess
 
 sys.path.insert(
     0, os.path.abspath("../../bjet_mcmc")
@@ -9,7 +10,6 @@ sys.path.insert(
 sys.path.insert(
     0, os.path.abspath("../../bjet_core")
 )  # Source code dir relative to this file
-print(sys.path)
 
 release = "0.2"
 version = "0.2.1"
@@ -22,7 +22,20 @@ extensions = [
     "sphinx.ext.autodoc",
     "sphinx.ext.autosummary",
     "sphinx.ext.intersphinx",
+    "breathe",
 ]
+
+# Check if we're running on Read the Docs' servers
+read_the_docs_build = os.environ.get("READTHEDOCS", None) == "True"
+
+if read_the_docs_build:
+    print("Building on Read the Docs")
+    dox_cmd = "doxygen Doxyfile"
+    subprocess.run(dox_cmd, shell=True)
+    breathe_projects = {"bjet_core": "../build/doxygen/xml"}
+    breathe_default_project = "bjet_core"
+    breathe_default_members = ("members", "undoc-members")
+
 autosummary_generate = True  # Turn on sphinx.ext.autosummary
 
 intersphinx_mapping = {

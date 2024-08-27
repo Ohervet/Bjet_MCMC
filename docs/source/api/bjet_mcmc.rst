@@ -1,11 +1,10 @@
-bjet\_mcmc package
+bjet\_mcmc Package
 ==================
 
 Submodules
 ----------
-
 .. toctree::
-   :maxdepth: 5
+   :maxdepth: 8
 
    bjet_mcmc.blazar_clean
    bjet_mcmc.blazar_initialize
@@ -17,11 +16,3 @@ Submodules
    bjet_mcmc.blazar_run_mcmc
    bjet_mcmc.blazar_utils
    bjet_mcmc.user_SED_plot
-
-Module contents
----------------
-
-.. automodule:: bjet_mcmc
-   :members:
-   :undoc-members:
-   :show-inheritance:

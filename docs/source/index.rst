@@ -34,4 +34,4 @@ Contents
    data_format
    outputs
    bjet_core
-   modules
+   api/index
