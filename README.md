@@ -7,7 +7,9 @@
 **Bjet_MCMC** is a tool to automatically model multiwavelength spectral energy distributions of blazars, considering one-zone synchrotron-self-Compton (SSC) model with or without the addition of external inverse-Compton process from the thermal emission of the nucleus. It also contains manual fitting functionalities for multi-zone SSC modeling.
 This tool is built as an MCMC python wrapper around the C++ code Bjet.
 
-The main contributors of Bjet_MCMC are: Olivier Hervet, Caitlin Johnson, and Adrian Youngquist
+The original contributors of Bjet_MCMC are: Olivier Hervet, Caitlin Johnson, and Adrian Youngquist
+
+Other contributor: Deivid Ribeiro
 
 License
 -------
