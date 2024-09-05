@@ -50,7 +50,13 @@ pygments_style = "sphinx"
 
 templates_path = ["_templates"]
 exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
-autodoc_mock_imports = ["numpy", "emcee", "scipy", "astropy", "tqdm", "matplotlib"]
+autodoc_mock_imports = [
+    "emcee",
+    "scipy",
+    "swig",
+    "tqdm",
+    "matplotlib",
+]
 
 # -- Options for HTML output
 
