@@ -17,13 +17,13 @@ if read_the_docs_build:
     breathe_default_project = "bjet_core"
     breathe_default_members = ("members", "undoc-members")
 
-sys.path.insert(0, os.path.abspath("../../"))  # Source code dir relative to this file
 sys.path.insert(
     0, os.path.abspath("../../bjet_mcmc")
 )  # Source code dir relative to this file
 sys.path.insert(
     0, os.path.abspath("../../bjet_core")
 )  # Source code dir relative to this file
+sys.path.insert(0, os.path.abspath("../../"))  # Source code dir relative to this file
 
 release = "0.2"
 version = "0.2.1"
