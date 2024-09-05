@@ -4,6 +4,9 @@
 import os, sys
 import subprocess
 
+# Check if we're running on Read the Docs' servers
+read_the_docs_build = os.environ.get("READTHEDOCS", None) == "True"
+
 if read_the_docs_build:
     print("Building on Read the Docs")
     dox_cmd = "doxygen Doxyfile"
@@ -32,9 +35,6 @@ extensions = [
     "sphinx.ext.intersphinx",
     "breathe",
 ]
-
-# Check if we're running on Read the Docs' servers
-read_the_docs_build = os.environ.get("READTHEDOCS", None) == "True"
 
 autosummary_generate = True  # Turn on sphinx.ext.autosummary
 
