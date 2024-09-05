@@ -9,9 +9,11 @@ read_the_docs_build = os.environ.get("READTHEDOCS", None) == "True"
 
 if read_the_docs_build:
     print("Building on Read the Docs")
+    if not os.path.exists("./_build/doxygen"):
+        os.makedirs("./_build/doxygen")
     dox_cmd = "doxygen Doxyfile"
     subprocess.run(dox_cmd, shell=True)
-    breathe_projects = {"bjet_core": "../build/doxygen/xml"}
+    breathe_projects = {"bjet_core": "_build/doxygen/xml"}
     breathe_default_project = "bjet_core"
     breathe_default_members = ("members", "undoc-members")
 
