@@ -1,6 +1,7 @@
 // exact copy of the processes_supp from bjet
 #ifndef __PROCESSES_SUPP_V02_H_
 #define __PROCESSES_SUPP_V02_H_
+/** @file */
 
 extern double Simpson(double func[], double ics[], int res, int start, int end);
 extern double linint(double x, double xvec[], int xdim, double x_min, double x_max);

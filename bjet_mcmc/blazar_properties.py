@@ -1,6 +1,6 @@
 """
 This gets the path to .../blazars-mcmc, which then allows for function calls
-to use the absolute path."
+to use the absolute path.
 """
 
 import os
@@ -50,6 +50,16 @@ NAME_STEM = "run"
 
 
 class BlazarProperties(object):
+    """
+    Module: BlazarProperties
+
+    This module contains the definition of the BlazarProperties class, which is used to store properties related to blazar objects.
+
+    Classes:
+        BlazarProperties: A class used to store properties related to blazar objects.
+
+    """
+
     def __init__(
         self,
         num_dim,
@@ -58,6 +68,22 @@ class BlazarProperties(object):
         detailed_param_names,
         param_is_log,
     ):
+        """
+        Class representing Blazar Properties.
+
+        :param num_dim: number of dimensions
+        :type num_dim: int
+        :param param_names: list of parameter names
+        :type param_names: list[str]
+        :param formatted_param_names: list of formatted parameter names
+        :type formatted_param_names: list[str]
+        :param detailed_param_names: list of detailed parameter names
+        :type detailed_param_names: list[str]
+        :param param_is_log: list indicating whether parameters are logarithmic
+        :type param_is_log: list[bool]
+
+        :raises Exception: if dimensions of arrays conflict in blazar_properties
+        """
         self.NUM_DIM = num_dim
         self.PARAM_NAMES = param_names
         self.FORMATTED_PARAM_NAMES = formatted_param_names
@@ -74,6 +100,14 @@ class BlazarProperties(object):
 
 
 def modelProperties(is_eic=False, fixed_params=None):
+    """
+    :param is_eic: a boolean indicating whether the properties are for the EIC model (default is False)
+    :type is_eic: bool
+    :param fixed_params: a list of fixed parameter values to remove from the properties (default is None)
+    :type fixed_params: list or None
+    :return: the properties object with specified modifications
+    :rtype: BlazarProperties
+    """
     sscProperties = BlazarProperties(
         9,
         ["delta", "K", "n_1", "n_2", "gamma_min", "gamma_max", "gamma_break", "B", "R"],
@@ -190,6 +224,14 @@ def modelProperties(is_eic=False, fixed_params=None):
 # TODO Implement a different scheme for saving output files. Do not place in program install location but in a user
 #  defined analysis directory.
 def _get_path():
+    """
+    This function retrieves the base path of the current file and returns the path up to the main folder.
+
+    .. note:: This method should return __file__ from the location of the Bjet-MCMC repository root, and not the python install location in `site-packages`.
+
+    :return: The base path up to the main folder.
+    :rtype: str
+    """
     base_path = str(os.path.dirname(__file__))
     # base_path = str(pathlib.Path().resolve())
     stop = base_path.find(PROGRAM_NAME)

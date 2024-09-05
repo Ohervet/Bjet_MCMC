@@ -104,6 +104,24 @@ param_max_vals = np.array(param_max_vals)
 
 
 def make_model(params, name_stem="run"):
+    """
+    This function builds a model based on the provided parameters and name stem. It converts the parameters to logarithmic values where necessary. The model is built by executing a command using subprocess.run() and the output is saved to a file. The logarithmic wavelength and flux values are then extracted from the file and converted to linear values. Additional components are added to the model based on the name stem. Lastly, the built model is interpolated and combined with the existing model.
+
+    :param params: The parameters for building the model.
+    :type params: list[float]
+    :param name_stem: The prefix for the output file names.
+    :type name_stem: str
+    :return: The logarithmic wavelength values, logarithmic flux values, linear wavelength values, and linear flux values.
+    :rtype: tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]
+
+    A tuple containing the following elements:
+        - logv (float[]): The logarithm of the frequency values.
+        - logvFv (float[]): The logarithm of the flux values.
+        - v (float[]): The frequency values.
+        - vFv (float[]): The flux values.
+
+    .. note:: This implementation uses subprocess.popen and should be rewritten in the future with bj_core.py methods.
+    """
     # convert to log
     # TODO rewrite this entire method using bj_core methods and without building a command string.
     params = params * 1.0
@@ -184,6 +202,31 @@ def make_model(params, name_stem="run"):
 
 
 def log_prior(params):
+    """
+    This function calculates the log prior probability for a given set of parameters.
+
+    Args:
+        params (tuple): A tuple containing the following parameters:
+            - delta (float): The value of delta.
+            - K (float): The value of K.
+            - n1 (float): The value of n1.
+            - n2 (float): The value of n2.
+            - gamma_min (float): The value of gamma_min.
+            - gamma_max (float): The value of gamma_max.
+            - gamma_break (float): The value of gamma_break.
+            - B (float): The value of B.
+            - R (float): The value of R.
+            - other_params (tuple): Optional additional parameters.
+
+    Returns:
+        float: The log prior value. If any of the parameters violate the constraints, it returns negative infinity (-inf). Otherwise, it returns 0.
+
+    :param params: The input parameters to calculate the log prior probability.
+    :type params: tuple
+
+    :return: The log prior probability.
+    :rtype: float
+    """
     delta, K, n1, n2, gamma_min, gamma_max, gamma_break, B, R, *other_params = params
     if (
         n1 > n2
@@ -207,6 +250,22 @@ def log_prior(params):
 
 
 def random_params():
+    """
+    Generates random parameters within given range and checks if they have finite log prior values and are within specified minimum and maximum values.
+
+    Returns:
+        numpy.ndarray: Array of random parameters.
+
+    Raises:
+        None.
+
+    Examples:
+        >>> random_params()
+        array([0.5, 1.2, 0.8])
+
+    :return: Randomly generated parameters within the specified range.
+    :rtype: numpy.ndarray
+    """
     parameter_size = param_max_vals - param_min_vals
     parameters = param_min_vals + parameter_size * np.random.rand(DIM)
     while not np.isfinite(log_prior(parameters)):
@@ -215,6 +274,34 @@ def random_params():
 
 
 def log_prob(params):
+    """
+
+    This function calculates the log probability for a given set of parameters.
+
+    The array should contain the following elements in order:
+        - **delta**: A float representing a prior value
+        - **K**: An integer representing a prior value
+        - **n1**: An integer representing a prior value
+        - **n2**: An integer representing a prior value
+        - **gamma_min**: A float representing a prior value
+        - **gamma_max**: A float representing a prior value
+        - **gamma_break**: A float representing a prior value
+        - **B**: A float representing a prior value
+        - **R**: A float representing a prior value
+        - **\*other_params**: Additional parameters (optional)
+
+    :param params: A list of parameters.
+    :type params: list
+    :return: The log probability for the given parameters. It returns -inf if any of the following conditions are met:
+
+        - **n1 > n2**
+        - **gamma_min > gamma_max**
+        - **gamma_break < gamma_min**
+        - **gamma_break > gamma_max**
+        - Any parameter falls outside the specified range (param_min_vals and param_max_vals)
+
+    :rtype: float
+    """
     name_stem = "run_" + str(random.getrandbits(60))
 
     # prior
@@ -252,6 +339,42 @@ def log_prob(params):
 
 
 def mcmc(p0=None):
+    """
+    :param p0: The initial parameter values for each walker. If not provided, random parameter values will be generated.
+    :type p0: numpy.array or None
+    :return: A tuple containing the sampler object and the directory where the results are saved.
+    :rtype: tuple[emcee.EnsembleSampler, str]
+
+    This function performs a Markov Chain Monte Carlo (MCMC) simulation using the emcee library in Python. The MCMC simulation is used to sample from the posterior distribution of a specified likelihood function. The simulation starts from an initial set of parameter values (p0) and iteratively updates these values to explore the parameter space and converge to the posterior distribution.
+
+    If p0 is provided, the function prints the first element of p0.
+    The function then checks for "folder_label" and "description" in the "configs" dictionary. If "folder_label" is present, it assigns its value to the variable "folder_label", otherwise it assigns the default value "run". If "description" is present, it assigns its value to the variable "description", otherwise it assigns None.
+
+    The function then creates a directory to store the results using the current date and time.
+    It creates a "backend.h5" file for storing the backend data.
+    It creates a "basic_info.txt" file to store basic information about the simulation, including the folder name, description (if provided), and configurations. If p0 is provided, it indicates that p0 was given in the file.
+
+    If the "parallel" configuration is set to True in the "configs" dictionary, the function creates a multiprocessing pool to run the simulation in parallel. The number of processes in the pool is determined by the "cores" configuration in "configs" (default value is the number of available CPU cores). If "parallel" is False, the pool is set to None.
+
+    The function then creates an emcee HDFBackend object to store the backend data.
+    It resets the backend with the specified number of walkers and dimensions.
+
+    If p0 is not provided, it generates random initial parameter values for each walker.
+
+    The function creates an emcee EnsembleSampler object with the specified number of walkers, dimensions, log probability function, backend, move, and pool.
+
+    It prints a message indicating the start of the MCMC simulation.
+
+    The function records the start time and runs the MCMC simulation using the run_mcmc() method of the sampler.
+
+    If the "parallel" configuration is True, it closes the multiprocessing pool.
+
+    The function records the end time and appends the total simulation time to the "basic_info.txt" file.
+
+    Finally, the function calls the "show_results()" and "save_plots_and_info()" functions from the blazar_report module with various parameters to display and save the simulation results.
+
+    The function returns a tuple containing the MCMC sampler and the directory where the results are saved.
+    """
     if p0 is not None:
         print(p0[0])
     if "folder_label" in configs:
@@ -338,10 +461,20 @@ def mcmc(p0=None):
 
 def main_cli():
     """
-    p0_file = "local_results/3C66A_b6_eic_2022-06-08-20:17:26/backend.h5"
-    reader = emcee.backends.HDFBackend(BASE_PATH + p0_file, read_only=True)
-    p0 = reader.get_last_sample().coords
+    This function is the entry point for the command-line interface of the software. It performs the following steps:
+
+    1. It initializes the variable `p0` to `None`.
+
+    2. It calls the `mcmc()` function with the `p0` variable as an argument. The `mcmc()` function returns two values - `sampler` and `directory`. These values are assigned to the variables `sampler` and `directory` respectively.
+
+    3. If the value of `blazar_properties.TMP` is true, it moves the directory specified by `BASE_PATH + directory` to `blazar_properties.FOLDER_PATH + directory` using the `shutil.move()` function. It also removes the temporary directory specified by `blazar_properties.TEMP_DIR` using the `shutil.rmtree()` function.
+
+    :return: None
+    :rtype: None
     """
+    # p0_file = "local_results/3C66A_b6_eic_2022-06-08-20:17:26/backend.h5"
+    # reader = emcee.backends.HDFBackend(BASE_PATH + p0_file, read_only=True)
+    # p0 = reader.get_last_sample().coords
     p0 = None
     sampler, directory = mcmc(p0=p0)
     if blazar_properties.TMP:

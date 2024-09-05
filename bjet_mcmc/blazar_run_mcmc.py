@@ -1,42 +1,28 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-file name: blazar_run_mcmc.py
-
 Program Purpose: Implement the mcmc. Run the file to run the MCMC as a script
 using a parameter file.
 
 Parameters are always listed in the following order:
 [delta, K, n1, n2, gamma_min, gamma_max, gamma_break, B, R]
+
 All parameters are the logarithm of the true value except for delta, n1, and n2
----------------------------------------------------
-delta       doppler factor                  linear
-K           particle density [cm^-3]        log
-n1          alpha_1 (first index)           linear
-n2          alpha_2 (second index)          linear
-gamma_min   low-energy cutoff               log
-gamma_max   high-energy cutoff              log
-gamma_break energy break                    log
-B           magnetic field strength [G]     log
-R           blob radius (cm)                log
----------------------------------------------------
 
-Contains:
+===================  =============================  ======
+Parameter            Description                    Scale
+===================  =============================  ======
+delta                doppler factor                 linear
+K                    particle density [cm^-3]       log
+n1                   n_1 (first index)              linear
+n2                   n_2 (second index)             linear
+gamma_min            low-energy cutoff              log
+gamma_max            high-energy cutoff             log
+gamma_break          energy break                   log
+B                    magnetic field strength [G]    log
+R                    blob radius (cm)               log
+===================  =============================  ======
 
-FUNCTIONS:
-run_mcmc
-mcmc
-
-
-run_mcmc(configs, param_min_vals=None, param_max_vals=None, backend_file="<RESULTS_FOLDER>/backend.h5",
-             p0=None, min_freq=None, max_freq=None)
-    Runs the actual mcmc given a configuration dictionary.
-    Returns the sampler and a string of how long the mcmc took.
-
-mcmc(config_file=None, directory=None, p0=None, p0_label=None)
-    Function called by main. Can be run with no parameters and runs the mcmc given
-    a configuration file.
-    Returns the sampler.
 """
 import datetime
 import multiprocessing
@@ -73,48 +59,52 @@ def run_mcmc(
     eic=False,
 ):
     """
-    Arguments:
-        configs: dictionary; keys are strings, value types are mixed
-            Configurations usually obtained with read_configs. See below for
-                necessary dictionary elements.
-        param_min_vals (optional): np array of floats, shape (NUM_DIM,)
-            min values for each param in the usual order; default is None; will
-            use defaults in blazar_utils.min_max_parameters
-        param_max_vals (optional): np array of floats, shape (NUM_DIM,)
-            max values for each param in the usual order; default is None; will
-            use defaults in blazar_utils.min_max_parameters
-        backend_file (optional): str
-            location of backend file; default location will be used if none specified
-        p0 (optional): 2D np array of floats, shape (n_walkers, NUM_DIM)
-            initial locations. Default is none; then, random start parameters will be used.
-            Usually only specify this if you would like to continue a previous run from the
-            last state of a chain.
-        min_freq (optional): float
-            minimum frequency for creating SED models; default is None, then default
-            will be used.
-        max_freq (optional): float
-            maximum frequency for creating SED models; default is None, then default
-            will be used.
-    ------
-    Returns:
-        tuple: (emcee.EnsembleSampler, str)
-        (sampler, time)
-        sampler: sampler created
-        time: string of how long the MCMC took in hh:mm:ss.ssssss
-    ------
+    This function runs an MCMC simulation using the emcee package.
 
     Config dictionary keys and values:
     Keys are strings, value format is mixed
+
+    =================       ===================================================
     Key (str)               Value
-    "data_file"             (str) relative path to data
-    "n_steps"               (int) number of num to run
-    "n_walkers"             (int) number of walkers
-    "discard"               (int) how many num are discarded before analysis
-    "parallel"              (bool) whether parallel processing will be used
-    "cores"                 (int) NOT PRESENT IF PARALLEL IS FALSE; # of cores
-                                if absent and parallel TRUE,
-                                (# cores on machine - 1) used
-    "tau_variability"       (float) time in hours for variability constraint
+    =================       ===================================================
+    data_file               (str) relative path to data
+    n_steps                 (int) number of num to run
+    n_walkers               (int) number of walkers
+    discard                 (int) how many num are discarded before analysis
+    parallel                (bool) whether parallel processing will be used
+    cores                   (int) NOT PRESENT IF PARALLEL IS FALSE; # of cores
+                            if absent and parallel TRUE,
+                            (# cores on machine - 1) used
+    tau_variability         (float) time in hours for variability constraint
+    =================       ===================================================
+
+
+    :param configs: keys are strings, value types are mixed Configurations usually obtained with read_configs. See below for necessary dictionary elements.
+    :type configs: dict
+    :param param_min_vals: A numpy array (NUM_DIM,) of the minimum values for each parameter. If None, default values will be used.
+    :type param_min_vals: numpy array, optional
+    :param param_max_vals: A numpy array (NUM_DIM,) of the maximum values for each parameter. If None, default values will be used.
+    :type param_max_vals: numpy array, optional
+    :param backend_file: The file name of the backend HDF5 file. Default is 'backend.h5'.
+    :type backend_file: str, optional
+    :param p0: 2D np array of floats, shape (n_walkers, NUM_DIM) initial locations. Default is none; then, random start parameters will be used. Usually only specify this if you would like to continue a previous run from the last state of a chain. The starting positions for the walkers. If None, random positions will be generated. If eic_p0_from_std is True, these positions will be used to generate the starting positions. Otherwise, if p0_file is provided, positions from this file will be used. If p0 is provided, these positions will be used. Else, random positions will be generated based on the parameter limits.
+    :type p0: numpy array, optional
+    :param p0_file: The file name of the HDF5 file containing the starting positions for the walkers. If provided, the positions from this file will be used. If not, random positions will be generated.
+    :type p0_file: str, optional
+    :param eic_p0_from_std: If True, starting positions will be generated based on the standard deviation of the parameters specified in p0_file. This option is only valid for EIC mode. Default is False.
+    :type eic_p0_from_std: bool, optional
+    :param min_freq: The minimum frequency to be considered in the blazar SED model. If None, the minimum frequency in the data file will be used.
+    :type min_freq: float, optional
+    :param max_freq: The maximum frequency to be considered in the blazar SED model. If None, the maximum frequency in the data file will be used.
+    :type max_freq: float, optional
+    :param prev_files: If True, previous output files will be read and used as additional data points. Default is False.
+    :type prev_files: bool, optional
+    :param use_param_file: If True, the param_file will be used to store the walker positions. Default is True.
+    :type use_param_file: bool, optional
+    :param eic: If True, the model will be run in EIC mode. Otherwise, non-EIC mode will be used. Default is False.
+    :type eic: bool, optional
+    :return: The sampler object containing information about the MCMC run, and the duration of the run as a string (string of how long the MCMC took in hh:mm:ss.ssssss).
+    :rtype:  tuple(emcee.EnsembleSampler, time)
     """
     if configs["parallel"]:
         if "cores" not in configs:
@@ -291,28 +281,30 @@ def mcmc(
     use_param_file=False,
 ):
     """
-    The MCMC function that will run just given a configuration file--this is the
-    function called by the main method.
+    The MCMC function that will run just given a configuration file--this is the function called by the main method.
 
-    Arguments:
-        all arguments are optional
-        config_file (optional): str
-            Absolute path to configuration file; default is None; if none,
-            it will be set to "mcmc_config.txt"
-        directory (optional): str
-            Location for results; default is none; if none, it will
-            be in <RESULTS_FOLDER>/run_YYYY-mm-dd-hh:mm:ss. This will be set with
-            configs if possible.
-        folder_label (optional): str
-            If directory is None and folder_label is not None, results will
-            be saved in a folder named <folder_label>_YYYY-mm-dd-hh:mm:ss
-        p0 (optional): numpy arr of floats, n_walkers x NUM_DIM)
-            Initial positions of the walkers; default is None; if none, random
-            positions will be used.
-            Usually only set this if continuing a run from a past MCMC run.
-        p0_label (optional): str
-            Label describing where the p0 values came from; default
-            is none; if none, the label will be "random"
+    :param config_file: Absolute path to configuration file; default is None; if none, it will be set to "mcmc_config.txt"
+    :type config_file: str
+    :param directory: Location for results; default is none; if none, it will be in <RESULTS_FOLDER>/run_YYYY-mm-dd-hh:mm:ss. This will be set with configs if possible.
+    :type directory: str
+    :param folder_label: If directory is None and folder_label is not None, results will be saved in a folder named `<folder_label>_YYYY-mm-dd-hh:mm:ss`
+    :type folder_label: str
+    :param p0:  numpy arr of floats, n_walkers x NUM_DIM). Initial positions of the walkers; default is None; if none, random positions will be used. Usually only set this if continuing a run from a past MCMC run.
+    :type p0: list or None
+    :param p0_label: The label for the initial parameter values.
+    :type p0_label: str
+    :param p0_file: Label describing where the p0 values came from; default is none; if none, the label will be "random"
+    :type p0_file: str or None
+    :param eic_p0_from_std: A flag indicating whether to use EIC p0 values from standard deviations.
+    :type eic_p0_from_std: bool
+    :param description: A description of the MCMC analysis.
+    :type description: str or None
+    :param prev_files: A flag indicating whether to use previous files.
+    :type prev_files: bool
+    :param use_param_file: A flag indicating whether to use a parameter file.
+    :type use_param_file: bool
+    :return: The MCMC sampler and the directory where the results are saved.
+    :rtype: tuple
     """
     configs = blazar_utils.read_configs(config_file=config_file)
 

@@ -5,21 +5,6 @@ file name: blazar_initialize.py
 
 Purpose: Implement functions to make necessary directories and compile the c++ code
 
-Contains:
-FUNCTIONS:
-make_dirs
-compile_bjet
-initialize
------------------
-make_dirs(data_folder=None, results_folder=None, parameter_folder=None, parameter_file=False)
-    Creates data folder, results folder, and parameter folder. Folders can be
-    specified. Others, folders specified in blazar_properties.py will be used.
-compile_bjet(bjet_folder=None, executable=None, verbose=False)
-    Compile c++ code
-initialize(data_folder=None, results_folder=None, parameter_folder=None, parameter_file=False,
-               bjet_folder=None, executable=None, run_compile=True)
-    Calls make_dirs and compile_bjet. If code is to be run in the temp directory, the executable
-    of the C++ code is copied into the temp directory.
 """
 import os
 import shutil
@@ -33,6 +18,33 @@ __all__ = ["make_dirs", "compile_bjet", "initialize"]
 def make_dirs(
     data_folder=None, results_folder=None, parameter_folder=None, parameter_file=False
 ):
+    """
+    This function, `make_dirs`, creates folders based on the input parameters.
+
+    The function first checks if any of the input folder parameters are None. If they are, it assigns default values based on predefined constants.
+
+    Then, it iterates through each of the folders (data_folder, results_folder, parameter_folder) and checks if they are not None. If they are not None, it checks if the folder path does not already exist. If it doesn't exist, it creates the folder.
+
+    Finally, it checks if the current folder being processed is the results_folder and if the folder path doesn't already exist. If it doesn't exist, it creates the folder under a specific path.
+
+    Note: This function relies on the presence of certain constants (e.g. DATA_FOLDER, RESULTS_FOLDER, PARAMETER_FOLDER, BASE_PATH, FOLDER_PATH), but these constants are not defined or included in this documentation.
+
+    Example usage:
+        make_dirs(data_folder='data', results_folder='results', parameter_folder='parameters', parameter_file=True)
+
+    :param data_folder: The folder to store data files. Defaults to DATA_FOLDER.
+    :type data_folder: str
+    :param results_folder: The folder to store results files. Defaults to RESULTS_FOLDER.
+    :type results_folder: str
+    :param parameter_folder: The folder to store parameter files.  If None and parameter_file is True, it defaults to the value of PARAMETER_FOLDER. If None and parameter_file is False, the parameter folder will not be created.
+    :type parameter_folder: str
+    :param parameter_file: A boolean indicating whether a parameter file is present or not. Defaults to False.
+    :type parameter_file: bool
+    :return: None
+    :rtype: None
+
+
+    """
     if data_folder is None:
         data_folder = DATA_FOLDER
     if results_folder is None:
@@ -52,6 +64,18 @@ def make_dirs(
 
 
 def compile_bjet(bjet_folder=None, executable=None, verbose=False):
+    """
+    Compiles the specified BJET folder using the specified executable.
+
+    :param bjet_folder: The folder containing the BJET files to be compiled. If not provided, the default CPP_FOLDER will be used.
+    :type bjet_folder: str
+    :param executable: The name of the executable file to be generated. If not provided, the default EXECUTABLE will be used.
+    :type executable: str
+    :param verbose: If True, the make process will display verbose output. If False, the output will be suppressed. Default is False.
+    :type verbose: bool
+    :return: None
+    :rtype: None
+    """
     if bjet_folder is None:
         bjet_folder = CPP_FOLDER
     if executable is None:
@@ -80,6 +104,26 @@ def initialize(
     executable=None,
     run_compile=True,
 ):
+    """
+    Initializes the software by creating necessary directories, compiling the required files, and copying the executable.
+
+    :param data_folder: The path to the data folder. Defaults to None.
+    :type data_folder: str
+    :param results_folder: The path to the results folder. Defaults to None.
+    :type results_folder: str
+    :param parameter_folder: The path to the parameter folder. Defaults to None.
+    :type parameter_folder: str
+    :param parameter_file: Indicates whether a parameter file is present. Defaults to False.
+    :type parameter_file: bool
+    :param bjet_folder: The path to the bjet folder. Defaults to None.
+    :type bjet_folder: str
+    :param executable: The name of the executable file. Defaults to None.
+    :type executable: str
+    :param run_compile: Indicates whether to compile the bjet executable. Defaults to True.
+    :type run_compile: bool
+    :return: None
+    :rtype: None
+    """
     make_dirs(
         data_folder=data_folder,
         results_folder=results_folder,

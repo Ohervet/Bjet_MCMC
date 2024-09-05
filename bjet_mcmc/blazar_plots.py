@@ -1,26 +1,30 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-file name: blazar_plots.py
 Program purpose: Code for various plots
 
 Parameters are always listed in the following order:
 [delta, K, n1, n2, gamma_min, gamma_max, gamma_break, B, R]
+
 All parameters are the logarithm of the true value except for delta, n1, and n2
+
 ---------------------------------------------------
-delta       doppler factor                  linear
-K           particle density [cm^-3]        log
-n1          n_1 (first index)           linear
-n2          n_2 (second index)          linear
-gamma_min   low-energy cutoff               log
-gamma_max   high-energy cutoff              log
-gamma_break energy break                    log
-B           magnetic field strength [G]     log
-R           blob radius (cm)                log
----------------------------------------------------
+
+===================  =============================  ======
+Parameter            Description                    Scale
+===================  =============================  ======
+delta                doppler factor                 linear
+K                    particle density [cm^-3]       log
+n1                   n_1 (first index)              linear
+n2                   n_2 (second index)             linear
+gamma_min            low-energy cutoff              log
+gamma_max            high-energy cutoff             log
+gamma_break          energy break                   log
+B                    magnetic field strength [G]    log
+R                    blob radius (cm)               log
+===================  =============================  ======
 
 Note that data (observed) is expected in linear scale and model data is expected in log scale unless log param is set to False.
-
 """
 import glob
 import os
@@ -84,33 +88,36 @@ def plot_model(
     log=True,
 ):
     """
-    Plots frequency against energy flux using matplotlib
-    Args:
-        results: an index-able type with at least two elements
-            The first two elements are 1D numpy arrays of floats. Only the first
-            2 elements are used. results[0] should be logv values and results[1]
-            logvFv values.
-        save (optional): bool
-            Whether model should be saved as image; default is False
-        show (optional): bool
-            Specifies if plot is shown; default is true
-        file_name (optional):str
-            Where model should be saved; default is "<RESULTS_FOLDER>/model.<image_type>"
-        line (optional): bool
-            Specifies if the line between points should be shown; default is True
-        points (optional): bool
-            Specifies if the points should be shown (or just the line); default is True
-        point_style (optional): str that is a valid matplotlib point style
-            Specifies the point style; default is '.'
-        line_style (optional): str that is a valid matplotlib line style
-            Specifies the line style; default is '-'
-        clear_plot (optional): bool
-            Whether the plot should be cleared before new data is plotted; default
-            is True
+    Plot Model
 
-    After function call:
-        If show is true, the plot is shown.
-        If save is true, the plot is saved as file.
+    :param model: The model data to plot. The first two elements are 1D numpy arrays of floats. Only the first 2 elements are used. results[0] should be logv values and results[1] logvFv values.
+    :type model: tuple
+    :param title: Optional title for the plot.
+    :type title: str
+    :param no_title: If True, no title will be displayed on the plot.
+    :type no_title: bool
+    :param line: If True, a line plot will be created.
+    :type line: bool
+    :param points: If True, scatter points will be plotted.
+    :type points: bool
+    :param point_style: Marker style for the scatter points.
+    :type point_style: str
+    :param line_style: Line style for the line plot.
+    :type line_style: str
+    :param line_alpha: Alpha value for the line plot.
+    :type line_alpha: float
+    :param file_name: File name to save the plot.
+    :type file_name: str
+    :param clear_plot: If True, clears the existing plot before creating a new one.
+    :type clear_plot: bool
+    :param save: If True, saves the plot to a file.
+    :type save: bool
+    :param show: If True, displays the plot.
+    :type show: bool
+    :param log: If True, applies logarithmic scaling to the model data before plotting.
+    :type log: bool
+    :return: None
+    :rtype: None
     """
     if log:
         x = np.power(10, model[0])
@@ -150,36 +157,34 @@ def plot_data(
     show=True,
 ):
     """
-    Create a plot of the data
-    Args:
-        v_data: 1D np array of floats
-            Data
-        vFv_data: 1D np array of floats
-            Data
-        title: str
-            Title for plot
-        file_name (optional): str
-            Relative path to where the image should be saved; default is
-            "<RESULTS_FOLDER>>/data.<image_type>"
-        save (optional): bool
-            If the plot should be saved; default is False
-        show (optional): bool
-            Specifies if plot is shown; default is True
-        adjust_scale (optional): bool
-            True = the plot should use the scale of the data
-            False = scaled to the model
-            default is True
-        lower_adjust_multiplier (optional): float
-            How far below the data the plot should be scaled; default is 1.1
-        upper_adjust_multiplier (optional): float
-            How far above the data the plot should be scaled; default is 1.1
-        clear_plot (optional): bool
-            Whether the plot should be cleared before new data is plotted; default
-            is True
+    Plots data from a given file.
 
     After function call:
         If show is true, the plot is shown.
         If save is true, the plot is saved as file.
+
+    :param data_file: Path to the data file.
+    :type data_file: str
+    :param title: Title of the plot. Default is None.
+    :type title: str, optional
+    :param no_title: Whether to include a title in the plot. Default is False.
+    :type no_title: bool, optional
+    :param adjust_scale: Whether to adjust the y-axis scale of the plot. Default is True.
+    :type adjust_scale: bool, optional
+    :param lower_adjust_multiplier: Lower multiplier for adjusting the y-axis scale. Default is None.
+    :type lower_adjust_multiplier: float, optional
+    :param upper_adjust_multiplier: Upper multiplier for adjusting the y-axis scale. Default is None.
+    :type upper_adjust_multiplier: float, optional
+    :param file_name: Name of the output file to save the plot. Default is "<RESULTS_FOLDER>/<data>.<IMAGE_TYPE>".
+    :type file_name: str, optional
+    :param clear_plot: Whether to clear the current plot before plotting. Default is True.
+    :type clear_plot: bool, optional
+    :param save: Whether to save the plot as an image file. Default is False.
+    :type save: bool, optional
+    :param show: Whether to display the plot. Default is True.
+    :type show: bool, optional
+    :return: None
+    :rtype: None
     """
     filled_markers = (
         "o",
@@ -333,31 +338,47 @@ def plot_model_and_data(
 ):
     """
     Create a plot with data and model data
-    Args:
-        model: tuple of 1D np arrays of floats
-            The data for the model; only the first 2 elems are used, which are
-            logv and logvFv
-        title: str
-            Title for plot
-        file_name (optional): str
-            Relative path to where the image should be saved; default is
-            "<RESULTS_FOLDER>/model_and_data.<image_type>"
-        save (optional): bool
-            If the plot should be saved; default is False
-        show (optional): bool
-            Specifies if plot is shown; default is True
-        adjust_scale (optional): bool
-            True = the plot should use the scale of the data
-            False = scaled to the model
-            default is True
-        lower_adjust_multiplier (optional): float
-            How far below the data the plot should be scaled; default is 1.1
-        upper_adjust_multiplier (optional): float
-            How far above the data the plot should be scaled; default is 1.1
 
     After function call:
         If show is true, the plot is shown.
         If save is true, the plot is saved as file.
+
+    :param model: The data for the model; only the first 2 elems are used, which are logv and logvFv
+    :type model: Any
+    :param data_file: The data file to plot.
+    :type data_file: str
+    :param flat_samples: The flat samples.
+    :type flat_samples: Any
+    :param indices_within_1sigma: The indices within 1 sigma.
+    :type indices_within_1sigma: Any
+    :param redshift: The redshift value.
+    :type redshift: Any
+    :param eic: The eic value.
+    :type eic: Any
+    :param title: The title of the plot. (optional)
+    :type title: str, default=None
+    :param no_title: Whether to exclude the title from the plot. (optional)
+    :type no_title: bool, default=False
+    :param adjust_scale: Whether to adjust the scale of the plot. True = the plot should use the scale of the data. False = scaled to the model. (optional)
+    :type adjust_scale: bool, default=True
+    :param lower_adjust_multiplier: How far below the data the plot should be scaled. (optional)
+    :type lower_adjust_multiplier: Any, default=1.1
+    :param upper_adjust_multiplier: How far above the data the plot should be scaled. (optional)
+    :type upper_adjust_multiplier: Any, default=1.1
+    :param file_name:  Relative path to where the image should be saved. (optional)
+    :type file_name: str, default=RESULTS_FOLDER + "/model_and_data." + image_type
+    :param save: Whether to save the plot to a file. (optional)
+    :type save: bool, default=False
+    :param show: Whether to show the plot. (optional)
+    :type show: bool, default=True
+    :param log: Whether to use a logarithmic scale on the plot. (optional)
+    :type log: bool, default=True
+    :param fixed_params: The fixed parameters. (optional)
+    :type fixed_params: Any, default=None
+    :param verbose: Whether to display verbose output. (optional)
+    :type verbose: bool, default=False
+    :return: None
+    :rtype: None
     """
 
     params = {  #'backend': 'ps',
@@ -446,33 +467,59 @@ def corner_plot(
     fixed_params=None,
 ):
     """
-    Create a corner plot:
-    Args:
-        values: 2D np array of arrays w/ NUM_DIM columns
-            Flat samples--a list of sets of parameters
-        param_min_vals: list or np array of NUM_DIM floats
-            Minimum value for each param
-        param_max_vals: list or np array of NUM_DIM floats
-            Maximum value for each param
-        best_params: list or np array of NUM_DIM floats
-            Parameter values for the model with the best chi squared value
-        sigma_below_params: list or np array of NUM_DIM floats
-            Value for cutoff of lowest param value within 1 sigma for each param
-        sigma_above_params: list or np array of NUM_DIM floats
-            Value for cutoff of highest param value within 1 sigma for each param
-        param_names (optional): list of strings
-            Names of the parameters (param_names for the plot). These should be
-            formatted params for math text. Default is None; then they will be
-            set to FORMATTED_PARAM_NAMES.
-        save (optional): bool
-            If the plot should be saved; default is False
-        show (optional): bool
-            Specifies if plot is shown; default is True
-        file_name (optional): str
-            Relative path to where the image should be saved; default is
-            "corner.<image_type>"
+    This function generates a corner plot for given values and parameters.
+
     After function call:
         mpl plot is shown, if save is true, plot is saved to a file
+
+    :param values: The values to plot on the corner plot. 2D np array of arrays w/ NUM_DIM columns. Flat samples--a list of sets of parameters
+    :type values: numpy.ndarray
+
+    :param param_min_vals: The minimum values for each parameter. Array of NUM_DIM floats.
+    :type param_min_vals: list
+
+    :param param_max_vals: The maximum values for each parameter. Array of NUM_DIM floats.
+    :type param_max_vals: list
+
+    :param best_params: Parameter values for the model with the best chi squared value. Array of NUM_DIM floats.
+    :type best_params: list
+
+    :param sigma_below_params: Value for cutoff of lowest param value within 1 sigma for each param.Array of NUM_DIM floats.
+    :type sigma_below_params: list
+
+    :param sigma_above_params: Value for cutoff of highest param value within 1 sigma for each param. Array of NUM_DIM floats.
+    :type sigma_above_params: list
+
+    :param title: The title of the corner plot. (optional)
+    :type title: str
+
+    :param no_title: If True, the corner plot will not have a title. (optional)
+    :type no_title: bool
+
+    :param param_names: Names of the parameters (param_names for the plot). These should be formatted params for math text. Default is None; then they will be set to FORMATTED_PARAM_NAMES.
+    :type param_names: list
+
+    :param file_name: Relative path to where the image should be saved; default is
+            "corner.<image_type>"
+    :type file_name: str
+
+    :param save: If True, the plot will be saved. (optional, default: False)
+    :type save: bool
+
+    :param show: If True, the plot will be displayed. (optional, default: True)
+    :type show: bool
+
+    :param dpi: The DPI (dots per inch) for saving the plot. (optional, default: 300)
+    :type dpi: int
+
+    :param eic: If True, the plot will be generated for EIC data. (optional, default: False)
+    :type eic: bool
+
+    :param fixed_params: The fixed parameters. (optional)
+    :type fixed_params: dict
+
+    :return: The generated corner plot figure.
+    :rtype: matplotlib.figure.Figure
     """
     if param_names is None:
         param_names = modelProperties(
@@ -539,6 +586,23 @@ def plot_chain(
     show=True,
     eic=False,
 ):
+    """
+    Plot the given chain data.
+
+    :param chain: The chain of samples to plot, usually a 3-dimensional array.
+    :type chain: numpy.ndarray
+    :param param_names: List of parameter names corresponding to the dimensions of the chain. Default is None.
+    :type param_names: list, optional
+    :param file_name: The name of the file to save the plot as. Default is "chain.svg".
+    :type file_name: str, optional
+    :param save: Whether to save the plot to a file. Default is False.
+    :type save: bool, optional
+    :param show: Whether to display the plot. Default is True.
+    :type show: bool, optional
+    :param eic: Whether the chain contains EIC data. Default is False.
+    :type eic: bool, optional
+    :return: None
+    """
     if param_names is None:
         param_names = modelProperties(eic).FORMATTED_PARAM_NAMES
     fig, axes = plt.subplots(modelProperties(eic).NUM_DIM, sharex="all")
@@ -566,6 +630,34 @@ def plot_chi_squared(
     show=True,
     clear_plot=True,
 ):
+    """
+    This function plots the chi-squared values against the step number. It provides options for customizing the plot type, title, format, file name, saving the plot, showing the plot, and clearing the plot.
+
+    :param values: An array of chi-squared values.
+    :type values: numpy.ndarray
+    :param discard_number: The number of initial steps to discard.
+    :type discard_number: int
+    :param use_log_probs: Whether to use log probabilities for calculating chi-squared values. Default is True.
+    :type use_log_probs: bool
+    :param plot_type: The type of plot to generate. Must be one of "med", "best", or "all". Default is 'med'.
+    :type plot_type: str
+    :param title: The title of the plot. If not provided, a default title will be used depending on the plot_type.
+    :type title: str
+    :param no_title: Determines whether to show the title on the plot. Default is False.
+    :type no_title: bool
+    :param fmt: The format string for the plot. Default is an empty string.
+    :type fmt: str
+    :param file_name: The name of the file to save the plot. Default is 'med_chi_squared_plot.<image_type>', where <image_type> is the file format specified in the code.
+    :type file_name: str
+    :param save: Determines whether to save the plot. Default is False.
+    :type save: bool
+    :param show: Determines whether to show the plot. Default is True.
+    :type show: bool
+    :param clear_plot: Determines whether to clear the plot before generating a new one. Default is True.
+    :type clear_plot: bool
+    :return: None
+    :rtype: None
+    """
     if plot_type not in ["med", "best", "all"]:
         raise ValueError(plot_type + " is not a valid plot type")
 
@@ -653,15 +745,85 @@ def plot_1sigma(
     torus_frac=None,
     verbose=False,
 ):
-    """
-    TODO what happens when folder is None??
-    The parameters within 1 sigma that have the biggest and smallest values for
-    each parameter are found, resulting in 2 arrays of dimension NUM_DIM * NUM_DIM.
-    Models are created from these, and for each frequency value,
-    the minimum and the maximum are found.
-    The graph is made by filling in the space between the minimum and maximum
-    for each frequency value.
-    The best model and the actual data with error bars are plotted on top of this.
+    # TODO what happens when folder is None??
+    """Plot the range from models within 1 sigma along with the best model and the data.
+
+    .. note::
+        - The parameters within 1 sigma that have the biggest and smallest values for each parameter are found, resulting in 2 arrays of dimension NUM_DIM * NUM_DIM.
+        - Models are created from these, and for each frequency value, the minimum and the maximum are found.
+        - The graph is made by filling in the space between the minimum and maximum for each frequency value.
+        - The best model and the actual data with error bars are plotted on top of this.
+
+    :param v_data: The observed values of the frequency.
+    :type v_data:
+    :param vFv_data: The observed values of the nuFnu.
+    :type vFv_data:
+    :param err_data: The error values of the data.
+    :type err_data:
+    :param indices_within_1sigma: The indices of the samples within 1 sigma.
+    :type indices_within_1sigma:
+    :param flat_samples: The flat samples obtained from the MCMC algorithm.
+    :type flat_samples:
+    :param min_chi_squared_index: The index of the model with minimum chi-squared value.
+    :type min_chi_squared_index:
+    :param both: Boolean value indicating whether both extreme and random models should be plotted. Default is False.
+    :type both: bool, optional
+    :param extreme: Boolean value indicating whether extreme models should be plotted. Default is True.
+    :type extreme: bool, optional
+    :param title: The title of the plot.
+    :type title: str, optional
+    :param no_title: If True, do not display a title on the plot.
+    :type no_title: bool, optional
+    :param folder: The folder in which to save the plot.
+    :type folder: str, optional
+    :param file: The name of the file to save the plot as.
+    :type file: str, optional
+    :param save: If True, save the plot to a file.
+    :type save: bool, optional
+    :param show: If True, display the plot.
+    :type show: bool, optional
+    :param serialize: Boolean value indicating whether to serialize the plot using pickle. Default is False.
+    :type serialize: bool, optional
+    :param lower_adjust_multiplier: The lower adjustment multiplier for scaling the y-axis. If None, the minimum y-value of the observed dependent variable will be used.
+    :type lower_adjust_multiplier: float, optional
+    :param upper_adjust_multiplier: The upper adjustment multiplier for scaling the y-axis. Default is 1.02.
+    :type upper_adjust_multiplier: float, optional
+    :param max_num_lines_to_graph: The maximum number of lines to graph for random models. Default is 1000.
+    :type max_num_lines_to_graph: int, optional
+    :param dims: The number of dimensions in the model.
+    :type dims: int, optional
+    :param eic: If True, include the EIC parameter.
+    :type eic: bool, optional
+    :param theta: The theta parameter for the model.
+    :type theta: float, optional
+    :param redshift: The redshift parameter for the model.
+    :type redshift: float, optional
+    :param min_freq: The minimum frequency for the model.
+    :type min_freq: float, optional
+    :param max_freq: The maximum frequency for the model.
+    :type max_freq: float, optional
+    :param executable: The path to the executable for the model.
+    :type executable: str, optional
+    :param data_folder: The path to the folder containing the data.
+    :type data_folder: str, optional
+    :param name_stem: The stem of the name of the plot files.
+    :type name_stem: str, optional
+    :param command_params_full: The command parameters for the model.
+    :type command_params_full: str, optional
+    :param command_params_1: The first set of command parameters for the model.
+    :type command_params_1: str, optional
+    :param command_params_2: The second set of command parameters for the model.
+    :type command_params_2: str, optional
+    :param torus_temp: The torus temperature parameter for the model.
+    :type torus_temp: float, optional
+    :param torus_luminosity: The torus luminosity parameter for the model.
+    :type torus_luminosity: float, optional
+    :param torus_frac: The torus fraction parameter for the model.
+    :type torus_frac: float, optional
+    :param verbose: If True, display verbose output.
+    :type verbose: bool, optional
+    :return: None
+    :rtype: None
     """
     if both:
         descriptor = ""
@@ -837,15 +999,86 @@ def plot_1sigma_plots(
     torus_frac=None,
     verbose=False,
 ):
+    # TODO what happens when folder is None??
     """
-    TODO what happens when folder is None??
-    The parameters within 1 sigma that have the biggest and smallest values for
-    each parameter are found, resulting in 2 arrays of dimension NUM_DIM * NUM_DIM.
-    Models are created from these, and for each frequency value,
-    the minimum and the maximum are found.
-    The graph is made by filling in the space between the minimum and maximum
-    for each frequency value.
-    The best model and the actual data with error bars are plotted on top of this.
+    .. note::
+        - The parameters within 1 sigma that have the biggest and smallest values for each parameter are found, resulting in 2 arrays of dimension NUM_DIM * NUM_DIM.
+        - Models are created from these, and for each frequency value, the minimum and the maximum are found.
+        - The graph is made by filling in the space between the minimum and maximum for each frequency value.
+        - The best model and the actual data with error bars are plotted on top of this.
+
+    :param v_data: The observed values for frequency (ν) data.
+    :type v_data: numpy.ndarray
+    :param vFv_data: The observed values for νFν data.
+    :type vFv_data: numpy.ndarray
+    :param err_data: The error values for νFν data.
+    :type err_data: numpy.ndarray
+    :param indices_within_1sigma: The indices of the samples within 1 sigma.
+    :type indices_within_1sigma: numpy.ndarray
+    :param flat_samples: The flattened MCMC samples.
+    :type flat_samples: numpy.ndarray
+    :param min_chi_squared_index: The index of the minimum chi-squared value.
+    :type min_chi_squared_index: int
+    :param both: Whether to plot both sets of models (within 1 sigma and extreme). Default is False.
+    :type both: bool
+    :param extreme: Whether to plot extreme models within 1 sigma. Default is True.
+    :type extreme: bool
+    :param title: The title of the plot. Default is None.
+    :type title: str
+    :param no_title: Whether to display a title on the plot. Default is False.
+    :type no_title: bool
+    :param folder: The folder to save the plot in. Default is None.
+    :type folder: str
+    :param file: The filename to save the plot as. Default is None.
+    :type file: str
+    :param save: Whether to save the plot. Default is False.
+    :type save: bool
+    :param show: Whether to display the plot. Default is True.
+    :type show: bool
+    :param serialize: Whether to serialize the plot as a pickle file. Default is False.
+    :type serialize: bool
+    :param lower_adjust_multiplier: The lower adjustment multiplier for scaling the y-axis. Default is None.
+    :type lower_adjust_multiplier: float
+    :param upper_adjust_multiplier: The upper adjustment multiplier for scaling the y-axis. Default is 1.02.
+    :type upper_adjust_multiplier: float
+    :param max_num_lines_to_graph: The maximum number of lines to plot. Default is 1000.
+    :type max_num_lines_to_graph: int
+    :param dims: The dimensions of the model. Default is None.
+    :type dims: int
+    :param eic: Whether to use Extended Isothermal Cone (EIC) model. Default is False.
+    :type eic: bool
+    :param return_models: Whether to return the generated models. Default is False.
+    :type return_models: bool
+    :param theta: The theta value for the model. Default is None.
+    :type theta: float
+    :param redshift: The redshift value for the model. Default is None.
+    :type redshift: float
+    :param min_freq: The minimum frequency value for the model. Default is None.
+    :type min_freq: float
+    :param max_freq: The maximum frequency value for the model. Default is None.
+    :type max_freq: float
+    :param executable: The path to the executable file. Default is None.
+    :type executable: str
+    :param data_folder: The path to the data folder. Default is None.
+    :type data_folder: str
+    :param command_params_full: The full command parameters. Default is None.
+    :type command_params_full: str
+    :param command_params_1: The first command parameters. Default is None.
+    :type command_params_1: str
+    :param command_params_2: The second command parameters. Default is None.
+    :type command_params_2: str
+    :param name_stem: The name stem for the plots. Default is None.
+    :type name_stem: str
+    :param torus_temp: The temperature of the torus. Default is None.
+    :type torus_temp: float
+    :param torus_luminosity: The luminosity of the torus. Default is None.
+    :type torus_luminosity: float
+    :param torus_frac: The fractional size of the torus. Default is None.
+    :type torus_frac: float
+    :param verbose: Whether to display verbose output. Default is False.
+    :type verbose: bool
+    :return: The generated models, if return_models is True.
+    :rtype: list
     """
     if both:
         descriptor = ""
@@ -1012,6 +1245,22 @@ def plot_1sigma_plots(
 
 # utils ----------------------------------------------------------------------------------------------------------------
 def scale_to_values(values, upper_adjust_multiplier=None, lower_adjust_multiplier=None):
+    """
+    Scales the given values to new minimum and maximum values based on the upper and lower adjust multipliers.
+
+
+    :param values: The input values to be scaled.
+    :type values: list, numpy.ndarray
+    :param upper_adjust_multiplier: Optional. The multiplier to adjust the upper range.
+        If not provided, the default value is 5.
+    :type upper_adjust_multiplier: int or float
+    :param lower_adjust_multiplier: Optional. The multiplier to adjust the lower range.
+        If not provided, the default value is 5.
+    :type lower_adjust_multiplier: int or float
+    :return: The scaled minimum and maximum values.
+    :rtype: tuple
+
+    """
     if upper_adjust_multiplier is None:
         upper_adjust_multiplier = 5
     if lower_adjust_multiplier is None:
@@ -1033,17 +1282,25 @@ def get_params_1sigma_ranges(
     flat_samples, indices_within_1sigma, eic=False, fixed_params=None
 ):
     """
+    Returns the minimum and maximum parameter values within the specified range.
+
     Finds the array of parameters that has the minimum and maximum value for
     each of the parameters.
+
     For example, with samples [[0, 1, 2], [5, 2, 1], [4, 6, 1], [3, 2, 0]], the
     minima would be [[0, 1, 2], [0, 1, 2], [3, 2, 0]] and the maxima would be
     [[5, 2, 1], [4, 6, 1], [0, 1, 2]]
 
-    Arguments:
-    flat_samples:
-    indices_within_1sigma:
-
-    Returns:
+    :param flat_samples: A numpy array of flattened parameter samples.
+    :type flat_samples: numpy.ndarray
+    :param indices_within_1sigma: A list of indices representing samples within the desired range.
+    :type indices_within_1sigma: list
+    :param eic: A boolean value indicating whether the model properties should be adjusted for electron-ion collisions. Default is False.
+    :type eic: bool
+    :param fixed_params: A dictionary of fixed parameters. Default is None.
+    :type fixed_params: dict
+    :return: A tuple containing the minimum and maximum parameter values within the specified range.
+    :rtype: tuple
     """
     # set the minima and maxima to the first set of params for all vals
     dims = modelProperties(eic, fixed_params=fixed_params).NUM_DIM
@@ -1084,6 +1341,46 @@ def get_min_max_per_point(
     eic=False,
     fixed_params=None,
 ):
+    """
+    :param v_vals: The array of values at which to calculate the minimum and maximum.
+    :type v_vals: numpy.ndarray
+    :param model_params_list: The list of model parameter arrays from which to calculate the minimum and maximum.
+    :type model_params_list: List[numpy.ndarray]
+    :param name_stem: The prefix for the name of the output files (optional).
+    :type name_stem: str
+    :param theta: The viewing angle of the model (optional).
+    :type theta: float
+    :param redshift: The redshift of the source (optional).
+    :type redshift: float
+    :param min_freq: The minimum frequency of the SED (optional).
+    :type min_freq: float
+    :param max_freq: The maximum frequency of the SED (optional).
+    :type max_freq: float
+    :param torus_temp: The temperature of the torus (optional).
+    :type torus_temp: float
+    :param torus_luminosity: The luminosity of the torus (optional).
+    :type torus_luminosity: float
+    :param torus_frac: The fraction of the disk luminosity contributed by the torus (optional).
+    :type torus_frac: float
+    :param data_folder: The folder where the input and output files are stored (optional).
+    :type data_folder: str
+    :param executable: The path to the executable for the model calculation (optional).
+    :type executable: str
+    :param command_params_full: The command-line parameters for the full model calculation (optional).
+    :type command_params_full: str
+    :param command_params_1: The command-line parameters for the first stage model calculation (optional).
+    :type command_params_1: str
+    :param command_params_2: The command-line parameters for the second stage model calculation (optional).
+    :type command_params_2: str
+    :param verbose: Whether to display verbose output (default is False).
+    :type verbose: bool
+    :param eic: Whether to enable emission-inverse Compton (EIC) calculations (default is False).
+    :type eic: bool
+    :param fixed_params: The array of fixed model parameters to be inserted into the model calculations (optional).
+    :type fixed_params: List[float]
+    :return: The arrays of minimum and maximum values per point calculated from the given model parameter arrays.
+    :rtype: Tuple[numpy.ndarray, numpy.ndarray]
+    """
     num_points = len(v_vals)
     lowest_per_point = np.array([np.inf for _ in range(num_points)])
     highest_per_point = np.array([-np.inf for _ in range(num_points)])
@@ -1137,6 +1434,21 @@ def get_min_max_per_point(
 
 
 def residual_plot(data, best_model, lowest_per_point, highest_per_point):
+    """
+    This function generates a residual plot for given data and model parameters.
+
+    :param data: The data used for generating the residual plot.
+    :type data: tuple or list
+    :param best_model: The best-fit model used for generating the plot.
+    :type best_model: tuple or list
+    :param lowest_per_point: The lower error bound for each data point.
+    :type lowest_per_point: tuple or list
+    :param highest_per_point: The upper error bound for each data point.
+    :type highest_per_point: tuple or list
+    :return: None
+    :rtype: None
+
+    """
     f_best = interpolate.interp1d(best_model[2], best_model[3])
     f_low = interpolate.interp1d(best_model[2], np.power(10, lowest_per_point))
     f_high = interpolate.interp1d(best_model[2], np.power(10, highest_per_point))
@@ -1157,6 +1469,22 @@ def residual_plot(data, best_model, lowest_per_point, highest_per_point):
 
 
 def N_e_BknPowLaw(gamma, K, n_1, n_2, gamma_break):
+    """
+    Calculate the effective number of galaxies, N_e, per bin for a broken power law luminosity function.
+
+    :param gamma: The value of gamma parameter.
+    :type gamma: float
+    :param K: The value of K parameter.
+    :type K: float
+    :param n_1: The value of n_1 parameter.
+    :type n_1: float
+    :param n_2: The value of n_2 parameter.
+    :type n_2: float
+    :param gamma_break: The value of gamma_break parameter.
+    :type gamma_break: float
+    :return: The calculated value of N_e using the broken power law formula.
+    :rtype: float
+    """
     K = 10**K
     gamma_break = 10**gamma_break
     K2 = K * gamma_break ** (n_2 - n_1)
@@ -1176,45 +1504,87 @@ def plot_particle_spectrum(
 ):
     """
     Plot the broken power-law particle spectrum with 1sigma contour based on Bjet_MCMC outputs
+
+    Array of best parameters found by the MCMC fit.
+    For simple SSC without fixed parameters, the order is: [delta, K, n_1, n_2, gamma_min, gamma_max, gamma_break, B, R]
+    Additional description:
+
+    .. list-table::
+       :header-rows: 1
+
+       * - Parameter
+         - Description
+         - Scale
+       * - ``delta``
+         - Doppler factor
+         - Linear
+       * - ``K``
+         - Particle density [cm^-3]
+         - Log
+       * - ``n1``
+         - alpha_1 (first index)
+         - Linear
+       * - ``n2``
+         - alpha_2 (second index)
+         - Linear
+       * - ``gamma_min``
+         - Low-energy cutoff
+         - Log
+       * - ``gamma_max``
+         - High-energy cutoff
+         - Log
+       * - ``gamma_break``
+         - Energy break
+         - Log
+       * - ``B``
+         - Magnetic field strength [G]
+         - Log
+       * - ``R``
+         - Blob radius [cm]
+         - Log
+
+    Additional params for EIC
+
+    .. list-table::
+       :header-rows: 1
+
+       * - Parameter
+         - Description
+         - Scale
+       * - ``bb_temp``
+         - Black body temp of disk [K]
+         - Log
+       * - ``l_nuc``
+         - Nucleus luminosity [ergs/s]
+         - Log
+       * - ``tau``
+         - Fraction of luminosity scattered
+         - Log
+       * - ``blob_dist``
+         - Distance of blob [cm]
+         - Log
+
     Note the errors of gamma_min and gamma_max are not included in the contour
 
-    Parameters
-    ----------
-    best_params : 1D np array of floats
-        Array of best parameters found by the MCMC fit.
-        For simple SSC without fixed parameters, the order is:
-            [delta, K, n_1, n_2, gamma_min, gamma_max, gamma_break, B, R]
-        Additional description:
-            ---------------------------------------------------
-            delta       doppler factor                  linear
-            K           particle density [cm^-3]        log
-            n1          n_1 (first index)           linear
-            n2          n_2 (second index)          linear
-            gamma_min   low-energy cutoff               log
-            gamma_max   high-energy cutoff              log
-            gamma_break energy break                    log
-            B           magnetic field strength [G]     log
-            R           blob radius [cm]                log
-    min_1sigma_params : 1D np array of floats
-        Array of 1 sigma lower boundary of free parameters found by the MCMC fit.
-        The order should match the one of best_params
-    max_1sigma_params : 1D np array
-        Array of 1 sigma upper boundary of free parameters found by the MCMC fit.
-        The order should match the one of best_params
-    fixed_params : list of floats
-        List of user-fixed parameters. If no fixed parameters in simple SSC model:
-            fixed_params = [-inf, -inf, -inf, -inf, -inf, -inf, -inf, -inf, -inf]
-    file_name : str, optional
-        Absolute path and name for the saved plot.
-        The default is BASE_PATH + RESULTS_FOLDER + "/particle_spectrum.svg".
-    save : boolean, optional
-        True for saving. The default is False.
-    show : boolean, optional
-        True to display. The default is True.
 
-    Returns
-    -------
-    The particle spectrum plot.
+    :param best_params: The best-fit parameters for the particle spectrum.
+    :type best_params: numpy array (shape: (6,))
+    :param min_1sigma_params: Array of 1 sigma lower boundary of free parameters found by the MCMC fit. The order should match the one of best_params
+    :type min_1sigma_params: numpy array (shape: (6,))
+    :param max_1sigma_params:  Array of 1 sigma upper boundary of free parameters found by the MCMC fit. The order should match the one of best_params
+    :type max_1sigma_params: numpy array (shape: (6,))
+    :param fixed_params: List of user-fixed parameters. If no fixed parameters in simple SSC model: fixed_params = [-inf, -inf, -inf, -inf, -inf, -inf, -inf, -inf, -inf]
+    :type fixed_params: numpy array (shape: (9,))
+    :param file_name: Absolute path and name for the saved plot.The default is BASE_PATH + RESULTS_FOLDER + "/particle_spectrum.svg".
+    :type file_name: str
+    :param save: Flag to save the plot of the particle spectrum. Default is False.
+    :type save: bool
+    :param show: Flag to show the plot of the particle spectrum. Default is True.
+    :type show: bool
+    :return: None
+    :rtype: None
+
+    This function plots the particle spectrum based on the given best-fit parameters, lower and upper bounds of the 1-sigma confidence interval, and fixed parameters. The plot is saved as an SVG file if the "save" flag is set to True. The plot is also displayed if the "show" flag is set to True.
     """
 
     # crate a list of particle spectrum parameters (free and fixed)
@@ -1303,7 +1673,23 @@ c = 2.997924 * 1.0e10  # [cm / s]
 
 
 def cooling_time_Thomson(gamma, U_B, U_syn, U_blr):
-    # see e.g. Inoue & Takahara 1996
+    """
+    Calculates the cooling time for a given particle energy using the Thomson scattering process. (see e.g. [Inoue]_)
+
+        :param gamma: The Lorentz factor of the particle.
+        :type gamma: float
+        :param U_B: The energy density of the magnetic field.
+        :type U_B: float
+        :param U_syn: The energy density of the synchrotron radiation.
+        :type U_syn: float
+        :param U_blr: The energy density of the broad-line region.
+        :type U_blr: float
+        :return: The cooling time of the particle according to Thomson scattering.
+        :rtype: float
+
+    .. [Inoue] Inoue & Takahara 1996
+    """
+
     return 3 * m_e * c / (4 * (U_B + U_syn + U_blr) * sig_T * gamma)
 
 
@@ -1317,7 +1703,28 @@ def plot_cooling_times(
     eic=False,
     redshift=None,
 ):
+    """
+    Plots the observed cooling times in the Thomson limit.
 
+    :param logfile: The path to the log file.
+    :type logfile: str
+    :param best_params: A list of best fit parameters.
+    :type best_params: list
+    :param fixed_params: A list of fixed parameters.
+    :type fixed_params: list
+    :param file_name: The name of the output file.
+    :type file_name: str
+    :param save: Whether to save the plot as an SVG file.
+    :type save: bool
+    :param show: Whether to display the plot.
+    :type show: bool
+    :param eic: Whether to grep the energy density from bjet.log.
+    :type eic: bool
+    :param redshift: The redshift value.
+    :type redshift: float or None
+    :return: None
+    :rtype: None
+    """
     # retrieve the energy densities from bjet.log
     grep = subprocess.run(
         ["grep", "(U_B)", BASE_PATH + logfile], capture_output=True, text=True
@@ -1363,6 +1770,31 @@ def plot_likelihood_profiles(
     eic=False,
     folder_path=BASE_PATH + RESULTS_FOLDER,
 ):
+    """
+    :param flat_samples: The flattened samples of the parameters obtained from the MCMC sampling.
+    :type flat_samples: array-like
+    :param flat_log_probs: The flattened log-probability values corresponding to the samples.
+    :type flat_log_probs: array-like
+    :param best_params: The best-fit parameter values obtained from the MCMC sampling.
+    :type best_params: array-like
+    :param min_1sigma_params: The parameter values at the lower 1-sigma confidence interval obtained from the MCMC sampling.
+    :type min_1sigma_params: array-like
+    :param max_1sigma_params: The parameter values at the upper 1-sigma confidence interval obtained from the MCMC sampling.
+    :type max_1sigma_params: array-like
+    :param save: Flag indicating whether to save the plotted likelihood profiles. Default is False.
+    :type save: bool, optional
+    :param show: Flag indicating whether to display the plotted likelihood profiles. Default is True.
+    :type show: bool, optional
+    :param fixed_params: The fixed parameter values that are not varied during the MCMC sampling. Default is None.
+    :type fixed_params: dict, optional
+    :param eic: Flag indicating whether the model is an EIC model. Default is False.
+    :type eic: bool, optional
+    :param folder_path: The path to the folder where the plot will be saved. Default is BASE_PATH + RESULTS_FOLDER.
+    :type folder_path: str, optional
+    :return: None
+    :rtype: None
+
+    """
     # plot posterior likelihood profiles for all free parameters.
 
     param_names = modelProperties(eic, fixed_params=fixed_params).PARAM_NAMES
