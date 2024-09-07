@@ -236,7 +236,8 @@ def _get_path():
     # base_path = str(pathlib.Path().resolve())
     stop = base_path.find(PROGRAM_NAME)
     if stop == -1:
-        raise Exception(PROGRAM_NAME + " is not in file path")
+        #raise Exception(PROGRAM_NAME + " is not in file path")
+        print(PROGRAM_NAME + " is not in file path")
     return base_path[: -len(MAIN_FOLDER)] + "/"
 
 
