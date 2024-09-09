@@ -58,6 +58,7 @@ autodoc_mock_imports = [
     "tqdm",
     "matplotlib",
     "bjet_core",
+    "corner",
 ]
 
 # -- Options for HTML output
