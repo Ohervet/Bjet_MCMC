@@ -57,6 +57,7 @@ autodoc_mock_imports = [
     "swig",
     "tqdm",
     "matplotlib",
+    "bjet_core",
 ]
 
 # -- Options for HTML output
