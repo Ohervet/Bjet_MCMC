@@ -59,6 +59,7 @@ autodoc_mock_imports = [
     "matplotlib",
     "bjet_core",
     "corner",
+    "astropy",
 ]
 
 # -- Options for HTML output
