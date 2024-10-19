@@ -26,7 +26,7 @@ This is the default data file, already available in Bjet_MCMC : ``real_data/J101
 This dataset of the blazar 1RXS J101015.9-311909 comes from  `Cerruti et al. (2013) <https://www.aanda.org/articles/aa/full_html/2013/10/aa20963-12/aa20963-12.html>`_ ::
 
 
-  !E(eV)  F(ergcm-2s-1)   delta_E(-)      delta_E(+)      delta_F(-)      delta_F(+)	instrument
+  !E(eV)    F(ergcm-2s-1)   delta_E(-)      delta_E(+)      delta_F(-)      delta_F(+)	instrument
   1.5548	8.48E-012	0.17621		0.16843		4.11E-013	4.11E-013	ATOM
   1.9356	8.97E-012	0.16314		0.27997		2.03E-012	3.52E-012	ATOM
   2.8327	1.05E-011	0.35125		0.43236		3.03E-012	5.25E-012	ATOM
