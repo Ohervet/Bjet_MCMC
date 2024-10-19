@@ -10,13 +10,13 @@ The value set for ``F(ergcm-2s-1)`` should be the flux U.L.(L.L.) at 95% confide
 
 Error format for U.L ::
 
-delta_F(-)      delta_F(+)
-         0               0 
+  delta_F(-)      delta_F(+)
+  0               0 
 
 error format for L.L ::
 
-delta_F(-)      delta_F(+)
-        -1               0 
+  delta_F(-)      delta_F(+)
+  -1               0 
 
 
 For upper limits, set ``delta_F(-)``	and ``delta_F(+)`` at 0. The value set for ``F(ergcm-2s-1)`` should be the flux U.L. at 95% confidence level. Upper limits are considered in the fitting algorithm as likelihood step functions, with a flat probability of 95% below the U.L. and 5% above, extending on both sides to infinity.
