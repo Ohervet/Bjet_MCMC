@@ -8,12 +8,12 @@ Data by default is assumed to be in data files with the following columns as lab
 Upper limits (U.L.) and lower limits (L.L.) can be used. Upper(Lower) limits are considered in the fitting algorithm as likelihood step functions, with a flat probability of 95% below(above) the limit and 5% above(below), extending on both sides to infinity.
 The value set for ``F(ergcm-2s-1)`` should be the flux U.L.(L.L.) at 95% confidence level.
 
-Error format for U.L::
+Error format for U.L ::
 
 delta_F(-)      delta_F(+)
          0               0 
 
-error format for L.L::
+error format for L.L ::
 
 delta_F(-)      delta_F(+)
         -1               0 
