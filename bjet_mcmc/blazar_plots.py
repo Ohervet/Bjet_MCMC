@@ -528,7 +528,21 @@ def corner_plot(
 
     min_maxes = []
     for i in range(modelProperties(eic, fixed_params=fixed_params).NUM_DIM):
-        min_maxes.append([param_min_vals[i], param_max_vals[i]])
+        #automatically rescale x axis if the parameter space is too narrow
+        custom_low = best_params[i]-5*(best_params[i]-sigma_below_params[i])
+        custom_high = best_params[i]+5*(sigma_above_params[i]-best_params[i])
+        if param_min_vals[i] < custom_low:
+            min_val = custom_low
+        else:
+            min_val = param_min_vals[i]
+        if param_max_vals[i] > custom_high:
+            max_val = custom_high
+        else:
+            max_val = param_max_vals[i]
+        min_maxes.append([custom_low, custom_high])
+        
+    
+        
     fig = corner.corner(
         values,
         labels=param_names,
@@ -1308,15 +1322,30 @@ def get_params_1sigma_ranges(
     # print(eic)
     minima = [flat_samples[indices_within_1sigma[0]].copy() for _ in range(dims)]
     maxima = [flat_samples[indices_within_1sigma[0]].copy() for _ in range(dims)]
+    index_min = [0]*dims
+    index_max = [0]*dims
     for index in indices_within_1sigma:
         params = flat_samples[index]
         # print(len(params), len(minima))
         for i in range(dims):
             if params[i] < minima[i][i]:
                 minima[i] = params.copy()
+                index_min[i] = index
             if params[i] > maxima[i][i]:
                 maxima[i] = params.copy()
-    # print(minima, maxima)
+                index_max[i] = index
+    
+    #we have sometime multiple time the same index, this doesn't optimize the contours as it runs multiple time the exact same parameters
+    #just select index-1 for the duplicate indexes
+    # all_indexes = index_min+index_max
+    # for i in range(dims):
+    #     if index_min.count(index_min[i]) > 1 or index_min[i] in index_max:
+    #         if index_min[i] < len()
+    #         index_min[i] += 1
+            
+    
+    
+    #print(index_min, index_max)
     # print(len(minima))
     return minima, maxima
 
@@ -1808,27 +1837,38 @@ def plot_likelihood_profiles(
         # sort parameter with associated log_prob
         param_array, sorted_log_probs = zip(*sorted(zip(param_array, flat_log_probs)))
         nbins = 40
-        Drange = param_array[-1] - param_array[0]
+        #automatically rescale x axis if the parameter space is too narrow
+        custom_low = best_params[j]-5*(best_params[j]-min_1sigma_params[j])
+        custom_high = best_params[j]+5*(max_1sigma_params[j]-best_params[j])
+        if param_array[0] < custom_low:
+            min_val = custom_low
+        else:
+            min_val = param_array[0]
+        if param_array[-1] > custom_high:
+            max_val = custom_high
+        else:
+            max_val = param_array[-1]
+        Drange = max_val - min_val
         binsize = Drange / (nbins - 1)
-        param_binned = np.linspace(param_array[0], param_array[-1], nbins)
-        bin_min = param_array[0]
+        bin_min = min_val
         bin_max = bin_min + binsize
         prob_tmp = []
         prob_max = []
         ln_prob_max = []
         param_binned_mid = []
         for i in range(len(param_array)):
-            if bin_min <= param_array[i] < bin_max:
-                prob_tmp.append(sorted_log_probs[i])
-            else:
-                if len(prob_tmp) == 0:
-                    prob_tmp.append(-np.inf)
-                prob_max.append(np.exp(max(prob_tmp)))
-                ln_prob_max.append(max(prob_tmp))
-                param_binned_mid.append(bin_min + binsize / 2.0)
-                prob_tmp = []
-                bin_min += binsize
-                bin_max += binsize
+            if min_val <= param_array[i] <= max_val:
+                if bin_min <= param_array[i] < bin_max:
+                    prob_tmp.append(sorted_log_probs[i])
+                else:
+                    if len(prob_tmp) == 0:
+                        prob_tmp.append(-np.inf)
+                    prob_max.append(np.exp(max(prob_tmp)))
+                    ln_prob_max.append(max(prob_tmp))
+                    param_binned_mid.append(bin_min + binsize / 2.0)
+                    prob_tmp = []
+                    bin_min += binsize
+                    bin_max += binsize
 
         figure_name = "likelihood_" + param_names[j]
         plt.figure(figure_name)
@@ -1838,6 +1878,8 @@ def plot_likelihood_profiles(
         plt.axvline(max_1sigma_params[j], color="b", ls="--")
         plt.xlabel(str(fromatted_param_names[j]), fontsize=13)
         plt.ylabel(r"Likelihood", fontsize=13)
+        plt.xlim(min_val, max_val)
+        plt.ylim(0,max(prob_max)*1.2)
 
         if save:
             plt.savefig(folder_path + "/" + figure_name + ".svg")
