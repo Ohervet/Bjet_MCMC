@@ -554,8 +554,11 @@ def corner_plot(
         labelpad=0.28,
         max_n_ticks=4,
     )
-
-    fig.subplots_adjust(top=0.97, bottom=0.08, left=0.07, right=0.88)
+    
+    if len(param_names) > 6:
+        fig.subplots_adjust(top=0.97, bottom=0.08, left=0.07, right=0.88)
+    else:
+        fig.subplots_adjust(top=0.96, bottom=0.11, left=0.1, right=0.9)
 
     # extract axes
     dims = modelProperties(eic, fixed_params=fixed_params).NUM_DIM
