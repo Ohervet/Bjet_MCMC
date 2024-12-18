@@ -75,7 +75,7 @@ html_context = {
     'display_github': True,
     'github_user': 'Ohervet',
     'github_repo': 'Bjet_MCMC',
-    'github_version': 'master/',
+    'github_version': 'master/docs/source/',
                }
 
 # -- Options for EPUB output
