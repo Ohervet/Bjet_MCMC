@@ -73,8 +73,9 @@ html_theme_options = {
 }
 html_context = {
     'display_github': True,
-    'github_repo': 'Ohervet/Bjet_MCMC',
-               }`
+    'github_user': 'Ohervet',
+    'github_repo': 'Bjet_MCMC',
+               }
 
 # -- Options for EPUB output
 epub_show_urls = "footnote"
