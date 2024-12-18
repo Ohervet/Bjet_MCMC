@@ -71,6 +71,10 @@ html_theme_options = {
     "logo_only": True,
     "display_version": False,
 }
+html_context = {
+    'display_github': True,
+    'github_repo': 'Ohervet/Bjet_MCMC',
+               }`
 
 # -- Options for EPUB output
 epub_show_urls = "footnote"
