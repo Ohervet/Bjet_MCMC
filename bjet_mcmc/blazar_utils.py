@@ -806,9 +806,9 @@ def chi_squared_from_model(model_results, v_data, vFv_data, err_data):
     err_data[1] += if_UL * chi_squared_Limit_to_err(0.05, func_nu_data, vFv_data)
     # transform err_data to consider LLs (P=95% when above, P=5% when below)
     if_LL = err_data[0] == -1
-    err_data[0] += if_LL * (chi_squared_Limit_to_err(0.05, func_nu_data, vFv_data)+1)
+    err_data[0] += if_LL * chi_squared_Limit_to_err(0.05, func_nu_data, vFv_data)
     err_data[1] += if_LL * chi_squared_Limit_to_err(0.95, func_nu_data, vFv_data)
-    
+
     return np.sum((diff / (sign * err_data[1] + ~sign * err_data[0])) ** 2.0)
 
 
@@ -919,7 +919,8 @@ def chi_squared(
         verbose=verbose,
         eic=eic,
     )
-
+    #print("nu=", model_results[-2])
+    #print("Chi2 =",chi_squared_from_model(model_results, v_data, vFv_data, err_data),"\n")
     return chi_squared_from_model(model_results, v_data, vFv_data, err_data)
 
 

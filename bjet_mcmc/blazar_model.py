@@ -77,12 +77,18 @@ Additional params for EIC
 """
 import os
 import subprocess
+import ctypes
 
 import numpy as np
 from scipy import interpolate
 
 from bjet_mcmc.blazar_properties import *
 from bjet_core import bj_core
+
+#for debugging only
+#import emcee
+#import h5py
+
 
 __all__ = [
     "add_data",
@@ -155,10 +161,11 @@ def make_SED(
     :param folder: Additional folder information; default is None.
     :type folder: str, optional
     """
-    # TODO rewrite this entire method using bj_core methods and without building a command string.
+
     if executable is None:
         executable = CPP_FOLDER + "/" + EXECUTABLE
-
+    #for debug only
+    #params_original = params[:]
     if command_params_full is None:
         params = params_log_to_linear(
             params, param_is_log=modelProperties(eic).PARAM_IS_LOG
@@ -214,25 +221,95 @@ def make_SED(
             # add numerical params (min/max freq, number of pts)
             command_params_full = command_params_full + command_params_2[3:]
 
-    # command_params_full have been set now
-
     if not verbose:
-        subprocess.run(
-            [BASE_PATH + executable, *command_params_full],
-            stderr=open(os.devnull, "wb"),
-            stdout=open(os.devnull, "wb"),
-        )
+        #new method, without subprocess
+        
+        #create a single string of parameters for ints implentation in C++ with swig
+        model_type = 0
+        params_char = [0]*len(params)
+        for i in range(len(params)):
+            params_char[i] = f'{params[i]:0.4e}'
+        list_params = command_params_1[3:] + params_char + command_params_2[:-1]
+        if eic:
+            model_type = 1
+            list_params = command_params_1[3:] + params_char[:9] + command_params_2[:2] + [params_char[-1]] + [
+               params_char[9],
+               str(torus_temp),
+               params_char[10],
+               params_char[11],
+               str(torus_luminosity),
+               str(torus_frac)] + command_params_2[3:-1] 
+            #print("list_params",list_params)
+            
+        string_params =""
+        for i in range(len(list_params)):
+            string_params += list_params[i]+" "
+        #print("string_params = ["+str(string_params)+"]")
+        #print("bjet_inputs:", string_params, model_type, FOLDER_PATH+DATA_FOLDER, name_stem)
+        output = bj_core.main_swig(string_params, model_type, FOLDER_PATH+DATA_FOLDER, name_stem)
+        NU_DIM = int(command_params_2[3])
+        n_components = 6
+        if eic:
+            n_components = 10
+        full_size = int(NU_DIM*n_components)
+        output = (ctypes.c_double * full_size).from_address(int(output))
+        output = list(output)
+        
+        
+        #this following part is for debug only
+        #I want to be sure that the hdf5 file write out the good proba and parameters
+        #It seems there is an issue with the swig version
+        #check last sample of the HDF5 file
+        # results_directory = "/test_debug"
+        # backend_path = BASE_PATH+RESULTS_FOLDER + results_directory + "/backend.h5"
+        # if os.path.isfile(backend_path):
+        #     print("bjet params:", params_original[1:],'\n')
+        #     with h5py.File(backend_path, "r") as f:
+        #         a = list(f['mcmc']['chain'])
+        #         if a:
+        #             for j in range(len(a)-1):
+        #                 if sum(sum(a[j])) and not sum(sum(a[j+1])): #a bunch of 10 walkers has begun
+        #                     for k in range(len(a[j])-1):
+        #                         # if np.log10(params[1]) in a[j][k]:
+        #                         #     print("backend K:", a[j][k][0])
+        #                         if sum(a[j][k]):
+        #                             #if abs(1 - np.log10(params[1])/a[j][k-2][0]) <= 1e-3:
+        #                             print("backend params:", a[j][k])       
+        
+        return output
     else:
+        # print("params", params)
+        # print(command_params_full)
         result = subprocess.run(
             [BASE_PATH + executable, *command_params_full],
             capture_output=True,
             text=True,
         )
-        print("params", params)
-        print(command_params_full)
 
-        # write log file and print
+        #this following part is for debug only
+        #I want to be sure that the hdf5 file write out the good proba and parameters
+        #It seems there is an issue with the swig version
+        #check last sample of the HDF5 file
+        # results_directory = "/test_debug"
+        # backend_path = BASE_PATH+RESULTS_FOLDER + results_directory + "/backend.h5"
+        # if os.path.isfile(backend_path):
+        #     print("bjet params:", params_original[1:],'\n')
+        #     with h5py.File(backend_path, "r") as f:
+        #         a = list(f['mcmc']['chain'])
+        #         if a:
+        #             for j in range(len(a)-1):
+        #                 if sum(sum(a[j])) and not sum(sum(a[j+1])): #a bunch of 10 walkers has begun
+        #                     for k in range(len(a[j])-1):
+        #                         # if np.log10(params[1]) in a[j][k]:
+        #                         #     print("backend K:", a[j][k][0])
+        #                         if sum(a[j][k]):
+        #                             #if abs(1 - np.log10(params[1])/a[j][k-2][0]) <= 1e-3:
+        #                             print("backend params:", a[j][k])
+
+        
+        #write log file and print
         print(result.stderr)
+        print(FOLDER_PATH, folder)
         with open(FOLDER_PATH + folder + "/bjet.log", "w") as f:
             f.write(result.stderr)
 
@@ -274,7 +351,6 @@ def file_make_SED(
 
     .. note:: This method uses older implementation and it is recommended to rewrite the method using bj_core methods, avoiding building a command string.
     """
-    # TODO rewrite this entire method using bj_core methods and without building a command string.
     if parameter_file is None:
         parameter_file = PARAMETER_FOLDER + "/params.txt"
     if executable is None:
@@ -291,6 +367,8 @@ def file_make_SED(
     # input mode, data file
     settings_params = [p, BASE_PATH + data_folder]
     if verbose:
+        print(BASE_PATH)
+        print([BASE_PATH + executable, *settings_params, BASE_PATH + parameter_file])
         subprocess.run(
             [BASE_PATH + executable, *settings_params, BASE_PATH + parameter_file]
         )
@@ -399,8 +477,53 @@ def add_data(
     return logv, logvFv, v, vFv
 
 
+def add_SED_component(current_component, new_component):
+    """
+    Add new model components of the SED
+
+    """
+    current_logv, current_logvFv, current_v, current_vFv = current_component
+    model_logv, model_logvFv, model_v, model_vFv = new_component
+    
+    if len(model_logv):
+    
+        """
+        Find overlap
+        """
+        new_lower = np.where(model_logv < current_logv[0])[0]
+        new_higher = np.where(model_logv > current_logv[-1])[0]
+    
+        logv = np.concatenate((model_logv[new_lower], current_logv, model_logv[new_higher]))
+        logvFv = np.concatenate(
+            (model_logvFv[new_lower], current_logvFv, model_logvFv[new_higher])
+        )
+        vFv = np.power(10, logvFv)
+    
+        overlap_start = np.where(logv >= max(model_logv[0], current_logv[0]))[0][0]
+        overlap_end = np.where(logv <= min(model_logv[-1], current_logv[-1]))[0][-1]
+    
+        interpolation = interpolate.interp1d(model_logv, model_vFv)
+    
+        new_vFv = np.concatenate(
+            (
+                np.zeros(overlap_start),
+                interpolation(logv[overlap_start : overlap_end + 1]),
+                np.zeros(len(logv) - overlap_end - 1),
+            )
+        )
+    
+        vFv = vFv + new_vFv
+        logvFv = np.log10(vFv)
+        v = np.power(10, logv)
+        
+    else:
+        #This can happen for extreme  parameters when some emisison components are so weak they are not even computed by Bjet
+        logv, logvFv, v, vFv = current_component
+    return logv, logvFv, v, vFv
+
+
 def process_model(
-    name_stem=None, data_folder=None, verbose=False, eic=False, additional_suffixes=None
+    output, name_stem=None, data_folder=None, verbose=False, eic=False, additional_suffixes=None,
 ):
     """
     Read a model from data files and returns arrays of frequencies and energy flux.
@@ -431,8 +554,7 @@ def process_model(
     :param data_folder: The folder where the model files are located. If not provided, it will use the default value `DATA_FOLDER`.
     :type data_folder: str, optional
 
-    :param verbose: Determines whether to print additional information during the process. Default is `False`.
-    :type verbose: bool, optional
+    :param verbose: If True, it runs the full swig wrapper (no I/O). If False it runs the classical version
 
     :param eic: Determines whether to enable Extended Inverse Compton (EIC) mode. Default is `False`.
     :type eic: bool, optional
@@ -444,65 +566,105 @@ def process_model(
     :rtype: tuple of numpy arrays
 
     """
-
     if name_stem is None:
         name_stem = NAME_STEM
     if data_folder is None:
         data_folder = DATA_FOLDER
-    # Read in models from the files created by the c++ code
-    # This model uses only the data from the compton model and the synchrotron
-    # model.
-    # Data is read into a numpy 2D array
-    try:
-        synchrotron_model = np.loadtxt(
-            BASE_PATH + data_folder + "/" + name_stem + "_ss.dat", delimiter=" "
-        )
-    except IOError:
-        raise IOError(
-            "process_model: "
-            + BASE_PATH
-            + data_folder
-            + "/"
-            + name_stem
-            + "_*.dat cannot be read"
-        )
 
-    # extract data used - only use frequency and energy flux, which are the 1st
-    # and 3rd columns
-    logv_synchrotron = synchrotron_model[:, 0]
-    logvFv_synchrotron = synchrotron_model[:, 2]
-    v_synchrotron = np.power(10, logv_synchrotron)
-    vFv_synchrotron = np.power(10, logvFv_synchrotron)
-
-    logv, logvFv, v, vFv = add_data(
-        (logv_synchrotron, logvFv_synchrotron, v_synchrotron, vFv_synchrotron),
-        file_suffix="cs",
-        name_stem=name_stem,
-        data_folder=data_folder,
-    )
-    logv, logvFv, v, vFv = add_data(
-        (logv, logvFv, v, vFv),
-        file_suffix="cs2",
-        name_stem=name_stem,
-        data_folder=data_folder,
-    )
-    # Total energy flux is determined by summing the flux from the compton and
-    # synchrotron models.
-
-    if eic:
-        if additional_suffixes is None:
-            additional_suffixes = ["ecs", "nuc"]
-        if verbose:
-            print("process_model EIC mode: ss cs", *additional_suffixes, "read")
-        for s in additional_suffixes:
-            logv, logvFv, v, vFv = add_data(
-                (logv, logvFv, v, vFv),
-                file_suffix=s,
-                name_stem=name_stem,
-                data_folder=data_folder,
+    if verbose: 
+        # Read in models from the files created by the c++ code
+        # This model uses only the data from the compton model and the synchrotron
+        # model.
+        # Data is read into a numpy 2D array
+        try:
+            synchrotron_model = np.loadtxt(
+                BASE_PATH + data_folder + "/" + name_stem + "_ss.dat", delimiter=" "
             )
-    elif verbose:
-        print("process_model SSC mode")
+        except IOError:
+            raise IOError(
+                "process_model: "
+                + BASE_PATH
+                + data_folder
+                + "/"
+                + name_stem
+                + "_ss.dat cannot be read"
+            )
+    
+        # extract data used - only use frequency and energy flux, which are the 1st
+        # and 3rd columns
+        logv_synchrotron = synchrotron_model[:, 0]
+        logvFv_synchrotron = synchrotron_model[:, 2]
+        v_synchrotron = np.power(10, logv_synchrotron)
+        vFv_synchrotron = np.power(10, logvFv_synchrotron)        
+        
+        logv, logvFv, v, vFv = add_data(
+            (logv_synchrotron, logvFv_synchrotron, v_synchrotron, vFv_synchrotron),
+            file_suffix="cs",
+            name_stem=name_stem,
+            data_folder=data_folder,
+        )
+        
+        logv, logvFv, v, vFv = add_data(
+            (logv, logvFv, v, vFv),
+            file_suffix="cs2",
+            name_stem=name_stem,
+            data_folder=data_folder,
+        )
+        if eic:
+            if additional_suffixes is None:
+                additional_suffixes = ["ecs", "nuc"]
+            if verbose:
+                print("process_model EIC mode: ss cs", *additional_suffixes, "read")
+            for s in additional_suffixes:
+                logv, logvFv, v, vFv = add_data(
+                    (logv, logvFv, v, vFv),
+                    file_suffix=s,
+                    name_stem=name_stem,
+                    data_folder=data_folder,
+                )
+        
+    else:
+        #new method
+        NU_DIM = 99
+        n_components = 6
+        if eic:
+            n_components = 8
+        start = 0
+        stop = NU_DIM
+        sliced_output = [0]*n_components
+        for i in range(n_components):
+            sliced_output[i] = output[start:stop+start]
+            start += NU_DIM
+            #remove indexes with 0 frequency
+            if i%2:
+                while 0 in sliced_output[i-1]:
+                    tmp = sliced_output[i-1].index(0)
+                    del sliced_output[i][tmp]
+                    del sliced_output[i-1][tmp]   
+                if i == 1:
+                    logv = np.array(sliced_output[0])
+                    logvFv = np.array(sliced_output[1])
+                    v = 10**logv
+                    vFv = 10**logvFv
+                else:
+                    logv_new = np.array(sliced_output[i-1])
+                    logvFv_new = np.array(sliced_output[i])
+                    v_new = 10**logv_new
+                    vFv_new = 10**logvFv_new   
+                    logv, logvFv, v, vFv = add_SED_component((logv, logvFv, v, vFv), (logv_new, logvFv_new, v_new, vFv_new))  
+    
+    # if eic:
+    #     if additional_suffixes is None:
+    #         additional_suffixes = ["nuc"]
+    #     if verbose:
+    #         print("process_model EIC mode: ss cs", *additional_suffixes, "read")
+    #     for s in additional_suffixes:
+    #         logv, logvFv, v, vFv = add_data(
+    #             (logv, logvFv, v, vFv),
+    #             file_suffix=s,
+    #             name_stem=name_stem,
+    #             data_folder=data_folder,
+    #         )
 
     return logv, logvFv, v, vFv
 
@@ -607,6 +769,7 @@ def make_model(
     :return: The computed model.
     :rtype: numpy.ndarray
     """
+
     if use_param_file:
         if eic:
             raise ValueError("EIC mode cannot be used with parameter file")
@@ -625,7 +788,7 @@ def make_model(
         for i in range(len(fixed_params)):
             if fixed_params[i] != -np.inf:
                 params = np.insert(params, i, fixed_params[i])
-    make_SED(
+    output = make_SED(
         params,
         name_stem=name_stem,
         theta=theta,
@@ -645,7 +808,7 @@ def make_model(
         eic=eic,
         folder=folder,
     )
-    return process_model(name_stem=name_stem, data_folder=data_folder, eic=eic)
+    return process_model(output, name_stem=name_stem, data_folder=data_folder, verbose=verbose, eic=eic)
 
 
 def command_line_sub_strings(
@@ -772,11 +935,12 @@ def create_params_file(
     if redshift is None:
         redshift = 0.143
     if min_freq is None:
-        min_freq = 5.0e7
+        min_freq = 1.0e8
     if max_freq is None:
-        max_freq = 1.0e29
+        max_freq = 1.0e28
     if verbose:
         print(params)
+        
 
     # Set parameters from list, convert those in log space to linear space
     (

@@ -104,10 +104,12 @@ using namespace std;
 using namespace bj_core02;
 
 namespace bj_core02 {
+    int PRINT = 0; //!< 1=True, 0=False
     int INPUT_MODE = 0; /*!< Sarah Youngquist added;
     // 0 = normal
     // 1 = no prev files */
     char DATA_DIRECTORY[254] = "output";
+    char prefix[256] = "run";
     int CASE_JET;
     int CASE_X;
     int CASE_EIC;
@@ -200,15 +202,13 @@ double I_JET	       = 0.0;
     double GAMMA_MAX_0;
     int null0;
     double V_exp, DEL_Tph, DEL_Tj;
-    char prefix[256];
 
 
 // VECTORS
-
-    double NU[NU_MAX + 1];
-    double I_rad[NU_MAX + 1];
-    double I_rad1st[NU_MAX + 1]; //!< for 2nd order SSC
-    double I_CMB[NU_MAX + 1];
+    double NU[NU_DIM_MAX + 1];
+    double I_rad[NU_DIM_MAX + 1];
+    double I_rad1st[NU_DIM_MAX + 1]; //!< for 2nd order SSC
+    double I_CMB[NU_DIM_MAX + 1];
 
     double X_VAL[SL_DIM_MAX + 2];
     double Y_VAL[SL_DIM_MAX + 2];
@@ -227,35 +227,43 @@ double I_JET	       = 0.0;
     double L_BB_nuc[NU_DIM_MAX + 1];
     double I_eic_jet[NU_DIM_MAX + 1];
 
-    double I_rad_syn[NU_MAX + 1];
-    double I_rad_syn2[NU_MAX + 1];
-    double I_rad_com[NU_MAX + 1];
-    double I_rad2nd[NU_MAX + 1];
-    double I_rad_ext[NU_MAX + 1];
-    double I_rad_ext_Int[NU_MAX + 1];
-    double I_rad_ext1[NU_MAX + 1];
-    double I_com_ext[NU_MAX + 1];
-    double I_com_ext1[NU_MAX + 1];
-    double I_com_disc[NU_MAX + 1];
-    double I_rad_ext_s[NU_MAX + 1];
+    double I_rad_syn[NU_DIM_MAX + 1];
+    double I_rad_syn2[NU_DIM_MAX + 1];
+    double I_rad_com[NU_DIM_MAX + 1];
+    double I_rad2nd[NU_DIM_MAX + 1];
+    double I_rad_ext[NU_DIM_MAX + 1];
+    double I_rad_ext_Int[NU_DIM_MAX + 1];
+    double I_rad_ext1[NU_DIM_MAX + 1];
+    double I_com_ext[NU_DIM_MAX + 1];
+    double I_com_ext1[NU_DIM_MAX + 1];
+    double I_com_disc[NU_DIM_MAX + 1];
+    double I_rad_ext_s[NU_DIM_MAX + 1];
 
     double I_rad_ext_D[200 + 1];
     double D[200 + 1];
 
-    double C_e[NU_MAX + 1];
-    double C_a[NU_MAX + 1];
-    double C_e1[NU_MAX + 1];
-    double C_a1[NU_MAX + 1];
+    double C_e[NU_DIM_MAX + 1];
+    double C_a[NU_DIM_MAX + 1];
+    double C_e1[NU_DIM_MAX + 1];
+    double C_a1[NU_DIM_MAX + 1];
 
-    double F_IC_disk[NU_MAX + 1];
-    double F_IC_tot[NU_MAX + 1];
-    double NU_IC_disk[NU_MAX + 1];
-
-
-
+    double F_IC_disk[NU_DIM_MAX + 1];
+    double F_IC_tot[NU_DIM_MAX + 1];
+    double NU_IC_disk[NU_DIM_MAX + 1];
+    
+    // outputs
+    double NU_SYN_out[NU_DIM_MAX + 1];
+    double F_SYN_out[NU_DIM_MAX + 1];
+    double NU_SSC_out[NU_DIM_MAX + 1];
+    double F_SSC_out[NU_DIM_MAX + 1];
+    double NU_SSC2_out[NU_DIM_MAX + 1];
+    double F_SSC2_out[NU_DIM_MAX + 1];
+    double NU_EIC_out[NU_DIM_MAX + 1];
+    double F_EIC_out[NU_DIM_MAX + 1];
+    double NU_DISK_out[NU_DIM_MAX + 1];
+    double F_DISK_out[NU_DIM_MAX + 1];
 
 // MATRIXES
-
     double I_SYN_JET[SL_DIM_MAX + 1][NU_DIM_MAX + 1];
     double I_SYN_JET_EDGE[SL_DIM_MAX + 1][NU_DIM_MAX + 1];
     double I_SYN_JET_BASE[SL_DIM_MAX + 1][NU_DIM_MAX + 1];
@@ -943,7 +951,6 @@ double N_e_Jet(double gg) {
         fprintf(stderr, "wrong value of redshift: %e (0..6) !!!\n", tmp[0]);
         return 0;
       }
-
       if (tmp[1] >= 50.0 && tmp[1] <= 100.0) {
         H_0 = tmp[1];
       } else {
@@ -1113,7 +1120,6 @@ double N_e_Jet(double gg) {
           return 0;
         }
       }
-
       // -------------------------------------------------------------------------------------------------------
 
       // numerical parameters--number of pts, min freq, max freq, file prefix
@@ -1141,10 +1147,10 @@ double N_e_Jet(double gg) {
         fprintf(stderr, "wrong value of maximum frequency: %e (1.0e+11...1.0e+35 [Hz]) !!!\n", tmp_max);
         return 0;
       }
-
-      // get file_prefix
-      sprintf(prefix, "%s", list[list_index]);
+      //char prefix = atof(list[list_index++]); Need to deal with this one. It is needed only in some cases
       // we're done and it worked!
+       
+      //
       return 1;
     }
 
@@ -1181,7 +1187,6 @@ double N_e_Jet(double gg) {
 
       double Gamma[G_DIM + 1];
       double elec_spec[G_DIM + 1];
-
 
       //D_L = (2.0 * c * (z + 1.0 - sqrt(z + 1.0))) / ((H_0 * 1.0e-19) / 3.086); old, not super accurate
 
@@ -1220,7 +1225,6 @@ double N_e_Jet(double gg) {
         R_blr = 0.1 * sqrt(L_nuc / 1.0e46) * 3.08568e18; //Sikora et al. 2009
       }
 
-
       if (CASE_JET) {
 
         V_JET = c * (2.0 * DOP_JET * DOP_JET * cos(THETA * M_PI / 180.0) - 2.0 * sqrt(
@@ -1255,7 +1259,7 @@ double N_e_Jet(double gg) {
         // distance blob - first slice (jet frame)
         D_BJ = X_MIN - D_b_src_j;
       }
-      //
+
       if (PRINT) {
         fprintf(stderr, "Hubble constant:        %6.3f\n", H_0);
         fprintf(stderr, "redshift                %6.3f\n", z);
@@ -1321,16 +1325,16 @@ double N_e_Jet(double gg) {
       }
 
       // SAVING ELECTRONS ENERGY SPECTRUM
-	
-      sprintf(stmp, "%s/%s_es.dat", DATA_DIRECTORY, prefix);
-      if (INPUT_MODE == 0) {
-
-        if (ifexist(stmp)) {
-          sprintf(comma, "mv %s/%s_es.dat %s/%s_prev_es.dat", DATA_DIRECTORY, prefix, DATA_DIRECTORY, prefix);
-          if (system(comma)) return 1;
+      if (PRINT){
+        sprintf(stmp, "%s/%s_es.dat", DATA_DIRECTORY, prefix);
+        if (INPUT_MODE == 0) {
+          if (ifexist(stmp)) {
+            sprintf(comma, "mv %s/%s_es.dat %s/%s_prev_es.dat", DATA_DIRECTORY, prefix, DATA_DIRECTORY, prefix);
+            if (system(comma)) return 1;
+          }
         }
+        stream_dat = fopen(stmp, "w+");
       }
-      stream_dat = fopen(stmp, "w+");
       tmp_min = log10(GAMMA_MIN);
       tmp_max = log10(GAMMA_MAX);
       tmp_stp = (tmp_max - tmp_min) / (G_DIM - 1);
@@ -1340,15 +1344,14 @@ double N_e_Jet(double gg) {
         dtmp = N_e(tmp_cur);
         Gamma[i] = tmp_cur;
         elec_spec[i] = dtmp * tmp_cur;
-        if (dtmp > 1e-300) {
+        if (dtmp > 1e-300 && PRINT == 1) {
           fprintf(stream_dat, "%f %f %e %e\n", log10(tmp_cur), log10(dtmp), tmp_cur, dtmp);
         }
         tmp_val = tmp_val + tmp_stp;
       }
      
       
-      fclose(stream_dat);
-
+      if (PRINT) fclose(stream_dat);
       elec_spec_tot_b = int_spec_b(2);
       Ub_e = m_e * c * c * elec_spec_tot_b;
       Lb_e = M_PI * R_src * R_src * LOR_B * LOR_B * c * Ub_e;
@@ -1356,8 +1359,6 @@ double N_e_Jet(double gg) {
       // 1 cold proton per electron
       Lb_p = M_PI * R_src * R_src * LOR_B * LOR_B * c * m_p * c * c * int_spec_b(1);
 
-
-	
       // PREPARING FREQUENCY VECTOR
 
       NU_STR_B = FreqTransO2S(NU_STR, DOP_B, z);
@@ -1373,15 +1374,16 @@ double N_e_Jet(double gg) {
         NU[i] = tmp_cur;
         tmp_val = tmp_val + tmp_stp;
       }
-      //Warning:: NU[1] < FreqTransO2S(NU_STR, DOP_B, z) !!
-      NU[1] = NU_STR_B;
+      //fprintf(stderr, "NU[0]%e\n", NU[0]);
+      //Warning:: NU[1] < FreqTransO2S(NU_STR, DOP_B, z) !! (old)
+      //NU[0] = NU_STR_B;
 
-
+      if (PRINT) {
       fprintf(stderr, "CALCULATING SYNCHROTRON SPECTRUM ... ");
+      }
 
-      
       // CALCULATING SYNCHROTRON SPECTRUM
-      if (CASE_JET == 0) {
+      if (CASE_JET == 0 && PRINT == 1) {
         sprintf(stmp, "%s/%s_ss.dat", DATA_DIRECTORY, prefix);
         if (INPUT_MODE == 0) {
           if (ifexist(stmp)) {
@@ -1392,7 +1394,6 @@ double N_e_Jet(double gg) {
         stream_dat = fopen(stmp, "w+");
       }
 
-
       for (i = 1; i <= NU_DIM; i++) {
         if (PRINT) fprintf(stderr, "%3i", i);
 
@@ -1400,7 +1401,7 @@ double N_e_Jet(double gg) {
         jj = j_syn(N_e, GAMMA_MIN, GAMMA_MAX, NU[i], B, SYN_PREC1, SYN_PREC2);
         kk = k_esa(N_e, GAMMA_MIN, GAMMA_MAX, NU[i], B, ABS_PREC1, ABS_PREC2);
         // Here the computation is made in the source frame
-
+        
         // transfer equation//
         if (L_src == 0.0) {
           I_syn = SphTransfEquat(jj, kk, R_src);
@@ -1417,34 +1418,36 @@ double N_e_Jet(double gg) {
           I_syn = CylTransfEquat(0.0, jj, kk, L_src);
           I_rad[i] = I_syn;
         }
-
-
-
+        
         // transformation to observer frame
         nu_tmp = FreqTransS2O(NU[i], DOP_B, z);
         fx_tmp = Intens2Flux(I_syn, R_src, DOP_B, z, H_0);
-
         if (CASE_JET == 0) {
-          if (fx_tmp > 1.0e-300) {
+          if (fx_tmp > 1.0e-200) {
+            if (PRINT) {
             fprintf(stream_dat, "%f %f %f\n", log10(nu_tmp), log10(fx_tmp), log10(nu_tmp * fx_tmp));
+            }
+            NU_SYN_out[i] = log10(nu_tmp);
+            F_SYN_out[i] = log10(nu_tmp * fx_tmp);
           }
         }
-
         if (PRINT) fprintf(stderr, "\b\b\b");
       }
-
-      if (CASE_JET == 0) fclose(stream_dat);
-
+      if (CASE_JET == 0 && PRINT == 1) fclose(stream_dat);
+      
+      if (PRINT){
       fprintf(stderr, "DONE\n\n");
+      }
 
       //synch energy density
       Ub_syn = 4 * M_PI / c * Simpson(I_rad, NU, NU_DIM, 1, NU_DIM);
 
-
+      if (PRINT){
       fprintf(stderr, "CALCULATING SSC SPECTRUM ... ");
+      }
 
       // CALCULATING INVERSE-COMPTON SPECTRUM
-      if (CASE_JET == 0 && CASE_EIC == 0) {
+      if (CASE_JET == 0 && CASE_EIC == 0 && PRINT == 1) {
         sprintf(stmp, "%s/%s_cs.dat", DATA_DIRECTORY, prefix);
         if (INPUT_MODE == 0) {
           if (ifexist(stmp)) {
@@ -1463,7 +1466,7 @@ double N_e_Jet(double gg) {
         }
         stream_tau = fopen(stmp, "w+");
       }
-
+      
       for (i = 1; i <= NU_DIM; i++) {
         if (PRINT) fprintf(stderr, "%3i", i);
 
@@ -1479,7 +1482,7 @@ double N_e_Jet(double gg) {
         // absorption by pair production
         if (L_src == 0.0) {
           I_com = SphTransfEquat(jj, kk, R_src);
-          I_rad1st[i] = 0.70 * CylTransfEquat(0.0, jj, kk, R_src);
+          I_rad1st[i] = 0.70 * CylTransfEquat(0.0, jj, kk, R_src); //for SSC 2nd order
           I_rad_com[i] = I_com;
         } else {
           I_com = CylTransfEquat(0.0, jj, kk, L_src);
@@ -1512,8 +1515,8 @@ double N_e_Jet(double gg) {
 
           } else tt = 0.;
 
-          fprintf(stream_tau, "%f %f\n", nu_tmp * h * 0.62415,  // Conversion Hz -> TeV
-                  exp(-tt));
+          if (PRINT) fprintf(stream_tau, "%f %f\n", nu_tmp * h * 0.62415, exp(-tt));  // Conversion Hz -> TeV
+                  
 
 
           // flux transformation to observer frame
@@ -1526,10 +1529,16 @@ double N_e_Jet(double gg) {
 
           //fprintf(stderr, "log10 freq=%f Tau SSC = %f \n",log10(nu_tmp),2.0 * R_src * kk);
 
+          if (fx_tmp > 1.0e-200) {
+            if (PRINT) {
+              fprintf(stream_dat, "%f %f %f %f %f\n", log10(nu_tmp), log10(fx_tmp), log10(nu_tmp * fx_tmp), log10(dtmp),
+                      log10(nu_tmp * dtmp));
+            }else {
+              NU_SSC_out[i] = log10(nu_tmp);
+              F_SSC_out[i] = log10(nu_tmp * fx_tmp);
+              //fprintf(stderr, "%e ", F_SSC_out[i+1]);
+            }
 
-          if (fx_tmp > 1.0e-300) {
-            fprintf(stream_dat, "%f %f %f %f %f\n", log10(nu_tmp), log10(fx_tmp), log10(nu_tmp * fx_tmp), log10(dtmp),
-                    log10(nu_tmp * dtmp));
           }
         }
 
@@ -1539,22 +1548,23 @@ double N_e_Jet(double gg) {
       //test
       //fprintf(stderr, "Max compton emission coeff = %e \n",dtmp4);
 
-      if (CASE_JET == 0 && CASE_EIC == 0) {
+      if (CASE_JET == 0 && CASE_EIC == 0  && PRINT == 1) {
         fclose(stream_dat);
         fclose(stream_tau);
       }
-
+      
+      if (PRINT){
       fprintf(stderr, "DONE\n\n");
+      }
 
       Ub_ssc = 4 * M_PI / c * Simpson(I_rad_com, NU, NU_DIM, 1, NU_DIM);
 
-
+      if (PRINT){
       fprintf(stderr, "CALCULATING 2nd ORDER SSC SPECTRUM ... ");
-
+      }
 
       // CALCULATING 2nd ORDER INVERSE-COMPTON SPECTRUM/
-
-      if (CASE_JET == 0) {
+      if (CASE_JET == 0 && CASE_EIC == 0 && PRINT == 1) {
         sprintf(stmp, "%s/%s_cs2.dat", DATA_DIRECTORY, prefix);
         if (INPUT_MODE == 0) {
           if (ifexist(stmp)) {
@@ -1574,8 +1584,8 @@ double N_e_Jet(double gg) {
         stream_tau = fopen(stmp, "w+");
       }
 
-      sprintf(stmp1, "%s/%s_cs2_blob_frame.dat", DATA_DIRECTORY, prefix);
-      stream_dat1 = fopen(stmp1, "w+");
+      //sprintf(stmp1, "%s/%s_cs2_blob_frame.dat", DATA_DIRECTORY, prefix);
+      //stream_dat1 = fopen(stmp1, "w+");
 
 
       for (i = 1; i <= NU_DIM; i++) {
@@ -1602,7 +1612,7 @@ double N_e_Jet(double gg) {
         I_rad2nd[i] = I_com2;
 
 
-        if (CASE_JET == 0) {
+        if (CASE_JET == 0 && CASE_EIC == 0) {
           // frequency transformation to observer frame
           nu_tmp = FreqTransS2O(NU[i], DOP_B, z);
 
@@ -1624,8 +1634,7 @@ double N_e_Jet(double gg) {
 
           } else tt = 0.;
 
-          fprintf(stream_tau, "%f %f\n", nu_tmp * h * 0.62415,  // Conversion Hz -> TeV
-                  exp(-tt));
+          if (PRINT) fprintf(stream_tau, "%f %f\n", nu_tmp * h * 0.62415, exp(-tt));
 
 
           // flux transformation to observer frame
@@ -1634,26 +1643,31 @@ double N_e_Jet(double gg) {
 
           // absorption by IIR
           fx_tmp = fx_tmp * exp(-tt);
-
-          if (fx_tmp > 1.0e-300) {
-            fprintf(stream_dat, "%f %f %f %f %f\n", log10(nu_tmp), log10(fx_tmp), log10(nu_tmp * fx_tmp), log10(dtmp),
-                    log10(nu_tmp * dtmp));
+          
+          if (fx_tmp > 1.0e-200) {
+            if (PRINT) fprintf(stream_dat, "%f %f %f %f %f\n", log10(nu_tmp), log10(fx_tmp), log10(nu_tmp * fx_tmp), log10(dtmp),
+                       log10(nu_tmp * dtmp));
+            NU_SSC2_out[i] = log10(nu_tmp);
+            F_SSC2_out[i] = log10(nu_tmp * fx_tmp);
           }
         }
-
+        
         nu_tmp1 = FreqTransS2O(NU[i], 1, z);
         fx_tmp1 = Intens2Flux(I_com2, R_src, 1, z, H_0);
-        if (fx_tmp1 > 1.0e-300) {
+        /*
+        if (fx_tmp1 > 1.0e-200) {
           fprintf(stream_dat1, "%f %f %f\n", log10(nu_tmp1), log10(fx_tmp1), log10(nu_tmp1 * fx_tmp1));
         }
-
+        */
         if (PRINT) fprintf(stderr, "\b\b\b");
       }
 
-      if (CASE_JET == 0) fclose(stream_dat);
-      fclose(stream_dat1);
-
+      if (CASE_JET == 0 && CASE_EIC == 0 && PRINT == 1) fclose(stream_dat);
+      //fclose(stream_dat1);
+ 
+      if (PRINT){
       fprintf(stderr, "DONE\n\n");
+      }
 
       Ub_ssc2 = 4 * M_PI / c * Simpson(I_rad2nd, NU, NU_DIM, 1, NU_DIM);
 
@@ -1662,28 +1676,32 @@ double N_e_Jet(double gg) {
 
 
       // NUCLEAR LUMINOSITY
+      if (PRINT){
+        sprintf(stmp, "%s/%s_nuc.dat", DATA_DIRECTORY, prefix);
+        if (INPUT_MODE == 0) {
+          if (ifexist(stmp)) {
+            sprintf(comma, "mv %s/%s_nuc.dat %s/%s_prev_nuc.dat", DATA_DIRECTORY, prefix, DATA_DIRECTORY, prefix);
+            if (system(comma)) return 1;
+          }
+        }
 
-      sprintf(stmp, "%s/%s_nuc.dat", DATA_DIRECTORY, prefix);
-      if (INPUT_MODE == 0) {
-        if (ifexist(stmp)) {
-          sprintf(comma, "mv %s/%s_nuc.dat %s/%s_prev_nuc.dat", DATA_DIRECTORY, prefix, DATA_DIRECTORY, prefix);
-          if (system(comma)) return 1;
+        sprintf(stmp1, "%s/%s_tor.dat", DATA_DIRECTORY, prefix);
+        if (INPUT_MODE == 0) {
+          if (ifexist(stmp1)) {
+            sprintf(comma, "mv %s/%s_tor.dat %s/%s_prev_tor.dat", DATA_DIRECTORY, prefix, DATA_DIRECTORY, prefix);
+            if (system(comma)) return 1;
+          }
         }
       }
 
-      sprintf(stmp1, "%s/%s_tor.dat", DATA_DIRECTORY, prefix);
-      if (INPUT_MODE == 0) {
-        if (ifexist(stmp1)) {
-          sprintf(comma, "mv %s/%s_tor.dat %s/%s_prev_tor.dat", DATA_DIRECTORY, prefix, DATA_DIRECTORY, prefix);
-          if (system(comma)) return 1;
-        }
-      }
-      stream_dat1 = fopen(stmp1, "w+");
-
+      
 
       if (CASE_EIC) {
-        fprintf(stderr, "CALCULATING NUCLEAR LUMINOSITY SPECTRUM ... ");
-        stream_dat = fopen(stmp, "w+");
+        if (PRINT) {
+          if (PRINT) fprintf(stderr, "CALCULATING NUCLEAR LUMINOSITY SPECTRUM ... ");
+          stream_dat = fopen(stmp, "w+");
+          stream_dat1 = fopen(stmp1, "w+");
+        }
 
 
         double L_BB_disk;
@@ -1715,45 +1733,44 @@ double N_e_Jet(double gg) {
           }
 
           fx_tmp = (1.0 + z) * L_BB_nuc[i] / (4.0 * M_PI * D_L * D_L);
-          if (fx_tmp > 1.0e-300) {
-            fprintf(stream_dat, "%f %f %f\n", log10(nu_tmp), log10(fx_tmp), log10(nu_tmp * fx_tmp));
+          if (fx_tmp > 1.0e-200) {
+            if (PRINT) fprintf(stream_dat, "%f %f %f\n", log10(nu_tmp), log10(fx_tmp), log10(nu_tmp * fx_tmp));
+            NU_DISK_out[i] = log10(nu_tmp);
+            F_DISK_out[i] = log10(nu_tmp * fx_tmp);
           }
 
           nu_tmp1 = FreqTransS2O(NU[i], 1.0, z);
           fx_tmp1 = (1.0 + z) * L_BB_tor / (4.0 * M_PI * D_L * D_L);
 
-          if (fx_tmp1 > 1.0e-300) {
-            fprintf(stream_dat1, "%f %f %f\n", log10(nu_tmp1), log10(fx_tmp1), log10(nu_tmp1 * fx_tmp1));
+          if (fx_tmp1 > 1.0e-200) {
+            if (PRINT) fprintf(stream_dat1, "%f %f %f\n", log10(nu_tmp1), log10(fx_tmp1), log10(nu_tmp1 * fx_tmp1));
           }
           if (PRINT) fprintf(stderr, "\b\b\b");
         }
-
+  
+        if (PRINT){
+        fclose(stream_dat);
         fclose(stream_dat1);
-
-        fprintf(stderr, "DONE\n\n");
-        //}
-
-
-
-
-
-        sprintf(stmp, "%s/%s_ecdisc.dat", DATA_DIRECTORY, prefix);
-        sprintf(stmp1, "%s/%s_prev_ecdisc.dat", DATA_DIRECTORY, prefix);
-        if (INPUT_MODE == 0) {
-          if (ifexist(stmp)) {
-            sprintf(comma, "mv %s/%s_ecdisc.dat %s/%s_prev_ecdisc.dat", DATA_DIRECTORY, prefix, DATA_DIRECTORY, prefix);
-            if (system(comma)) return 1;
-          } else if (ifexist(stmp1)) {
-            sprintf(comma, "rm %s/%s_prev_ecdisc.dat", DATA_DIRECTORY, prefix);
-            if (system(comma)) return 1;
-          }
         }
+ 
+        if (PRINT){
+          fprintf(stderr, "DONE\n\n");
 
-        //if (CASE_EIC){
+          sprintf(stmp, "%s/%s_ecdisc.dat", DATA_DIRECTORY, prefix);
+          sprintf(stmp1, "%s/%s_prev_ecdisc.dat", DATA_DIRECTORY, prefix);
+          if (INPUT_MODE == 0) {
+            if (ifexist(stmp)) {
+              sprintf(comma, "mv %s/%s_ecdisc.dat %s/%s_prev_ecdisc.dat", DATA_DIRECTORY, prefix, DATA_DIRECTORY, prefix);
+              if (system(comma)) return 1;
+            } else if (ifexist(stmp1)) {
+              sprintf(comma, "rm %s/%s_prev_ecdisc.dat", DATA_DIRECTORY, prefix);
+              if (system(comma)) return 1;
+            }
+          }
 
-        fprintf(stderr, "CALCULATING EXT. INV. COMPTON SPECTRUM ON NUCLEAR RADIATION ... ");
-
-        stream_dat = fopen(stmp, "w+");
+          fprintf(stderr, "CALCULATING EXT. INV. COMPTON SPECTRUM ON NUCLEAR RADIATION ... ");
+          stream_dat = fopen(stmp, "w+");
+        }
 
 
         for (i = 1; i <= NU_DIM; i++) {
@@ -1826,7 +1843,7 @@ double N_e_Jet(double gg) {
           // absorption by IIR
           fx_tmp = fx_tmp * exp(-tt);
 
-          if (fx_tmp > 1.0e-300) {
+          if (fx_tmp > 1.0e-200 && PRINT == 1) {
             fprintf(stream_dat, "%f %f %f %f %f\n", log10(nu_tmp), log10(fx_tmp), log10(nu_tmp * fx_tmp), log10(dtmp),
                     log10(nu_tmp * dtmp));
           }
@@ -1835,11 +1852,13 @@ double N_e_Jet(double gg) {
 
         }
 
-        fclose(stream_dat);
-
+        if (PRINT) fclose(stream_dat);
+        
+        if (PRINT){
         fprintf(stderr, "DONE\n\n");
+        }
 
-        if (CASE_JET == 0) {
+        if (CASE_JET == 0 && PRINT == 1) {
           sprintf(stmp, "%s/%s_ecs_disk.dat", DATA_DIRECTORY, prefix);
           sprintf(stmp1, "%s/%s_prev_ecs_disk.dat", DATA_DIRECTORY, prefix);
           if (INPUT_MODE == 0) {
@@ -1854,16 +1873,16 @@ double N_e_Jet(double gg) {
           }
         }
 
-
-        fprintf(stderr, "CALCULATING EXT. INV. COMPTON SPECTRUM ON BLR ... ");
+      
+        if (PRINT) fprintf(stderr, "CALCULATING EXT. INV. COMPTON SPECTRUM ON BLR ... ");
 
         //double R_blr = 0.1*sqrt(L_nuc/1.0e46)*3.08568e18; //Sikora et al. 2009
         //fprintf(stderr, "%6.3e\n", R_blr);
 
         if (CASE_JET == 0) stream_dat = fopen(stmp, "w+");
 
-        if (D_b >= 100. * R_blr) {
-          fprintf(stderr, "Blob outside 100*R_BLR!\n");
+        if (D_b >= 100. * R_blr && PRINT == 1) {
+          if (PRINT) fprintf(stderr, "Blob outside 100*R_BLR!\n");
         }
 
         for (i = 1; i <= NU_DIM; i++) {
@@ -1961,9 +1980,11 @@ double N_e_Jet(double gg) {
             // absorption by EBL
             F_IC_tot[i] = dtmp * exp(-tt);
 
-            if (F_IC_tot[i] > 1.0e-300) {
-              fprintf(stream_dat, "%f %f %f %f %f\n", log10(nu_tmp), log10(F_IC_tot[i]), log10(nu_tmp * F_IC_tot[i]),
-                      log10(dtmp), log10(nu_tmp * dtmp));
+            if (F_IC_tot[i] > 1.0e-200) {
+              if (PRINT) fprintf(stream_dat, "%f %f %f %f %f\n", log10(nu_tmp), log10(F_IC_tot[i]), log10(nu_tmp * F_IC_tot[i]),
+                                 log10(dtmp), log10(nu_tmp * dtmp));
+              NU_EIC_out[i] = log10(nu_tmp);
+              F_EIC_out[i] = log10(nu_tmp * dtmp);
             }
           }
 
@@ -1971,10 +1992,13 @@ double N_e_Jet(double gg) {
           if (PRINT) fprintf(stderr, "\b\b\b");
 
         }
+        if (PRINT){
         if (CASE_JET == 0) fclose(stream_dat);
         fprintf(stderr, "DONE\n\n");
+        }
 
         //EIC from dust torus
+        if (PRINT){
         sprintf(stmp, "%s/%s_ecs1.dat", DATA_DIRECTORY, prefix);
         if (INPUT_MODE == 0) {
           if (ifexist(stmp)) {
@@ -1983,10 +2007,11 @@ double N_e_Jet(double gg) {
           }
         }
         stream_dat = fopen(stmp, "w+");
+        }
 
 
         for (i = 1; i <= NU_DIM; i++) {
-          if (PRINT == 0) fprintf(stderr, "%3i", i);
+          if (PRINT) fprintf(stderr, "%3i", i);
 
 
           // Blackbody radiation field from the dust torus
@@ -2043,14 +2068,14 @@ double N_e_Jet(double gg) {
           // absorption by IIR
           fx_tmp = fx_tmp * exp(-tt);
 
-          if (fx_tmp > 1.0e-300) {
-            fprintf(stream_dat, "%f %f %f %f %f\n", log10(nu_tmp), log10(fx_tmp), log10(nu_tmp * fx_tmp), log10(dtmp),
+          if (fx_tmp > 1.0e-200) {
+            if (PRINT) fprintf(stream_dat, "%f %f %f %f %f\n", log10(nu_tmp), log10(fx_tmp), log10(nu_tmp * fx_tmp), log10(dtmp),
                     log10(nu_tmp * dtmp));
           }
-          if (PRINT == 0) fprintf(stderr, "\b\b\b");
+          if (PRINT) fprintf(stderr, "\b\b\b");
         }
 
-        fclose(stream_dat);
+        if (PRINT) fclose(stream_dat);
 
 
         //Ub_eicd = 4*M_PI/c*Simpson(I_com_ext, NU, NU_DIM, 1, NU_DIM);
@@ -2286,7 +2311,7 @@ double N_e_Jet(double gg) {
               sprintf(stmp, "%e", J_SYN_JET[j][i]);
 
               if ((strcmp(stmp, "-inf") == 0) || (strcmp(stmp, "inf") == 0) || (strcmp(stmp, "nan") == 0) ||
-                  (J_SYN_JET[j][i] < 1.0e-300)) {
+                  (J_SYN_JET[j][i] < 1.0e-200)) {
                 I_SYN_JET[j][i] = 0.0;
 
               } else {
@@ -2358,7 +2383,7 @@ double N_e_Jet(double gg) {
 
             nu_tmp1 = FreqTransS2O(NU[i], 1, z);
             fx_tmp1 = dtmp * (1.0 + z);
-            if (fx_tmp1 > 1.0e-300) {
+            if (fx_tmp1 > 1.0e-200) {
               fprintf(stream_dat1, "%f %f %f\n", log10(nu_tmp1), log10(fx_tmp1), log10(nu_tmp1 * fx_tmp1));
             }
 
@@ -2377,11 +2402,13 @@ double N_e_Jet(double gg) {
           PJ_SLICE[j] = M_PI * (pow(Y_VAL[j], 2.0) - pow(Y_VAL[j - 1], 2.0)) * LOR_JET * LOR_JET * c * UJ_SLICE[j];
           Pj_syn = Pj_syn + PJ_SLICE[j];
         }
-
+        
+        if (PRINT){
         fprintf(stderr, " DONE\n\n");
 
 
         fprintf(stderr, "CALCULATING JET SSC SPECTRUM ... ");
+        }
 
         // CALCULATING JET INVERSE-COMPTON SPECTRUM
 
@@ -2409,7 +2436,7 @@ double N_e_Jet(double gg) {
               sprintf(stmp, "%e", J_SYN_JET[k][i]);
 
               if ((strcmp(stmp, "-inf") == 0) || (strcmp(stmp, "inf") == 0) || (strcmp(stmp, "nan") == 0) ||
-                  (J_SYN_JET[k][i] < 1.0e-300)) {
+                  (J_SYN_JET[k][i] < 1.0e-200)) {
                 I_SYN_JET[k][i] = 0.0;
 
               }  
@@ -2447,7 +2474,7 @@ double N_e_Jet(double gg) {
               sprintf(stmp, "%e", J_SYN_JET[k][i]);
 
               if ((strcmp(stmp, "-inf") == 0) || (strcmp(stmp, "inf") == 0) || (strcmp(stmp, "nan") == 0) ||
-                  (J_SYN_JET[k][i] < 1.0e-300)) {
+                  (J_SYN_JET[k][i] < 1.0e-200)) {
                 I_SYN_JET[k][i] = 0.0;
 
               }
@@ -2543,7 +2570,7 @@ double N_e_Jet(double gg) {
               sprintf(stmp, "%e", J_COM_JET[j][i]);
 
               if ((strcmp(stmp, "-inf") == 0) || (strcmp(stmp, "inf") == 0) || (strcmp(stmp, "nan") == 0) ||
-                  (J_COM_JET[j][i] < 1.0e-300)) {
+                  (J_COM_JET[j][i] < 1.0e-200)) {
                 J_COM_JET[j][i] = 0.0;
 
               } else {
@@ -2612,7 +2639,7 @@ double N_e_Jet(double gg) {
 
             nu_tmp1 = FreqTransS2O(NU[i], 1, z);
             fx_tmp1 = dtmp * (1.0 + z);
-            if (fx_tmp1 > 1.0e-300) {
+            if (fx_tmp1 > 1.0e-200) {
               fprintf(stream_dat1, "%f %f %f\n", log10(nu_tmp1), log10(fx_tmp1), log10(nu_tmp1 * fx_tmp1));
             }
 
@@ -2632,11 +2659,11 @@ double N_e_Jet(double gg) {
           PJ_SLICE[j] = M_PI * (pow(Y_VAL[j], 2.0) - pow(Y_VAL[j - 1], 2.0)) * LOR_JET * LOR_JET * c * UJ_SLICE[j];
           Pj_ssc = Pj_ssc + PJ_SLICE[j];
         }
-
+ 
+        if (PRINT){
         fprintf(stderr, " DONE\n\n");
-
-
         fprintf(stderr, "CALCULATING EXT. INV. COMPTON SPECTRUM ON JET SYNCHROTRON... ");
+        }
         // CALCULATING EXT. INV. COMPTON SPECTRUM ON JET SYNCHROTRON
         
         //OH 2024
@@ -2656,7 +2683,7 @@ double N_e_Jet(double gg) {
 	    I_SYN = I_rad_ext_s[i];
             sprintf(stmp, "%e", J_SYN_JET[k][i]);
           if ((strcmp(stmp, "-inf") == 0) || (strcmp(stmp, "inf") == 0) || (strcmp(stmp, "nan") == 0) ||
-             (J_SYN_JET[k][i] < 1.0e-300)) {
+             (J_SYN_JET[k][i] < 1.0e-200)) {
              I_SYN_JET[k][i] = 0.0;
           } else {
             if (k == 1){
@@ -2762,19 +2789,23 @@ double N_e_Jet(double gg) {
           //transformation in the observer frame
           nu_tmp1 = FreqTransS2O(NU[i] * LOR_B_J, DOP_B, z);
           fx_tmp1 = Intens2Flux(I_com, R_src, 1, z, H_0);
-          if (fx_tmp1 > 1.0e-300) {
+          if (fx_tmp1 > 1.0e-200) {
             fprintf(stream_dat1, "%f %f %f\n", log10(nu_tmp1), log10(fx_tmp1), log10(nu_tmp1 * fx_tmp1));
           }
         }
         fclose(stream_dat1);
-
+        
+        if (PRINT){
         fprintf(stderr, "DONE\n\n");
+        }
 
         Ub_eicj = 4 * M_PI / c * Simpson(I_eic_jet, NU, NU_DIM, 1, NU_DIM);
       }
       
       if (CASE_EIC == 1) {
+      if (PRINT){
       fprintf(stderr, "CALCULATING RADIATION ABSORPTION OF THE BLOB EMISSION THROUGH THE BLR ... ");
+      }
 
       // PREPARING FREQUENCY VECTOR
       tmp_min   = log10(NU_STR_B);
@@ -2787,9 +2818,7 @@ double N_e_Jet(double gg) {
           tmp_val   = tmp_val + tmp_stp;
       }
       //Warning:: NU[1] < FreqTransO2S(NU_STR, DOP_B, z) !!
-      NU[1] = NU_STR_B;
-    
-      fprintf(stderr, "%6.3e\n", NU_END);
+      //NU[1] = NU_STR_B;
 
       //blob frame
       for (i = 1; i <= NU_DIM; i++) {
@@ -2841,14 +2870,16 @@ double N_e_Jet(double gg) {
 
       if (CASE_JET == 0) {
         //SSC
-        sprintf(stmp, "%s/%s_cs.dat", DATA_DIRECTORY, prefix);
-        if (INPUT_MODE == 0) {
-          if (ifexist(stmp)) {
-            sprintf(comma, "mv %s/%s_cs.dat %s/%s_prev_cs.dat", DATA_DIRECTORY, prefix, DATA_DIRECTORY, prefix);
-            if (system(comma)) return 1;
+        if (PRINT){
+          sprintf(stmp, "%s/%s_cs.dat", DATA_DIRECTORY, prefix);
+          if (INPUT_MODE == 0) {
+            if (ifexist(stmp)) {
+              sprintf(comma, "mv %s/%s_cs.dat %s/%s_prev_cs.dat", DATA_DIRECTORY, prefix, DATA_DIRECTORY, prefix);
+              if (system(comma)) return 1;
+            }
           }
+          stream_dat = fopen(stmp, "w+");
         }
-        stream_dat = fopen(stmp, "w+");
 
 
         for (i = 1; i <= NU_DIM; i++) {
@@ -2882,22 +2913,26 @@ double N_e_Jet(double gg) {
           // absorption by IIR
           fx_tmp = fx_tmp * exp(-tt);
 
-          if (fx_tmp > 1.0e-300) {
-            fprintf(stream_dat, "%f %f %f %f %f\n", log10(nu_tmp), log10(fx_tmp), log10(nu_tmp * fx_tmp), log10(dtmp),
+          if (fx_tmp > 1.0e-200) {
+            if (PRINT) fprintf(stream_dat, "%f %f %f %f %f\n", log10(nu_tmp), log10(fx_tmp), log10(nu_tmp * fx_tmp), log10(dtmp),
                     log10(nu_tmp * dtmp));
+            NU_SSC_out[i] = log10(nu_tmp);
+            F_SSC_out[i] = log10(nu_tmp * dtmp);
           }
         }
-        fclose(stream_dat);
+        if (PRINT) fclose(stream_dat);
 
         //SSC_2nd
-        sprintf(stmp, "%s/%s_cs2.dat", DATA_DIRECTORY, prefix);
-        if (INPUT_MODE == 0) {
-          if (ifexist(stmp)) {
-            sprintf(comma, "mv %s/%s_cs2.dat %s/%s_prev_cs2.dat", DATA_DIRECTORY, prefix, DATA_DIRECTORY, prefix);
-            if (system(comma)) return 1;
+        if (PRINT){
+          sprintf(stmp, "%s/%s_cs2.dat", DATA_DIRECTORY, prefix);
+          if (INPUT_MODE == 0) {
+            if (ifexist(stmp)) {
+              sprintf(comma, "mv %s/%s_cs2.dat %s/%s_prev_cs2.dat", DATA_DIRECTORY, prefix, DATA_DIRECTORY, prefix);
+              if (system(comma)) return 1;
+            }
           }
+          stream_dat = fopen(stmp, "w+");
         }
-        stream_dat = fopen(stmp, "w+");
 
         for (i = 1; i <= NU_DIM; i++) {
           // frequency transformation to observer frame
@@ -2930,12 +2965,14 @@ double N_e_Jet(double gg) {
           // absorption by IIR
           fx_tmp = fx_tmp * exp(-tt);
 
-          if (fx_tmp > 1.0e-300) {
-            fprintf(stream_dat, "%f %f %f %f %f\n", log10(nu_tmp), log10(fx_tmp), log10(nu_tmp * fx_tmp), log10(dtmp),
+          if (fx_tmp > 1.0e-200) {
+            if (PRINT) fprintf(stream_dat, "%f %f %f %f %f\n", log10(nu_tmp), log10(fx_tmp), log10(nu_tmp * fx_tmp), log10(dtmp),
                     log10(nu_tmp * dtmp));
+            NU_SSC2_out[i] = log10(nu_tmp);
+            F_SSC2_out[i] = log10(nu_tmp * dtmp);
           }
         }
-        fclose(stream_dat);
+        if (PRINT) fclose(stream_dat);
 
         //EIC from disk-BLR
         sprintf(stmp, "%s/%s_ecs.dat", DATA_DIRECTORY, prefix);
@@ -2978,7 +3015,7 @@ double N_e_Jet(double gg) {
           // absorption by IIR
           fx_tmp = fx_tmp * exp(-tt);
 
-          if (fx_tmp > 1.0e-300) {
+          if (fx_tmp > 1.0e-200) {
             fprintf(stream_dat, "%f %f %f %f %f\n", log10(nu_tmp), log10(fx_tmp), log10(nu_tmp * fx_tmp), log10(dtmp),
                     log10(nu_tmp * dtmp));
           }
@@ -2987,13 +3024,16 @@ double N_e_Jet(double gg) {
         Ub_eicd = 4 * M_PI / c * Simpson(I_com_ext, NU, NU_DIM, 1, NU_DIM);
 
       }
+      if (PRINT){
       fprintf(stderr, "DONE\n\n");
+      }
     }
 
 
       if (CASE_JET) {
-
+        if (PRINT){
         fprintf(stderr, "CALCULATING RADIATION ABSORPTION OF THE BLOB EMISSION THROUGH THE JET ... ");
+        }
 
         // PREPARING FREQUENCY VECTOR
         
@@ -3106,7 +3146,7 @@ double N_e_Jet(double gg) {
           fx_tmp = Intens2Flux(I_syn, R_src, DOP_B, z, H_0) / pow((DOP_B_J), 3.0);
 
 
-          if (fx_tmp > 1.0e-300) {
+          if (fx_tmp > 1.0e-200) {
             fprintf(stream_dat, "%f %f %f\n", log10(nu_tmp), log10(fx_tmp), log10(nu_tmp * fx_tmp));
           }
         }
@@ -3151,7 +3191,7 @@ double N_e_Jet(double gg) {
           // absorption by IIR
           fx_tmp = fx_tmp * exp(-tt);
 
-          if (fx_tmp > 1.0e-300) {
+          if (fx_tmp > 1.0e-200) {
             fprintf(stream_dat, "%f %f %f %f %f\n", log10(nu_tmp), log10(fx_tmp), log10(nu_tmp * fx_tmp), log10(dtmp),
                     log10(nu_tmp * dtmp));
           }
@@ -3196,7 +3236,7 @@ double N_e_Jet(double gg) {
           // absorption by IIR
           fx_tmp = fx_tmp * exp(-tt);
 
-          if (fx_tmp > 1.0e-300) {
+          if (fx_tmp > 1.0e-200) {
             fprintf(stream_dat, "%f %f %f %f %f\n", log10(nu_tmp), log10(fx_tmp), log10(nu_tmp * fx_tmp), log10(dtmp),
                     log10(nu_tmp * dtmp));
           }
@@ -3242,7 +3282,7 @@ double N_e_Jet(double gg) {
           // absorption by IIR
           fx_tmp = fx_tmp * exp(-tt);
 
-          if (fx_tmp > 1.0e-300) {
+          if (fx_tmp > 1.0e-200) {
             fprintf(stream_dat, "%f %f %f %f %f\n", log10(nu_tmp), log10(fx_tmp), log10(nu_tmp * fx_tmp), log10(dtmp),
                     log10(nu_tmp * dtmp));
           }
@@ -3287,7 +3327,7 @@ double N_e_Jet(double gg) {
           // absorption by IIR
           fx_tmp = fx_tmp * exp(-tt);
 
-          if (fx_tmp > 1.0e-300) {
+          if (fx_tmp > 1.0e-200) {
             fprintf(stream_dat, "%f %f %f %f %f\n", log10(nu_tmp), log10(fx_tmp), log10(nu_tmp * fx_tmp), log10(dtmp),
                     log10(nu_tmp * dtmp));
           }
@@ -3332,17 +3372,16 @@ double N_e_Jet(double gg) {
           // absorption by IIR
           fx_tmp = fx_tmp * exp(-tt);
 
-          if (fx_tmp > 1.0e-300) {
+          if (fx_tmp > 1.0e-200) {
             fprintf(stream_dat, "%f %f %f %f %f\n", log10(nu_tmp), log10(fx_tmp), log10(nu_tmp * fx_tmp), log10(dtmp),
                     log10(nu_tmp * dtmp));
           }
         }
         fclose(stream_dat);
+        if (PRINT){
         fprintf(stderr, " DONE\n\n");
-
-
-
         fprintf(stderr, "CALCULATING JET EXT. INV. COMPTON SPECTRUM ON BLOB SYNCHROTRON...");
+        }
         // CALCULATING JET EXT. INV. COMPTON SPECTRUM ON BLOB SYNCHROTRON.
         //OH 2024
         
@@ -3464,7 +3503,7 @@ double N_e_Jet(double gg) {
               sprintf(stmp, "%e", J_COM_EXT_JET[j][i]);
 
               if ((strcmp(stmp, "-inf") == 0) || (strcmp(stmp, "inf") == 0) || (strcmp(stmp, "nan") == 0) ||
-                  (J_COM_EXT_JET[j][i] < 1.0e-300)) {
+                  (J_COM_EXT_JET[j][i] < 1.0e-200)) {
                 J_COM_EXT_JET[j][i] = 0.0;
 
               } else {
@@ -3536,8 +3575,9 @@ double N_e_Jet(double gg) {
           return 2;
         }
 
-
+        if (PRINT){
         fprintf(stderr, " DONE\n\n");
+        }
 
 
 
@@ -3548,11 +3588,11 @@ double N_e_Jet(double gg) {
                 dtmp2); //,  FreqTransS2O(NU[i] * DOP_B_J, DOP_B/DOP_B_J , z) / (HZ_PER_EV*1e+12));
 
 */
-
+      
         fprintf(stderr, "Jet slice where the blob takes place:  %6.3d\n", jet_slice_blob);
       }
 
-
+      if (PRINT) {
       fprintf(stderr, "\n\nDERIVED PARAMETERS FROM THE BLOB:\n");
       fprintf(stderr, "----------\n");
       fprintf(stderr, "Velocity:                    %6.3e c \n", V_B / c);
@@ -3654,9 +3694,74 @@ double N_e_Jet(double gg) {
       fprintf(stderr, "%s\n", stmp);
 
       fprintf(stderr, "SAVING FINAL SPECTRUM\n");
+      }
 
       return 0;
     }
+    
+
+double *main_swig(char *allparams, int model_type, char *directory, char *pref){
+  //SWIG has difficulty understanding 1D input and 2D output arrays
+  //the input parameter list is set as a single string with " " separators
+  //The output array is flatten in 1D
+  char *params_char[24]; 
+  char *param = strtok(allparams, " ");
+  int i = 0;
+  int full_size;
+
+  //split the char array in a real list
+  // Extract the first parameter
+  // loop through the string to extract all other parameters
+  while( param != NULL ) {
+      params_char[i] = param;
+      param = strtok(NULL, " ");
+      i++;
+   }
+
+  strcpy(DATA_DIRECTORY, directory);
+  strcpy(prefix, pref);
+  bj_core02::INPUT_MODE = 1;
+  load_params_from_list(params_char, model_type, 0, i);
+  run_models();
+  if (CASE_EIC){
+    full_size = 10*NU_DIM;
+  }else{
+    full_size = 6*NU_DIM;
+  }
+  //double *output = (double *)malloc(full_size* sizeof(double));
+  double *output = (double*)calloc(full_size, sizeof(double));
+  
+  //Join all arrays into a single output
+  //Synchrotron
+  memmove(output, NU_SYN_out, NU_DIM * sizeof(double));
+  memmove(output + NU_DIM, F_SYN_out, NU_DIM * sizeof(double));
+  //SSC
+  memmove(output + NU_DIM*2, NU_SSC_out, NU_DIM * sizeof(double));
+  memmove(output + NU_DIM*3, F_SSC_out, NU_DIM * sizeof(double));
+  
+  //SSC2
+  memmove(output + NU_DIM*4, NU_SSC2_out, NU_DIM * sizeof(double));
+  memmove(output + NU_DIM*5, F_SSC2_out, NU_DIM * sizeof(double));
+  if (CASE_EIC){
+    //DISK
+    memmove(output + NU_DIM*6, NU_DISK_out, NU_DIM * sizeof(double));
+    memmove(output + NU_DIM*7, F_DISK_out, NU_DIM * sizeof(double));
+    //EIC on BLR
+    memmove(output + NU_DIM*8, NU_EIC_out, NU_DIM * sizeof(double));
+    memmove(output + NU_DIM*9, F_EIC_out, NU_DIM * sizeof(double));
+  }
+  
+   //reinitialize arrays at 0, this avoid some observed memory issues when running the script in loops
+  for (int i = 0; i <= NU_DIM_MAX + 1; i++) {
+    NU_SYN_out[i] = 0;
+    NU_SSC_out[i] = 0;   
+    NU_SSC2_out[i] = 0;
+    NU_DISK_out[i] = 0;
+    NU_EIC_out[i] = 0;
+  }
+  
+  return output;
+}
 
 }
 
@@ -3664,7 +3769,6 @@ double N_e_Jet(double gg) {
 int main(int argc, char **argv) {
   int num_models = 2; // blob, blob + nuc
   sprintf(PARA_FN, "%s", "none");
-
   // LOAD PARAMETERS
   if (argc == 2) { // simple run with parameter file in default location
     if (strcmp(argv[1], "--help") == 0) {
@@ -3683,7 +3787,8 @@ int main(int argc, char **argv) {
       return 2;
     }
     bj_core02::INPUT_MODE = input_type % 2;
-
+    bj_core02::PRINT = 1;
+    
     if (argc == 3 && input_type < 2) {  // called with input mode + param file
       // get and read param file
       strcpy(PARA_FN, argv[2]); // param file
@@ -3692,6 +3797,7 @@ int main(int argc, char **argv) {
       strcpy(DATA_DIRECTORY, argv[2]);
       strcpy(PARA_FN, argv[3]);
       if (load_params(PARA_FN)); else return 2;
+      
     } else if (argc >= 22) { // called with command line args
       int index = 2;
       // set data folder if necessary
@@ -3699,7 +3805,6 @@ int main(int argc, char **argv) {
         strcpy(DATA_DIRECTORY, argv[index]);
         index++;
       }
-
       // model type
       int model_type = atoi(argv[index]);
       index++;
@@ -3718,11 +3823,24 @@ int main(int argc, char **argv) {
         std::cerr << "Incorrect number of parameters for model.\n";
         return 2;
       }
-
       // everything is correct, do the model
-      if (!load_params_from_list(argv, model_type, index, argc))
+      if (!load_params_from_list(argv, model_type, index, argc)){
         return 2;
+       }
+          // get file_prefix
+    /*
+    fprintf(stderr,"argv[22]%s\n",argv[22]);
+    fprintf(stderr,"argc%i\n",argc);
+    fprintf(stderr,"CASE_EIC%i\n",CASE_EIC);
+    */
+      if (CASE_EIC) {
+      strcpy(prefix, argv[28]);
+      }else{
+      strcpy(prefix, argv[22]);
+      } 
     }
+
+    
   } else {
     cout << "Valid usages:\n"
             "- Usage 1: bj_core --help\n"
@@ -3745,3 +3863,8 @@ int main(int argc, char **argv) {
 
   run_models();
 }
+
+
+
+
+

@@ -42,6 +42,6 @@ extern void setHadronicParametersTest();
 
 extern double piondecay_ahaprecise_electron(double energy); // production of secondary electrons from pion decay
 
-extern void energetics();
+//extern void energetics();
 
 #endif

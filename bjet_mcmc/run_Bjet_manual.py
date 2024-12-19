@@ -38,7 +38,7 @@ def e_to_v(val):
     return val / h
 
 
-Source = "J1010"
+Source = "B3_2247"
 
 #-----input files and plotting parameters-----#
 if Source == "J1010":
@@ -48,6 +48,16 @@ if Source == "J1010":
     jet = False
     parameter_file = "parameter_files/J1010.par"
     instrument_data_file = "real_data/J1010_SED_reduced.dat"
+    
+
+if Source == "B3_2247":
+    Ylim = [1e-15,1e-9] #erg cm-2 s-1
+    Xlim = [1e8,1e28] #Hz
+    eic = False
+    jet = False
+    parameter_file = "parameter_files/B3_2247+381_updated.par"
+    instrument_data_file = "real_data/B32247_sed_data.dat"
+
 
 
 

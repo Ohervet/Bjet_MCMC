@@ -6,3 +6,9 @@
 %}
 %include bj_core.h
 %include processes_supp_core.h
+
+%include "cpointer.i"
+%pointer_functions(double ,doubleP)
+
+%include "carrays.i"
+%array_class(double, doubleArray);

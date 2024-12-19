@@ -13,11 +13,12 @@ from bjet_core import bj_core
 
 import glob
 import numpy as np
-import pathlib
+#import pathlib
 import subprocess
 import os
 import random
 from scipy import interpolate
+from ctypes import *
 
 __all__ = [
     "RESULTS_FOLDER",
@@ -103,150 +104,295 @@ param_min_vals = np.array(param_min_vals)
 param_max_vals = np.array(param_max_vals)
 
 
-def make_model(params, name_stem="run"):
-    """
-    This function builds a model based on the provided parameters and name stem. It converts the parameters to logarithmic values where necessary. The model is built by executing a command using subprocess.run() and the output is saved to a file. The logarithmic wavelength and flux values are then extracted from the file and converted to linear values. Additional components are added to the model based on the name stem. Lastly, the built model is interpolated and combined with the existing model.
+# def make_model_prev(params, name_stem="run"):
+#     """
+#     This function builds a model based on the provided parameters and name stem. It converts the parameters to logarithmic values where necessary. The model is built by executing a command using subprocess.run() and the output is saved to a file. The logarithmic wavelength and flux values are then extracted from the file and converted to linear values. Additional components are added to the model based on the name stem. Lastly, the built model is interpolated and combined with the existing model.
 
-    :param params: The parameters for building the model.
-    :type params: list[float]
-    :param name_stem: The prefix for the output file names.
-    :type name_stem: str
-    :return: The logarithmic wavelength values, logarithmic flux values, linear wavelength values, and linear flux values.
-    :rtype: tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]
+#     :param params: The parameters for building the model.
+#     :type params: list[float]
+#     :param name_stem: The prefix for the output file names.
+#     :type name_stem: str
+#     :return: The logarithmic wavelength values, logarithmic flux values, linear wavelength values, and linear flux values.
+#     :rtype: tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]
 
-    A tuple containing the following elements:
-        - logv (float[]): The logarithm of the frequency values.
-        - logvFv (float[]): The logarithm of the flux values.
-        - v (float[]): The frequency values.
-        - vFv (float[]): The flux values.
+#     A tuple containing the following elements:
+#         - logv (float[]): The logarithm of the frequency values.
+#         - logvFv (float[]): The logarithm of the flux values.
+#         - v (float[]): The frequency values.
+#         - vFv (float[]): The flux values.
 
-    .. note:: This implementation uses subprocess.popen and should be rewritten in the future with bj_core.py methods.
-    """
-    # convert to log
-    # TODO rewrite this entire method using bj_core methods and without building a command string.
-    params = params * 1.0
-    for i in range(len(params)):
-        if PARAM_IS_LOG[i]:
-            params[i] = np.power(10, params[i])
-    if not EIC:
-        command = (
-            settings_and_transformation
-            + [str(val) for val in params]
-            + constant_and_numerical[:-1]
-            + [name_stem]
-        )
-    else:
-        command = (
-            settings_and_transformation
-            + [str(val) for val in params[:9]]
-            + constant_and_numerical[:2]
-            + [str(params[-1])]
-        )
-        command = command + [
-            str(params[9]),
-            "2.0e+4",
-            str(params[10]),
-            str(params[11]),
-            "5.5e+20",
-            "9.0e-5",
-        ]  # EIC components
-        command = command + constant_and_numerical[3:-1] + [name_stem]
-    subprocess.run(
-        [BASE_PATH + EXECUTABLE, *command],
-        stderr=open(os.devnull, "wb"),
-        stdout=open(os.devnull, "wb"),
-    )
+#     .. note:: This implementation uses subprocess.popen and should be rewritten in the future with bj_core.py methods.
+#     """
+#     # convert to log
+#     # TODO rewrite this entire method using bj_core methods and without building a command string.
+#     params = params * 1.0
+#     for i in range(len(params)):
+#         if PARAM_IS_LOG[i]:
+#             params[i] = np.power(10, params[i])
+#     if not EIC:
+#         command = (
+#             settings_and_transformation
+#             + [str(val) for val in params]
+#             + constant_and_numerical[:-1]
+#             + [name_stem]
+#         )
+#     else:
+#         command = (
+#             settings_and_transformation
+#             + [str(val) for val in params[:9]]
+#             + constant_and_numerical[:2]
+#             + [str(params[-1])]
+#         )
+#         command = command + [
+#             str(params[9]),
+#             "2.0e+4",
+#             str(params[10]),
+#             str(params[11]),
+#             "5.5e+20",
+#             "9.0e-5",
+#         ]  # EIC components
+#         command = command + constant_and_numerical[3:-1] + [name_stem]
+#     subprocess.run(
+#         [BASE_PATH + EXECUTABLE, *command],
+#         stderr=open(os.devnull, "wb"),
+#         stdout=open(os.devnull, "wb"),
+#     )
 
-    loaded_model = np.loadtxt(
-        BASE_PATH + DATA_FOLDER + "/" + name_stem + "_ss.dat", delimiter=" "
-    )
-    logv = loaded_model[:, 0]
-    logvFv = loaded_model[:, 2]
-    vFv = np.power(10, logvFv)
+#     loaded_model = np.loadtxt(
+#         BASE_PATH + DATA_FOLDER + "/" + name_stem + "_ss.dat", delimiter=" "
+#     )
+#     logv = loaded_model[:, 0]
+#     logvFv = loaded_model[:, 2]
+#     vFv = np.power(10, logvFv)
 
-    stems = ["cs"] if not EIC else ["cs", "ecs", "cs2", "nuc"]
-    for s in stems:
-        loaded_model = np.loadtxt(
-            BASE_PATH + DATA_FOLDER + "/" + name_stem + "_" + s + ".dat", delimiter=" "
-        )
-        model_logv = loaded_model[:, 0]
-        model_logvFv = loaded_model[:, 2]
-        current_logv, current_logvFv, current_vFv = logv, logvFv, vFv
+#     stems = ["cs"] if not EIC else ["cs", "ecs", "cs2", "nuc"]
+#     for s in stems:
+#         loaded_model = np.loadtxt(
+#             BASE_PATH + DATA_FOLDER + "/" + name_stem + "_" + s + ".dat", delimiter=" "
+#         )
+#         model_logv = loaded_model[:, 0]
+#         model_logvFv = loaded_model[:, 2]
+#         current_logv, current_logvFv, current_vFv = logv, logvFv, vFv
 
-        new_lower = np.where(model_logv < logv[0])[0]
-        new_higher = np.where(model_logv > logv[-1])[0]
-        logv = np.concatenate(
-            (model_logv[new_lower], current_logv, model_logv[new_higher])
-        )
-        logvFv = np.concatenate(
-            (model_logvFv[new_lower], current_logvFv, model_logvFv[new_higher])
-        )
-        vFv = np.power(10, logvFv)
+#         new_lower = np.where(model_logv < logv[0])[0]
+#         new_higher = np.where(model_logv > logv[-1])[0]
+#         logv = np.concatenate(
+#             (model_logv[new_lower], current_logv, model_logv[new_higher])
+#         )
+#         logvFv = np.concatenate(
+#             (model_logvFv[new_lower], current_logvFv, model_logvFv[new_higher])
+#         )
+#         vFv = np.power(10, logvFv)
 
-        overlap_start = np.where(logv >= max(model_logv[0], current_logv[0]))[0][0]
-        overlap_end = np.where(logv <= min(model_logv[-1], current_logv[-1]))[0][-1]
+#         overlap_start = np.where(logv >= max(model_logv[0], current_logv[0]))[0][0]
+#         overlap_end = np.where(logv <= min(model_logv[-1], current_logv[-1]))[0][-1]
 
-        interpolation = interpolate.interp1d(model_logv, np.power(10, model_logvFv))
+#         interpolation = interpolate.interp1d(model_logv, np.power(10, model_logvFv))
 
-        new_vFv = np.concatenate(
-            (
-                np.zeros(overlap_start),
-                interpolation(logv[overlap_start : overlap_end + 1]),
-                np.zeros(len(logv) - overlap_end - 1),
-            )
-        )
+#         new_vFv = np.concatenate(
+#             (
+#                 np.zeros(overlap_start),
+#                 interpolation(logv[overlap_start : overlap_end + 1]),
+#                 np.zeros(len(logv) - overlap_end - 1),
+#             )
+#         )
 
-        vFv = vFv + new_vFv
-        logvFv = np.log10(vFv)
-    return logv, logvFv, np.power(10, logv), vFv
+#         vFv = vFv + new_vFv
+#         logvFv = np.log10(vFv)
+#     return logv, logvFv, np.power(10, logv), vFv
 
 
-def log_prior(params):
-    """
-    This function calculates the log prior probability for a given set of parameters.
 
-    Args:
-        params (tuple): A tuple containing the following parameters:
-            - delta (float): The value of delta.
-            - K (float): The value of K.
-            - n1 (float): The value of n1.
-            - n2 (float): The value of n2.
-            - gamma_min (float): The value of gamma_min.
-            - gamma_max (float): The value of gamma_max.
-            - gamma_break (float): The value of gamma_break.
-            - B (float): The value of B.
-            - R (float): The value of R.
-            - other_params (tuple): Optional additional parameters.
+# def make_model(params, name_stem="run"):
+#     """
+#     This function builds a model based on the provided parameters and name stem. 
+#     It converts the parameters to logarithmic values where necessary. 
+    
+#     new:
+#     The model is built by running the c++ function  bj_core.main_swig() that returns a single flat 1D array of all components
+#     outputs (log(nu), log(nuFnu)).
+#     Each cemission component is then retrived by slicing this array.
+#     old:
+#     executing a command using subprocess.run() and the output is saved to a file. 
+#     The logarithmic wavelength and flux values are then extracted from the file and converted to linear values. 
+    
+#     Additional components are added to the model based on the name stem. Lastly, 
+#     the built model is interpolated and combined with the existing model.
 
-    Returns:
-        float: The log prior value. If any of the parameters violate the constraints, it returns negative infinity (-inf). Otherwise, it returns 0.
+#     :param params: The parameters for building the model.
+#     :type params: list[float]
+#     :param name_stem: The prefix for the output file names.
+#     :type name_stem: str
+#     :return: The logarithmic wavelength values, logarithmic flux values, linear wavelength values, and linear flux values.
+#     :rtype: tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]
 
-    :param params: The input parameters to calculate the log prior probability.
-    :type params: tuple
+#     A tuple containing the following elements:
+#         - logv (float[]): The logarithm of the frequency values.
+#         - logvFv (float[]): The logarithm of the flux values.
+#         - v (float[]): The frequency values.
+#         - vFv (float[]): The flux values.
 
-    :return: The log prior probability.
-    :rtype: float
-    """
-    delta, K, n1, n2, gamma_min, gamma_max, gamma_break, B, R, *other_params = params
-    if (
-        n1 > n2
-        or gamma_min > gamma_max
-        or gamma_break < gamma_min
-        or gamma_break > gamma_max
-    ):
-        return -np.inf
-    # testing if between min and max
-    for i in range(len(params)):
-        # gamma break is solely constrained by gamma_min and gamma_max
-        if i != 6 and (param_min_vals[i] > params[i] or param_max_vals[i] < params[i]):
-            return -np.inf
-    if use_variability:
-        tau_var = tau * 60 * 60  # to seconds
-        c = 2.997924 * 1.0e10
-        R = np.power(10, R)
-        if tau_var < (1 + redshift) / c * R / delta:
-            return -np.inf
-    return 0
+#     .. note:: This implementation uses subprocess.popen and should be rewritten in the future with bj_core.py methods.
+#     """
+#     # convert to log
+#     # TODO rewrite this entire method using bj_core methods and without building a command string.
+#     params = params * 1.0
+#     for i in range(len(params)):
+#         if PARAM_IS_LOG[i]:
+#             params[i] = np.power(10, params[i])
+#     if not EIC:
+#         command = (
+#             settings_and_transformation
+#             + [str(val) for val in params]
+#             + constant_and_numerical[:-1]
+#             + [name_stem]
+#         )
+#     else:
+#         command = (
+#             settings_and_transformation
+#             + [str(val) for val in params[:9]]
+#             + constant_and_numerical[:2]
+#             + [str(params[-1])]
+#         )
+#         command = command + [
+#             str(params[9]),
+#             "2.0e+4",
+#             str(params[10]),
+#             str(params[11]),
+#             "5.5e+20",
+#             "9.0e-5",
+#         ]  # EIC components
+#         command = command + constant_and_numerical[3:-1] + [name_stem]
+#     subprocess.run(
+#         [BASE_PATH + EXECUTABLE, *command],
+#         stderr=open(os.devnull, "wb"),
+#         stdout=open(os.devnull, "wb"),
+#     )
+#     #New method, without subprocess run:
+#     #change into strings
+#     list_params = list((map(str, params))) + constant_and_numerical[:-1]
+#     aa = bj_core.main_swig(*list_params, 3, "/home/olivier/Bjet_MCMC_root/Bjet_MCMC/sed_calculations", name_stem)
+
+#     loaded_model = np.loadtxt(
+#         BASE_PATH + DATA_FOLDER + "/" + name_stem + "_ss.dat", delimiter=" "
+#     )
+#     logv = loaded_model[:, 0]
+#     logvFv = loaded_model[:, 2]
+#     vFv = np.power(10, logvFv)
+
+#     stems = ["cs"] if not EIC else ["cs", "ecs", "cs2", "nuc"]
+#     for s in stems:
+#         loaded_model = np.loadtxt(
+#             BASE_PATH + DATA_FOLDER + "/" + name_stem + "_" + s + ".dat", delimiter=" "
+#         )
+
+#         #New method
+#         if s == "cs":
+#             NU_DIM = 99
+#             n_components = 2
+#             full_size = int(NU_DIM*n_components)
+            
+#             p = (ctypes.c_double * full_size).from_address(int(aa))
+#             p = list(p)
+#             #print(p)
+#             # #this work for 1D array
+#             start = 0
+#             stop = NU_DIM
+#             SSC = [0]*2
+#             for i in range(n_components):
+#                 SSC[i] = p[start:stop+start]
+#                 start += NU_DIM
+#                 #print(SSC[i])
+                
+#             #remove indexes with 0 flux
+#             while 0 in SSC[1]:
+#                 tmp = SSC[1].index(0)
+#                 del SSC[1][tmp]
+#                 del SSC[0][tmp]
+#             model_logv = SSC[0]
+#             model_logvFv = SSC[1]
+#             #end new method
+            
+#         else:
+#             model_logv = loaded_model[:, 0]
+#             model_logvFv = loaded_model[:, 2]
+        
+#         current_logv, current_logvFv, current_vFv = logv, logvFv, vFv
+
+#         new_lower = np.where(model_logv < logv[0])[0]
+#         new_higher = np.where(model_logv > logv[-1])[0]
+#         logv = np.concatenate(
+#             (model_logv[new_lower], current_logv, model_logv[new_higher])
+#         )
+#         logvFv = np.concatenate(
+#             (model_logvFv[new_lower], current_logvFv, model_logvFv[new_higher])
+#         )
+#         vFv = np.power(10, logvFv)
+
+#         overlap_start = np.where(logv >= max(model_logv[0], current_logv[0]))[0][0]
+#         overlap_end = np.where(logv <= min(model_logv[-1], current_logv[-1]))[0][-1]
+
+#         interpolation = interpolate.interp1d(model_logv, np.power(10, model_logvFv))
+
+#         new_vFv = np.concatenate(
+#             (
+#                 np.zeros(overlap_start),
+#                 interpolation(logv[overlap_start : overlap_end + 1]),
+#                 np.zeros(len(logv) - overlap_end - 1),
+#             )
+#         )
+
+#         vFv = vFv + new_vFv
+#         logvFv = np.log10(vFv)
+#     return logv, logvFv, np.power(10, logv), vFv
+
+
+# def log_prior(params):
+#     """
+#     This function calculates the log prior probability for a given set of parameters.
+
+#     Args:
+#         params (tuple): A tuple containing the following parameters:
+#             - delta (float): The value of delta.
+#             - K (float): The value of K.
+#             - n1 (float): The value of n1.
+#             - n2 (float): The value of n2.
+#             - gamma_min (float): The value of gamma_min.
+#             - gamma_max (float): The value of gamma_max.
+#             - gamma_break (float): The value of gamma_break.
+#             - B (float): The value of B.
+#             - R (float): The value of R.
+#             - other_params (tuple): Optional additional parameters.
+
+#     Returns:
+#         float: The log prior value. If any of the parameters violate the constraints, it returns negative infinity (-inf). Otherwise, it returns 0.
+
+#     :param params: The input parameters to calculate the log prior probability.
+#     :type params: tuple
+
+#     :return: The log prior probability.
+#     :rtype: float
+#     """
+#     delta, K, n1, n2, gamma_min, gamma_max, gamma_break, B, R, *other_params = params
+#     if (
+#         n1 > n2
+#         or gamma_min > gamma_max
+#         or gamma_break < gamma_min
+#         or gamma_break > gamma_max
+#     ):
+#         return -np.inf
+#     # testing if between min and max
+#     for i in range(len(params)):
+#         # gamma break is solely constrained by gamma_min and gamma_max
+#         if i != 6 and (param_min_vals[i] > params[i] or param_max_vals[i] < params[i]):
+#             return -np.inf
+#     if use_variability:
+#         tau_var = tau * 60 * 60  # to seconds
+#         c = 2.997924 * 1.0e10
+#         R = np.power(10, R)
+#         if tau_var < (1 + redshift) / c * R / delta:
+#             return -np.inf
+#     return 0
 
 
 def random_params():
@@ -268,74 +414,74 @@ def random_params():
     """
     parameter_size = param_max_vals - param_min_vals
     parameters = param_min_vals + parameter_size * np.random.rand(DIM)
-    while not np.isfinite(log_prior(parameters)):
+    while not np.isfinite(blazar_utils.log_prior(parameters)):
         parameters = param_min_vals + parameter_size * np.random.rand(DIM)
     return parameters
 
 
-def log_prob(params):
-    """
+# def log_prob(params):
+#     """
 
-    This function calculates the log probability for a given set of parameters.
+#     This function calculates the log probability for a given set of parameters.
 
-    The array should contain the following elements in order:
-        - **delta**: A float representing a prior value
-        - **K**: An integer representing a prior value
-        - **n1**: An integer representing a prior value
-        - **n2**: An integer representing a prior value
-        - **gamma_min**: A float representing a prior value
-        - **gamma_max**: A float representing a prior value
-        - **gamma_break**: A float representing a prior value
-        - **B**: A float representing a prior value
-        - **R**: A float representing a prior value
-        - **\*other_params**: Additional parameters (optional)
+#     The array should contain the following elements in order:
+#         - **delta**: A float representing a prior value
+#         - **K**: An integer representing a prior value
+#         - **n1**: An integer representing a prior value
+#         - **n2**: An integer representing a prior value
+#         - **gamma_min**: A float representing a prior value
+#         - **gamma_max**: A float representing a prior value
+#         - **gamma_break**: A float representing a prior value
+#         - **B**: A float representing a prior value
+#         - **R**: A float representing a prior value
+#         - **\*other_params**: Additional parameters (optional)
 
-    :param params: A list of parameters.
-    :type params: list
-    :return: The log probability for the given parameters. It returns -inf if any of the following conditions are met:
+#     :param params: A list of parameters.
+#     :type params: list
+#     :return: The log probability for the given parameters. It returns -inf if any of the following conditions are met:
 
-        - **n1 > n2**
-        - **gamma_min > gamma_max**
-        - **gamma_break < gamma_min**
-        - **gamma_break > gamma_max**
-        - Any parameter falls outside the specified range (param_min_vals and param_max_vals)
+#         - **n1 > n2**
+#         - **gamma_min > gamma_max**
+#         - **gamma_break < gamma_min**
+#         - **gamma_break > gamma_max**
+#         - Any parameter falls outside the specified range (param_min_vals and param_max_vals)
 
-    :rtype: float
-    """
-    name_stem = "run_" + str(random.getrandbits(60))
+#     :rtype: float
+#     """
+#     name_stem = "run_" + str(random.getrandbits(60))
 
-    # prior
-    delta, K, n1, n2, gamma_min, gamma_max, gamma_break, B, R, *other_params = params
-    if (
-        n1 > n2
-        or gamma_min > gamma_max
-        or gamma_break < gamma_min
-        or gamma_break > gamma_max
-    ):
-        return -np.inf
-    # testing if between min and max
-    for i in range(len(params)):
-        # gamma break is solely constrained by gamma_min and gamma_max
-        if i != 6 and (param_min_vals[i] > params[i] or param_max_vals[i] < params[i]):
-            return -np.inf
-    if use_variability:
-        tau_var = tau * 60 * 60  # to seconds
-        c = 2.997924 * 1.0e10
-        R = np.power(10, R)
-        if tau_var < (1 + redshift) / c * R / delta:
-            return -np.inf
+#     # prior
+#     delta, K, n1, n2, gamma_min, gamma_max, gamma_break, B, R, *other_params = params
+#     if (
+#         n1 > n2
+#         or gamma_min > gamma_max
+#         or gamma_break < gamma_min
+#         or gamma_break > gamma_max
+#     ):
+#         return -np.inf
+#     # testing if between min and max
+#     for i in range(len(params)):
+#         # gamma break is solely constrained by gamma_min and gamma_max
+#         if i != 6 and (param_min_vals[i] > params[i] or param_max_vals[i] < params[i]):
+#             return -np.inf
+#     if use_variability:
+#         tau_var = tau * 60 * 60  # to seconds
+#         c = 2.997924 * 1.0e10
+#         R = np.power(10, R)
+#         if tau_var < (1 + redshift) / c * R / delta:
+#             return -np.inf
 
-    model = make_model(params, name_stem)
+#     model = make_model(params, name_stem)
 
-    # calculate chi squared
-    func = interpolate.interp1d(model[0], model[1], fill_value="extrapolate")
-    chi_sq = np.sum(
-        ((vFv_data - np.power(10, func(np.log10(v_data)))) / err_data) ** 2.0
-    )
-    for f in glob.glob(BASE_PATH + DATA_FOLDER + "/" + name_stem + "_*"):
-        os.remove(f)
+#     # calculate chi squared
+#     func = interpolate.interp1d(model[0], model[1], fill_value="extrapolate")
+#     chi_sq = np.sum(
+#         ((vFv_data - np.power(10, func(np.log10(v_data)))) / err_data) ** 2.0
+#     )
+#     for f in glob.glob(BASE_PATH + DATA_FOLDER + "/" + name_stem + "_*"):
+#         os.remove(f)
 
-    return -0.5 * chi_sq
+#     return -0.5 * chi_sq
 
 
 def mcmc(p0=None):

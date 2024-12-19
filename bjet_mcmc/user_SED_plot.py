@@ -63,8 +63,9 @@ def e_to_v(val):
 
 if __name__ == "__main__":
     backend_file = input("Enter relative path to backend file: ")
-    # example: local_results/J1010/J1010_2023-07-04-23:03:45/backend.h5
-    # local_results/J1010_2024-08-12-16:47:25/backend.h5
+    # example: local_results/1ES2344_SED_15pre_v10_Connor/backend.h5
+    # example: local_results/PKS_1222_eic_2024-10-11-23:36:12/backend.h5
+    #local_results/mkn421_fix_params_2024-10-16-11:45:39/backend.h5
     folder = backend_file[: backend_file.rfind("/")]
 
     if os.path.exists(FOLDER_PATH + folder + "/info.txt"):
@@ -109,13 +110,17 @@ if __name__ == "__main__":
     indices_within_1sigma = blazar_report.get_indices_within_1sigma(
         flat_log_probs, eic=eic, ndim=modelProperties(eic).NUM_DIM
     )
+    #test
+    # for i in range(len(indices_within_1sigma)):
+    #     n = indices_within_1sigma[i]
+    #     print("chi2 within 1 sigma: ",-2 * flat_log_probs[n])
 
     name_stem = "plot"
     command_params_1, command_params_2 = blazar_model.command_line_sub_strings(
         name_stem=name_stem, redshift=redshift, prev_files=False, eic=eic
     )
     command_params_2[3] = "99"  # number of points used to make SED
-
+    
     best_model = blazar_model.make_model(
         best_params,
         name_stem=name_stem,
@@ -123,8 +128,7 @@ if __name__ == "__main__":
         command_params_1=command_params_1,
         command_params_2=command_params_2,
         eic=eic,
-        fixed_params=fixed_params,
-    )
+        fixed_params=fixed_params)
 
     min_per_param, max_per_param = blazar_plots.get_params_1sigma_ranges(
         flat_samples, indices_within_1sigma, eic=eic, fixed_params=fixed_params
@@ -173,6 +177,8 @@ if __name__ == "__main__":
         command_params_2=command_params_2,
         eic=eic,
         fixed_params=fixed_params,
+        verbose=True,
+        folder=folder
     )
 
     synchrotron_model = np.loadtxt(
@@ -472,7 +478,7 @@ if __name__ == "__main__":
         ax1.minorticks_on()
 
     plt.tight_layout()
-    # plt.show()
+    #plt.show()
     plt.savefig(BASE_PATH + folder + "/user_plot_SED.svg")
 
     if Full_outputs:

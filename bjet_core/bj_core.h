@@ -17,7 +17,7 @@ namespace bj_core02 {
 
 
 // FLAGS
-    const int PRINT = 0; //!< 1=True, 0=False
+    //extern int PRINT = 0; //!< 1=True, 0=False
     const int DEBUG = 0; //!< 1=True, 0=False
 //#warning "DEUBG flag enabled"
 
@@ -165,6 +165,8 @@ namespace bj_core02 {
     int run_models(); // moved prev code from main here
     int load_params(char* name);
     int load_params_from_list(char** list, int model_type, int starting_index, int list_length);
+    //double* main_swig(char* p1, char* p2, char* p3, char* p4, char* p5, char* p6, char* p7, char* p8, char* p9, char* p10, char* p11, char* p12, char* p13, char* p14, char* p15,char* p16, char* p17,char* p18, int model_type, char *directory, char *pref);
+    double *main_swig(char *allparams, int model_type, char *directory, char *pref);
 };
 
 #endif //BLAZARS_MCMC_BJ02_COPY_H

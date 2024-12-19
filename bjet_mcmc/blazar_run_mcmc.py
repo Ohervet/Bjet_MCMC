@@ -41,6 +41,9 @@ from bjet_mcmc import blazar_initialize
 
 from bjet_mcmc.blazar_properties import *
 
+#this line is a recommendation from emcee 3.2.1 to avoid extra numpy parallelization processes
+os.environ["OMP_NUM_THREADS"] = "1"
+
 __all__ = ["run_mcmc", "mcmc"]
 
 
@@ -110,7 +113,7 @@ def run_mcmc(
         if "cores" not in configs:
             pool = multiprocessing.Pool()
         else:
-            pool = multiprocessing.Pool(processes=configs["cores"])
+           pool = multiprocessing.Pool(processes=configs["cores"])
     else:
         pool = None
     backend = emcee.backends.HDFBackend(BASE_PATH + backend_file)
@@ -330,6 +333,8 @@ def mcmc(
         if folder_label is None:
             folder_label = "run"
         directory = RESULTS_FOLDER + "/" + folder_label + "_" + date_string
+        #Just for debug, need to be removed afterward!
+        #directory = RESULTS_FOLDER + "/test_debug"
         os.mkdir(BASE_PATH + directory)
 
     backend = directory + "/backend.h5"

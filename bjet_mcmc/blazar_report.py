@@ -89,9 +89,7 @@ def get_indices_within_1sigma(
     min_chi_squared_index = np.argmin(chi_squared)
     min_chi_squared = chi_squared[min_chi_squared_index]
     delta_chi_squared = stats.chi2.ppf(1 - alpha, ndim)  # modelProperties(eic).NUM_DIM)
-    indices_within_1sigma = np.where(chi_squared < min_chi_squared + delta_chi_squared)[
-        0
-    ]
+    indices_within_1sigma = np.where(chi_squared < min_chi_squared + delta_chi_squared)[0]
     return indices_within_1sigma
 
 

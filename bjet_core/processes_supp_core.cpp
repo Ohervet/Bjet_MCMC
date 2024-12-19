@@ -3554,6 +3554,8 @@ double piondecay_ahaprecise_electron(double energy)
  *
  * @return void
  */
+ 
+ /*
 void energetics(){
   double t,t1,t2,step,per_decade,interval,elecEnergyDensity,spec_e,number_e,power_e,gamma,magEnergyDensity,nbElectron,eB,meanElectronEnergy,totalElectronEnergy,spec_p,number_p,power_p,Volume,energy;
   per_decade=1.0e+03;
@@ -3639,3 +3641,4 @@ void energetics(){
 
   return;
 }
+*/
