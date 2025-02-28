@@ -38,6 +38,7 @@ import subprocess
 from matplotlib import pyplot as plt
 from scipy import interpolate
 from scipy import stats
+from scipy.optimize import curve_fit
 
 from bjet_mcmc import blazar_model
 from bjet_mcmc.blazar_properties import *
@@ -633,6 +634,49 @@ def plot_chain(
     if show:
         plt.show()
 
+# x values for the data
+# y values for the data
+# params to pass the fitting function
+# names to express the parameters
+# fit_type: optional string to use one of the built in fitting functions
+# fit_func: optional callable to pass a custom fitting function
+def create_curve_fit(x_data, y_data, params, param_names=[], 
+                     fit_type="", fit_func=None):
+    func = None
+
+    # fitted y_vals, params, params_string
+    ret = []
+
+    # fitting functions should take, x, and then a list of parameters
+    def exponential_decay(x, *p):
+        return p[0] * np.exp(-x/p[1]) + p[2]
+
+    if fit_func is not None:
+        func = fit_func
+    elif fit_type == "" or fit_type=="exponential_decay":
+        func = exponential_decay
+    else:
+        ret = [np.zeros(len(x_data)), np.zeros(len(params)), ""]
+        return ret
+
+    popt, pcov = curve_fit(func, x_data, y_data, p0=params)
+
+    fitted_curve = exponential_decay(x_data, *popt)
+
+    params_str=""
+    for i in range(len(popt)):
+        pname = ""
+        if (i < len(param_names)):
+            pname = param_names[i]
+        else:
+            pname = f"P{i}"
+        params_str+=f"{pname}: {popt[i]:.3e}\n"
+
+    ret = [fitted_curve, popt, params_str]
+    return ret
+
+
+
 
 def plot_chi_squared(
     values,
@@ -685,13 +729,25 @@ def plot_chi_squared(
     else:
         chi_sq = 1.0 * values
 
+
+
     if plot_type == "med":
         chi_sq = np.median(chi_sq, axis=1)
         if title is None and not no_title:
             title = r"Median $\chi^2$ by Step"
+        x_data = np.arange(discard_number, discard_number+len(chi_sq))
         plt.plot(
-            np.arange(discard_number, discard_number + len(chi_sq)), chi_sq[:], fmt
+            x_data, chi_sq[:], fmt
         )
+        fit = create_curve_fit(x_data, chi_sq, 
+                               params=[chi_sq[0], 1e4, 100],
+                               param_names=["N0", "tau", "c"],
+                               fit_type="exponential_decay",
+                               )
+        plt.plot(x_data, fit[0], 'r-')
+        plt.figtext(0.89, 0.80, fit[2],
+                    horizontalalignment="right", verticalalignment="top")
+
     elif plot_type == "best":
         chi_sq = np.min(chi_sq, axis=1)
         if title is None and not no_title:
