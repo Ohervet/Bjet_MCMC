@@ -641,8 +641,9 @@ def plot_chain(
 # fit_type: optional string to use one of the built in fitting functions
 # fit_func: optional callable to pass a custom fitting function
 def create_curve_fit(x_data, y_data, params, param_names=[], 
-                     fit_type="", fit_func=None):
+                     fit_type="", fit_func=None, fit_func_tex=None):
     func = None
+    func_tex = None
 
     # fitted y_vals, params, params_string
     ret = []
@@ -659,6 +660,15 @@ def create_curve_fit(x_data, y_data, params, param_names=[],
         ret = [np.zeros(len(x_data)), np.zeros(len(params)), ""]
         return ret
 
+    if fit_func_tex is not None:
+        func_tex = fit_func_tex
+    elif fit_type=="exponential_decay":
+        func_tex = r"$N_0e^{-x/\tau}+c$"
+    else:
+        func_tex = ""
+
+
+
     popt, pcov = curve_fit(func, x_data, y_data, p0=params)
 
     fitted_curve = exponential_decay(x_data, *popt)
@@ -672,7 +682,7 @@ def create_curve_fit(x_data, y_data, params, param_names=[],
             pname = f"P{i}"
         params_str+=f"{pname}: {popt[i]:.3e}\n"
 
-    ret = [fitted_curve, popt, params_str]
+    ret = [fitted_curve, popt, params_str, func_tex]
     return ret
 
 
@@ -746,6 +756,8 @@ def plot_chi_squared(
                                )
         plt.plot(x_data, fit[0], 'r-')
         plt.figtext(0.89, 0.80, fit[2],
+                    horizontalalignment="right", verticalalignment="top")
+        plt.figtext(0.89, 0.855, fit[3], size="large",
                     horizontalalignment="right", verticalalignment="top")
 
     elif plot_type == "best":
