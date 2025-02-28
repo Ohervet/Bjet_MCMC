@@ -470,6 +470,7 @@ def get_random_parameters(
             tau_var=tau_var,
             use_variability=use_variability,
             fixed_params=fixed_params,
+            eic=eic
         )
     ):
         parameters = param_min_vals + parameter_size * np.random.rand(dim)
@@ -1063,6 +1064,7 @@ def log_probability(
             redshift=redshift,
             tau_var=tau_var,
             use_variability=use_variability,
+            eic=eic
         )
     ):
         return -np.inf
