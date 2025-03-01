@@ -10,6 +10,7 @@ All standard outputs of Bjet_MCMC can be re-created with the option Full_outputs
 
 """
 import os
+import sys
 import emcee
 import numpy as np
 import matplotlib.pyplot as plt
@@ -62,7 +63,14 @@ def e_to_v(val):
 
 
 if __name__ == "__main__":
-    backend_file = input("Enter relative path to backend file: ")
+    backend_file = ""
+    if len(sys.argv) > 2:
+        print("too many arguments. only pass the relative path to the .h5 file")
+    elif len(sys.argv) == 2:
+        backend_file = sys.argv[1]
+    else:
+        backend_file = input("Enter relative path to backend file: ")
+
     # example: local_results/J1010/J1010_2023-07-04-23:03:45/backend.h5
     # local_results/J1010_2024-08-12-16:47:25/backend.h5
     folder = backend_file[: backend_file.rfind("/")]
@@ -96,6 +104,11 @@ if __name__ == "__main__":
         eic=eic, fixed_params=fixed_params
     )
     reader = emcee.backends.HDFBackend(FOLDER_PATH + backend_file)
+
+    # if you get an error about not running with store=true here, it might be 
+    # because the script didn't find you backend.h5 file. Try running 
+    # user_SED from the root Bjet_MCMC directory insted of in 
+    # Bjet_MCMC/bjet_mcmc
     chain = reader.get_chain(discard=discard)
     # all parameters values:
     flat_samples = reader.get_chain(flat=True, discard=discard)

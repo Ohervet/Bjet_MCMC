@@ -442,10 +442,13 @@ def main_cli():
     )
 
     # in case of interrupted process, there may be leftovers in DATA_FOLDER, remove them
-    os.chdir(FOLDER_PATH + DATA_FOLDER)
-    files = [f for f in os.listdir() if f.startswith("run")]
-    for f in files:
-        os.remove(f)
+    ## NOTE: These are commented out by default because they interfere with
+    # running multiple instances of Bjet at the same time, at least on
+    # the ucsc hummingbird cluster
+    # os.chdir(FOLDER_PATH + DATA_FOLDER)
+    # files = [f for f in os.listdir() if f.startswith("run")]
+    # for f in files:
+        # os.remove(f)
 
     if TMP:
         shutil.move(BASE_PATH + results_directory, FOLDER_PATH + results_directory)
