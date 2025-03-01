@@ -751,7 +751,7 @@ def plot_chi_squared(
         )
         fit = create_curve_fit(x_data, chi_sq, 
                                params=[chi_sq[0], 1e4, 100],
-                               param_names=["N0", "tau", "c"],
+                               param_names=[r"$N_0$", r"$\tau$", r"$c$"],
                                fit_type="exponential_decay",
                                )
         plt.plot(x_data, fit[0], 'r-')
