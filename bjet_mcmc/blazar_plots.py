@@ -741,6 +741,7 @@ def plot_chi_squared(
 
 
 
+    chi_squared_decay=None
     if plot_type == "med":
         chi_sq = np.median(chi_sq, axis=1)
         if title is None and not no_title:
@@ -759,6 +760,7 @@ def plot_chi_squared(
                     horizontalalignment="right", verticalalignment="top")
         plt.figtext(0.89, 0.855, fit[3], size="large",
                     horizontalalignment="right", verticalalignment="top")
+        chi_squared_decay=fit[1][1]
 
     elif plot_type == "best":
         chi_sq = np.min(chi_sq, axis=1)
@@ -792,6 +794,8 @@ def plot_chi_squared(
         plt.show()
     if clear_plot and show == False:
         plt.close("Plot_of_chi^2")
+
+    return chi_squared_decay
 
 
 def plot_1sigma(
