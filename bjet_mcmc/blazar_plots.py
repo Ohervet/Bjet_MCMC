@@ -640,7 +640,7 @@ def plot_chain(
 # names to express the parameters
 # fit_type: optional string to use one of the built in fitting functions
 # fit_func: optional callable to pass a custom fitting function
-def create_curve_fit(x_data, y_data, params, param_names=[], 
+def create_curve_fit(x_data, y_data, p0, param_names=[], 
                      fit_type="", fit_func=None, fit_func_tex=None):
     func = None
     func_tex = None
@@ -669,7 +669,7 @@ def create_curve_fit(x_data, y_data, params, param_names=[],
 
 
 
-    popt, pcov = curve_fit(func, x_data, y_data, p0=params)
+    popt, pcov = curve_fit(func, x_data, y_data, p0=p0)
 
     fitted_curve = exponential_decay(x_data, *popt)
 
@@ -750,7 +750,7 @@ def plot_chi_squared(
             x_data, chi_sq[:], fmt
         )
         fit = create_curve_fit(x_data, chi_sq, 
-                               params=[chi_sq[0], 1e4, 100],
+                               p0=[chi_sq[0], len(chi_sq)/10, min(chi_sq)],
                                param_names=[r"$N_0$", r"$\tau$", r"$c$"],
                                fit_type="exponential_decay",
                                )
