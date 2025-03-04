@@ -197,6 +197,7 @@ def make_text_file(
     acceptance_frac=None,
     eic=False,
     fixed_params=None,
+    chi_squared_decay=None,
 ):
     """
     :param output_file: The name of the output file where the text report will be written to.
@@ -253,6 +254,24 @@ def make_text_file(
         flat_chain = data_source.get_chain(flat=True, discard=configs["discard"])
         log_probs = data_source.get_log_prob(flat=True, discard=configs["discard"])
 
+    # save a few of the values that don't get properly reproduced on 
+    # calls to user_SED_plot.py
+    if os.path.exists(BASE_PATH + output_file):
+        with open(BASE_PATH + output_file, "r") as f:
+            lines = f.readlines()
+            if "report description: " not in lines[0]:
+                print(
+                """Info file is missing certain descriptors. You may have run user_SED_plot before this patch, which would have deleted your data. Sorry!
+                """)
+            else:
+                description = lines[0].split(" ")[2].strip()
+                time = lines[1].split(" ")[1].strip()
+                p0_source = lines[2].split(" ")[2].strip()
+                for l in lines:
+                    if "acceptance fraction:" in l:
+                        acceptance_frac = float(l.split(" ")[4])
+
+        
     with open(BASE_PATH + output_file, "w") as f:
         tau = emcee.autocorr.integrated_time(samples, quiet=True)
         maximum_log_prob, best_params = get_best_log_prob_and_params(
@@ -317,6 +336,18 @@ def make_text_file(
         f.write("autocorrelation time: avg = ")
         f.write(str(np.mean(tau)) + " steps")
         f.write("\n\n")
+
+        if chi_squared_decay is not None:
+            ntau = float(configs["n_steps"])/chi_squared_decay
+            if ntau < 5.0:
+                f.write("steps/tau is not large enough! We suggest having enough steps such that steps/tau is AT LEAST 5.0\n")
+            f.write("chi squared convergence: steps/tau = ")
+            f.write(str(configs["n_steps"]))
+            f.write('/')
+            f.write(str(chi_squared_decay))
+            f.write(" = ")
+            f.write(str(ntau))
+            f.write("\n\n")
 
 
 def text_report(
@@ -506,6 +537,7 @@ def save_plots_and_info(
     torus_frac=None,
     verbose=False,
     eic=False,
+    chi_squared_decay=None,
 ):
     """
     :param configs: Dictionary containing various configurations for the analysis.
@@ -641,23 +673,6 @@ def save_plots_and_info(
 
     for f in glob.glob(BASE_PATH + DATA_FOLDER + "/" + name_stem + "_*"):
         os.remove(f)
-    make_text_file(
-        folder + "/info.txt",
-        configs,
-        len(data[0]),
-        backend_file=backend_file,
-        reader=reader,
-        sampler=sampler,
-        use_sampler=use_sampler,
-        samples=samples,
-        use_samples=use_samples,
-        description=description,
-        time=time,
-        p0_source=p0_source,
-        acceptance_frac=acceptance_frac,
-        eic=eic,
-        fixed_params=configs["fixed_params"],
-    )
     blazar_plots.plot_model_and_data(
         model,
         configs["data_file"],
@@ -713,7 +728,7 @@ def save_plots_and_info(
     # This output is not easy to read, so not fully relevant. removed for now
     # blazar_plots.plot_chain(chain, file_name=(folder + "/plot_of_chain.jpeg"), save=True, show=False,
     #                         eic=eic)  # too much stuff for svg
-    blazar_plots.plot_chi_squared(
+    chi_squared_decay=blazar_plots.plot_chi_squared(
         log_probs,
         configs["discard"],
         plot_type="med",
@@ -747,6 +762,24 @@ def save_plots_and_info(
         show=False,
         eic=eic,
         redshift=redshift,
+    )
+    make_text_file(
+        folder + "/info.txt",
+        configs,
+        len(data[0]),
+        backend_file=backend_file,
+        reader=reader,
+        sampler=sampler,
+        use_sampler=use_sampler,
+        samples=samples,
+        use_samples=use_samples,
+        description=description,
+        time=time,
+        p0_source=p0_source,
+        acceptance_frac=acceptance_frac,
+        eic=eic,
+        fixed_params=configs["fixed_params"],
+        chi_squared_decay=chi_squared_decay,
     )
 
 
