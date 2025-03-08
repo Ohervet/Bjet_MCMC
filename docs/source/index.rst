@@ -34,4 +34,6 @@ Contents
    data_format
    outputs
    bjet_core
+   optimization
    api/index
+
