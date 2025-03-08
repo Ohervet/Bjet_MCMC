@@ -205,10 +205,10 @@ double I_JET	       = 0.0;
 
 // VECTORS
 
-    double NU[NU_MAX + 1];
-    double I_rad[NU_MAX + 1];
-    double I_rad1st[NU_MAX + 1]; //!< for 2nd order SSC
-    double I_CMB[NU_MAX + 1];
+    double NU[NU_DIM_MAX + 1];
+    double I_rad[NU_DIM_MAX + 1];
+    double I_rad1st[NU_DIM_MAX + 1]; //!< for 2nd order SSC
+    double I_CMB[NU_DIM_MAX + 1];
 
     double X_VAL[SL_DIM_MAX + 2];
     double Y_VAL[SL_DIM_MAX + 2];
@@ -227,29 +227,29 @@ double I_JET	       = 0.0;
     double L_BB_nuc[NU_DIM_MAX + 1];
     double I_eic_jet[NU_DIM_MAX + 1];
 
-    double I_rad_syn[NU_MAX + 1];
-    double I_rad_syn2[NU_MAX + 1];
-    double I_rad_com[NU_MAX + 1];
-    double I_rad2nd[NU_MAX + 1];
-    double I_rad_ext[NU_MAX + 1];
-    double I_rad_ext_Int[NU_MAX + 1];
-    double I_rad_ext1[NU_MAX + 1];
-    double I_com_ext[NU_MAX + 1];
-    double I_com_ext1[NU_MAX + 1];
-    double I_com_disc[NU_MAX + 1];
-    double I_rad_ext_s[NU_MAX + 1];
+    double I_rad_syn[NU_DIM_MAX + 1];
+    double I_rad_syn2[NU_DIM_MAX + 1];
+    double I_rad_com[NU_DIM_MAX + 1];
+    double I_rad2nd[NU_DIM_MAX + 1];
+    double I_rad_ext[NU_DIM_MAX + 1];
+    double I_rad_ext_Int[NU_DIM_MAX + 1];
+    double I_rad_ext1[NU_DIM_MAX + 1];
+    double I_com_ext[NU_DIM_MAX + 1];
+    double I_com_ext1[NU_DIM_MAX + 1];
+    double I_com_disc[NU_DIM_MAX + 1];
+    double I_rad_ext_s[NU_DIM_MAX + 1];
 
     double I_rad_ext_D[200 + 1];
     double D[200 + 1];
 
-    double C_e[NU_MAX + 1];
-    double C_a[NU_MAX + 1];
-    double C_e1[NU_MAX + 1];
-    double C_a1[NU_MAX + 1];
+    double C_e[NU_DIM_MAX + 1];
+    double C_a[NU_DIM_MAX + 1];
+    double C_e1[NU_DIM_MAX + 1];
+    double C_a1[NU_DIM_MAX + 1];
 
-    double F_IC_disk[NU_MAX + 1];
-    double F_IC_tot[NU_MAX + 1];
-    double NU_IC_disk[NU_MAX + 1];
+    double F_IC_disk[NU_DIM_MAX + 1];
+    double F_IC_tot[NU_DIM_MAX + 1];
+    double NU_IC_disk[NU_DIM_MAX + 1];
 
 
 
@@ -3217,9 +3217,11 @@ double N_e_Jet(double gg) {
 
         // transformation to observer frame
         for (i = 1; i <= NU_DIM; i++) {
-          nu_tmp = FreqTransS2O(NU[i] * DOP_B_J * LOR_B_J, DOP_B / DOP_B_J, z);
+          //nu_tmp = FreqTransS2O(NU[i] * DOP_B_J * LOR_B_J, DOP_B / DOP_B_J, z);
+          nu_tmp = FreqTransS2O(NU[i] * DOP_B_J, DOP_B / DOP_B_J, z);
           I_com = I_eic_jet[i];
-          fx_tmp = M_PI * ((R_src * R_src) / (D_L * D_L)) * (1.0 + z) * (pow(DOP_B, 3.0) / pow((DOP_B_J), 3.0)) * I_com;
+          //fx_tmp = M_PI * ((R_src * R_src) / (D_L * D_L)) * (1.0 + z) * (pow(DOP_B, 3.0) / pow((DOP_B_J), 3.0)) * I_com;
+          fx_tmp = Intens2Flux(I_com, R_src, DOP_B, z, H_0) / pow((DOP_B_J), 3.0);
 
           if (IIR_level == 1) {
             if (EBLFLAG == 0) {
