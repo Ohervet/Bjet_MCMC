@@ -1,6 +1,6 @@
 [project]
 name = "Bjet-MCMC" #This is the name of the package to install/uninstall with pip
-version = "1.0.0"
+version = "1.1.0"
 description = "BJet-MCMC Python module"
 readme = "README.md"
 classifiers = ["Programming Language :: Python :: 3",
