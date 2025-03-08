@@ -746,7 +746,7 @@ def log_prior(
     if eic:
         # the intrinsic jet half opening angle cannot be more than 5deg. (e.g. Hervet 2016)
         opening_angle = (
-            np.arctan(np.power(10, params[8]) / np.power(10, params[12])) * 180 / pi
+            np.arctan(np.power(10, params[8]) / np.power(10, params[12])) * 180 / np.pi
         )
         if opening_angle > 5:
             return -np.inf
