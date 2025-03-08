@@ -9,7 +9,7 @@ This tool is built as an MCMC python wrapper around the C++ code Bjet.
 
 The original contributors of Bjet_MCMC are: Olivier Hervet, Caitlin Johnson, and Adrian Youngquist
 
-Other contributor: Deivid Ribeiro
+Other contributors: Deivid Ribeiro, Aaron Danen
 
 License
 -------
