@@ -17,6 +17,12 @@ Ensure all dependencies are installed, see :doc:`dependencies`. Recommended: cre
 
    $ conda env create -f environment.yml
 
+If you use an updated version of Bjet_MCMC from a previously installed version, you might need to update your conda environment, with
+
+.. code-block:: console 
+
+   $ conda env update --file environment.yml  --prune
+
 Then load your environment with
 
 .. code-block:: console
