@@ -21,7 +21,7 @@ If you use an updated version of Bjet_MCMC from a previously installed version, 
 
 .. code-block:: console 
 
-   $ conda env update --file environment.yml  --prune
+   $ conda env update -f environment.yml  --prune
 
 Then load your environment with
 
