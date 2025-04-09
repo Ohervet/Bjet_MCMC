@@ -34,3 +34,37 @@ On the y-axis, :math:`\tau` is the time constant of the exponential decay fitted
 Decreasing the number of steps and increasing the number of walkers reduces 
 the computation time but risks a failure to converge.
 
+OpenHPC - Slurm
+---------------
+Bjet_MCMC benefits greatly from running on multiple parallel CPUs, and takes 
+hours to run. Users may opt to utilize a computing cluster to decrease runtime
+and free up their PC. Below is a script that can be used to submit Bjet_MCMC
+jobs to the Slurm batch scheduling system used on many compute clusters such
+as UCSC's Hummingbird.
+
+.. code-block:: console
+
+  #!/bin/bash 
+  #SBATCH --job-name=bjet	#Job Name
+  #SBATCH --mail-type=ALL	#What events you want emailed to you (ALL, BEGIN, END, REQUEUE, FAIL)
+  #SBATCH --mail-user=<email>	#Email to send job status. Input your email into <email>
+  #SBATCH -p 128x24       #Name of which partition is being used 128x24
+  #SBATCH --nodes=1       #Number of nodes requested
+  #SBATCH --ntasks=1	#Number of tasks requested
+  #SBATCH --cpus-per-task=24 #Number of CPUs requested. Make sure that cores requested here matches the amount of cores requested in the config file.
+  #SBATCH --output=bjet_%j.out	#Output log. When job runs, output will be written to this file.
+  #SBATCH --error=bjet_%j.err	#Error log. When job runs, error will be written to this file.
+  #SBATCH --mem=10G         #Amount of memory per node
+  #SBATCH --time=5-00:00:00 #the job will be automatically terminated after 5 days if it is still	running
+
+  #Code to run Bjet
+  module load miniconda3/3.12 # load miniconda on the node
+
+  # init conda and activate the bjet-mcmc environment
+  conda init
+  conda activate bjet-mcmc
+
+  # start Bjet_MCMC
+  python3 /absolute/path/to/Bjet_MCMC/bjet_mcmc/blazar_run_mcmc.py
+
+
