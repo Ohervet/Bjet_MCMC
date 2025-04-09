@@ -117,7 +117,7 @@ Science plots
 
 - ``chi_squared_plot_med.svg``
 
- Median of all walker's :math:`\chi^2` at each step.
+ Median of all walker's :math:`\chi^2` at each step. Fitted with exponential decay function.
  e.g.
 
  .. image:: ../figures/chi_squared_plot_med.png
