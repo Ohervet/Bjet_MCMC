@@ -213,6 +213,7 @@ def read_configs(config_file=None, config_string=None, verbose=False):
     attributes = [
         "eic",
         "data_file",
+        "p0",
         "n_steps",
         "n_walkers",
         "discard",
@@ -481,6 +482,82 @@ def get_random_parameters(
 # mu gauss = best params for J1010 for example
 # sig gauss = parameter space /10 (100?)
 
+#need docstring
+def TwoSided_Multivariate_Normal(means, cov_matrix_down, cov_matrix_up):
+    parameter_samples_down = np.random.multivariate_normal(means, cov_matrix_down)
+    parameter_samples_up = np.random.multivariate_normal(means, cov_matrix_up)
+    parameters = parameter_samples_down.copy()
+    diff = means - parameter_samples_down
+    sign = diff > 0
+    # be sure that parameter_samples_up are aways more than the mean
+    # by default from our method parameter_samples_down will always be below the mean
+    parameter_samples_up = means + np.abs(parameter_samples_up - means)
+    # when a projection is below the mean, use parameter_samples_down, when above use parameter_samples_up
+    parameters = (
+        parameter_samples_down * sign + parameter_samples_up * ~sign
+    )
+    return parameters
+
+#function below is very preliminary
+def get_gaussian_parameters(
+    param_file="p0_file.txt",
+    param_min_vals=None,
+    param_max_vals=None,
+    redshift=None,
+    tau_var=None,
+    use_variability=True,
+    eic=False,
+    fixed_params=None,
+):
+    
+    #read from a parameter files that contains 1 sigma boundaries in linear space
+    p0 = ascii.read(param_file)
+    par_name= p0["Parameter"]
+    logpar_name = ["K", "gamma_min", "gamma_max", "gamma_break", "B", "R", "bb_temp", "l_nuc", "tau", "blob_dist"]
+
+    #set some parameters into log10 space
+    for i in range(len(par_name)):
+        if par_name[i] in logpar_name:
+            p0["Best_Value"][i] = np.log10(p0["Best_Value"][i])
+            p0["low_bound"][i] = np.log10(p0["low_bound"][i])
+            p0["up_bound"][i] = np.log10(p0["up_bound"][i])
+
+    # consider asymmetric errors in parameters (two-sided multivariate normal method)
+    means = p0["Best_Value"]
+    params_error_down =  means - p0["low_bound"]
+    params_error_up   =  p0["up_bound"] - means
+    cov_matrix_down = np.diag(params_error_down) ** 2
+    cov_matrix_up = np.diag(params_error_up) ** 2
+    
+    parameters = TwoSided_Multivariate_Normal(means, cov_matrix_down, cov_matrix_up)
+    
+    
+    # ensures valid parameters
+    if param_min_vals is None or param_max_vals is None:
+        default_min_max = min_max_parameters(
+            eic=eic, fixed_params=fixed_params
+        )
+    if param_min_vals is None:
+        param_min_vals = default_min_max[0]
+    if param_max_vals is None:
+        param_max_vals = default_min_max[1]
+
+    while not np.isfinite(
+        log_prior(
+            parameters,
+            param_min_vals,
+            param_max_vals,
+            redshift=redshift,
+            tau_var=tau_var,
+            use_variability=use_variability,
+            fixed_params=fixed_params,
+            eic=eic
+        )
+    ):
+        parameters = TwoSided_Multivariate_Normal(means, cov_matrix_down, cov_matrix_up)
+        
+    return parameters
+
 
 def random_defaults(
     walkers,
@@ -532,6 +609,67 @@ def random_defaults(
                 param_min_vals=param_min_vals,
                 param_max_vals=param_max_vals,
                 alpha2_limits=alpha2_limits,
+                redshift=redshift,
+                tau_var=tau_var,
+                use_variability=use_variability,
+                eic=eic,
+                fixed_params=fixed_params,
+            )
+            for _ in range(walkers)
+        ]
+    )
+
+#docstring & inputs needs to be checked
+#param files needs to be included
+def random_gaussian(
+    walkers,
+    param_min_vals=None,
+    param_max_vals=None,
+    alpha2_limits=None,
+    redshift=None,
+    tau_var=None,
+    use_variability=True,
+    eic=False,
+    fixed_params=None,
+):
+    """
+    Get the values used for the initial values for the MCMC. The defaults are random values in the acceptable range that satisfy the log_prior criteria.
+
+    :param walkers: number of walkers (specifies how many defaults to generate)
+    :type walkers: int
+
+    :param param_min_vals: Minimum values for the parameters. If None, default values will be used. (in the standard order)
+    :type param_min_vals: numpy.array or None
+
+    :param param_max_vals: Maximum values for the parameters. If None, default values will be used. (in the standard order)
+    :type param_max_vals: numpy.array or None
+
+    :param alpha2_limits: Limits for the alpha2 parameter. If None, default values will be used.
+    :type alpha2_limits: tuple or None
+
+    :param redshift: Redshift value. Default is None, so the log_prior function will use the default, which is 0.143 (the value for J1010)
+    :type redshift: float or None
+
+    :param tau_var: Variability value for tau. default is None, so the log_prior function will use the default, which is 24 hours
+    :type tau_var: float or None
+
+    :param use_variability: Flag to indicate whether variability should be used. Default is True.
+    :type use_variability: bool
+
+    :param eic: Flag to indicate whether EIC (Extended Inverted Chirality) should be used. Default is False.
+    :type eic: bool
+
+    :param fixed_params: Values for fixed parameters. If None, default values will be used.
+    :type fixed_params: numpy.array or None
+
+    :return: A numpy array with the random default parameter values for each walker. 2D np array of floats with NUM_DIM rows (the NUM_DIM parameters) and <walkers> rows. default values for all NUM_DIM parameters for each walker
+    :rtype: numpy.array
+    """
+    return np.array(
+        [
+            get_gaussian_parameters(
+                param_min_vals=param_min_vals,
+                param_max_vals=param_max_vals,
                 redshift=redshift,
                 tau_var=tau_var,
                 use_variability=use_variability,

@@ -142,7 +142,19 @@ def run_mcmc(
     v_data, vFv_data, err_data = blazar_utils.read_data(configs["data_file"])
 
     # starting position, a numpy array with # of walkers rows and # of parameters columns
-    if eic_p0_from_std:
+    if configs["p0"] == "gaussian":
+        p0 = blazar_utils.random_gaussian(
+            configs["n_walkers"],
+            param_min_vals,
+            param_max_vals,
+            redshift=configs["redshift"],
+            tau_var=configs["tau_variability"],
+            use_variability=configs["use_variability"],
+            eic=eic,
+            fixed_params=configs["fixed_params"],
+        )
+        print("p0 from gaussian, read from an external file")
+    elif eic_p0_from_std:
         if p0_file is None and p0 is None:
             raise ValueError("eic_p0_from_std is True but no p0 source provided")
         if not eic:
@@ -366,7 +378,7 @@ def mcmc(
         f.write("configurations:\n")
         f.write(str(configs))
         f.write("\n\np0: ")
-        f.write(p0_label)
+        f.write(configs["p0"])
         f.write("\n")
 
     results = run_mcmc(
@@ -425,20 +437,9 @@ def main_cli():
     else:
         config_file = None
 
-    # label_p0 = "From local_results/3C66A_b5_no_eic_2022-07-20-19:42:07/backend.h5"
-    label_p0 = None
-    p0_values = None
-
-    # file_p0 = "local_results/TON_599_no_eic/backend.h5"
-    file_p0 = None
-    p0_eic_from_std = False
     sampler_result, results_directory = mcmc(
         config_file=config_file,
         use_param_file=False,
-        p0_label=label_p0,
-        p0=p0_values,
-        p0_file=file_p0,
-        eic_p0_from_std=p0_eic_from_std,
     )
 
     # in case of interrupted process, there may be leftovers in DATA_FOLDER, remove them
