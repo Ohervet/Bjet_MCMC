@@ -12,6 +12,9 @@ eic=False
 # Data file:
 data_file=real_data/J1010_SED_reduced.dat
 
+#starting point of the mcmc chain:
+p0=gaussian
+
 # Number of steps:
 n_steps=3600
 
