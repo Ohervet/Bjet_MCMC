@@ -72,8 +72,13 @@ if __name__ == "__main__":
         backend_file = input("Enter relative path to backend file: ")
 
     # example: local_results/J1010/J1010_2023-07-04-23:03:45/backend.h5
-    # local_results/J1010_2024-08-12-16:47:25/backend.h5
+    # local_results/BLLac_Claire/BLLac_2025-05-05-12:30:26/backend.h5
     folder = backend_file[: backend_file.rfind("/")]
+    
+    if not os.path.exists(FOLDER_PATH + folder):
+        print("Error: path to backend file not found.", file=sys.stderr)
+        # Terminate the script with an exit code indicating an error (e.g., 1)
+        sys.exit(1)
 
     if os.path.exists(FOLDER_PATH + folder + "/info.txt"):
         info = blazar_report.parse_info_doc(folder + "/info.txt")
@@ -215,7 +220,7 @@ if __name__ == "__main__":
     if boundaries == "default":
         ax.set_xlim(5e8, 1e28)
         new_min, new_max = blazar_plots.scale_to_values(
-            data[1], lower_adjust_multiplier=20, upper_adjust_multiplier=15
+            data[1], lower_adjust_multiplier=15, upper_adjust_multiplier=25
         )
         ax.set_ylim(new_min, new_max)
     else:

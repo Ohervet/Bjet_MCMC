@@ -238,7 +238,7 @@ def _get_path():
     if stop == -1:
         #raise Exception(PROGRAM_NAME + " is not in file path")
         print(PROGRAM_NAME + " is not in file path")
-    return base_path[: -len(MAIN_FOLDER)] + "/"
+    return base_path[: -len(MAIN_FOLDER)] #+ "/"
 
 
 if TMP:

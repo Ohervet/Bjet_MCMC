@@ -934,6 +934,11 @@ def chi_squared_from_model(model_results, v_data, vFv_data, err_data):
     # from v_all to vFv_all
     func = interpolate.interp1d(logv_all, logvFv_all, fill_value="extrapolate")
     func_nu_data = np.power(10, func(np.log10(v_data)))
+    
+    # code can break in the unlikely, but possible case when model = data for ULs
+    # add an tiny deviation to the model to avoid this case
+    spot_on =  func_nu_data - vFv_data == 0
+    func_nu_data += spot_on * np.full(len(func_nu_data),func_nu_data/1.0e4)
 
     diff = func_nu_data - vFv_data
     # check if model is above or below data flux points, True if above

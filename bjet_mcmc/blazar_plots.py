@@ -1905,6 +1905,7 @@ def plot_likelihood_profiles(
     fromatted_param_names = modelProperties(
         eic, fixed_params=fixed_params
     ).FORMATTED_PARAM_NAMES
+ 
 
     for j in range(len(best_params)):
         # test to plot likelihood profiles
@@ -1944,7 +1945,7 @@ def plot_likelihood_profiles(
                     prob_tmp = []
                     bin_min += binsize
                     bin_max += binsize
-
+        
         figure_name = "likelihood_" + param_names[j]
         plt.figure(figure_name)
         plt.plot(param_binned_mid, prob_max, ds="steps-mid", color="0")
@@ -1957,6 +1958,63 @@ def plot_likelihood_profiles(
         plt.ylim(0,max(prob_max)*1.2)
 
         if save:
-            plt.savefig(folder_path + "/" + figure_name + ".svg")
+            plt.savefig(folder_path + "/" + figure_name + ".pdf")
         if show:
             plt.show()
+            
+            
+        if j == 0:
+            param_binned_mid_prev = param_binned_mid[:]
+            prob_max_prev = prob_max[:]
+        #plot likelihood profiles as a corner plot
+        if j ==1:
+            f, axarr = plt.subplots(2,2, gridspec_kw={'width_ratios': [1,1], 'height_ratios': [1, 1]},figsize=(5,5))
+            
+            #treat axarr as an array, from left to right
+            #remove the plot in the upper-right corner
+            axarr[0,1].remove()
+            
+            #first panel:
+            # x histogram
+            axarr[0,0].plot(param_binned_mid_prev, prob_max_prev, ds="steps-mid", color="0")
+            axarr[0,0].axvline(best_params[j], color="r")
+            axarr[0,0].axvline(min_1sigma_params[j], color="b", ls="--")
+            axarr[0,0].axvline(max_1sigma_params[j], color="b", ls="--")
+            #axarr[0,0].set_ylabel(r"Likelihood", fontsize=13)
+            axarr[0,0].set_xlim(min_val, max_val)
+            axarr[0,0].set_ylim(0,max(prob_max)*1.2)
+            #remove the tick labels of the x axis of the histogram
+            axarr[0,0].set_xticks([])
+            
+            
+            
+            #second panel
+            #2d array with imshow
+            x, y = np.meshgrid(param_binned_mid, param_binned_mid)
+            # Compute the outer product
+            z = np.outer(prob_max_prev, prob_max)
+            axarr[1,0].imshow(z, origin='lower')
+            axarr[1,0].set_xlabel(str(fromatted_param_names[j]), fontsize=13)
+            # axarr[1].set_xlabel("x")
+            # axarr[1].set_ylabel("y")
+            # axarr[1].set_ylim(-9,9)
+            # axarr[1].set_xlim(-9,9)
+            
+            axarr[1,1].plot(param_binned_mid, prob_max, ds="steps-mid", color="0")
+            axarr[1,1].axvline(best_params[j], color="r")
+            axarr[1,1].axvline(min_1sigma_params[j], color="b", ls="--")
+            axarr[1,1].axvline(max_1sigma_params[j], color="b", ls="--")
+            axarr[1,1].set_xlabel(str(fromatted_param_names[j]), fontsize=13)
+            #axarr[1,1].set_ylabel(r"Likelihood", fontsize=13)
+            axarr[1,1].set_xlim(min_val, max_val)
+            axarr[1,1].set_ylim(0,max(prob_max)*1.2)
+            
+
+            
+            #remove space between figures
+            f.subplots_adjust(hspace = 0)
+            
+            if save:
+                plt.savefig(folder_path + "/" + "Likelihood_corner" + ".pdf")
+            if show:
+                plt.show()

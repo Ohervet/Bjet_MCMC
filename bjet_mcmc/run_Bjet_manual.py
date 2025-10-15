@@ -38,7 +38,7 @@ def e_to_v(val):
     return val / h
 
 
-Source = "J1010"
+Source = "B21811"
 
 #-----input files and plotting parameters-----#
 if Source == "J1010":
@@ -48,6 +48,14 @@ if Source == "J1010":
     jet = False
     parameter_file = "parameter_files/J1010.par"
     instrument_data_file = "real_data/J1010_SED_reduced.dat"
+    
+if Source == "B21811":
+    Ylim = [1e-15,1e-9] #erg cm-2 s-1
+    Xlim = [1e8,1e28] #Hz
+    eic = False
+    jet = False
+    parameter_file = "parameter_files/J1010.par"
+    instrument_data_file = "real_data/B21811+31_SED_flare_2020.dat"
 
 
 
@@ -208,49 +216,49 @@ for i in range(1,len(instrument_data)):
 legend1 = ax.legend(loc="upper center", ncol=4)
 ax.add_artist(legend1)
 
-p2 = []
-labels2 = []
-ax.plot(v_blob_sync, vFv_blob_sync, color=cmap(0), label=None, alpha=.7)
-labels2.append("Blob Sync. & SSC")
-p2.append(ax.plot(v_blob_ssc, vFv_blob_ssc, color=cmap(0), label="Blob Sync. & SSC", alpha=.7))
-p2[-1] = p2[-1][0]
-if max(vFv_blob_ssc2)>Ylim[0]:
-    labels2.append("Blob SSC 2nd order")
-    p2.append(ax.plot(v_blob_ssc2, vFv_blob_ssc2, color=cmap(0), label="Blob SSC 2nd order", alpha=.7, ls=':'))
-    p2[-1] = p2[-1][0]
-labels2.append("Disk")
-if eic:
-    p2.append(ax.plot(v_disk, vFv_disk, color=cmap(2), label="disk", alpha=.7, ls='-.'))
-    p2[-1] = p2[-1][0]
-    if max(vFv_eic_blr)>Ylim[0]:
-        labels2.append("EIC blob-BLR")
-        p2.append(ax.plot(v_eic_blr, vFv_eic_blr, color=cmap(9), label="EIC blob-BLR", alpha=.7, ls=(0, (3, 1, 1, 1))))
-        p2[-1] = p2[-1][0]
-if jet:
-    ax.plot(v_jet_sync, vFv_jet_sync, color='r', alpha=.7, ls=(0, (3, 1, 1, 1, 1, 1)))
-    labels2.append("Jet Sync. & SSC")
-    p2.append(ax.plot(v_jet_ssc, vFv_jet_ssc, color='r', label="Jet Sync. & SSC", alpha=.7, ls=(0, (3, 1, 1, 1, 1, 1))))
-    p2[-1] = p2[-1][0]
+# p2 = []
+# labels2 = []
+# ax.plot(v_blob_sync, vFv_blob_sync, color=cmap(0), label=None, alpha=.7)
+# labels2.append("Blob Sync. & SSC")
+# p2.append(ax.plot(v_blob_ssc, vFv_blob_ssc, color=cmap(0), label="Blob Sync. & SSC", alpha=.7))
+# p2[-1] = p2[-1][0]
+# if max(vFv_blob_ssc2)>Ylim[0]:
+#     labels2.append("Blob SSC 2nd order")
+#     p2.append(ax.plot(v_blob_ssc2, vFv_blob_ssc2, color=cmap(0), label="Blob SSC 2nd order", alpha=.7, ls=':'))
+#     p2[-1] = p2[-1][0]
+# labels2.append("Disk")
+# if eic:
+#     p2.append(ax.plot(v_disk, vFv_disk, color=cmap(2), label="disk", alpha=.7, ls='-.'))
+#     p2[-1] = p2[-1][0]
+#     if max(vFv_eic_blr)>Ylim[0]:
+#         labels2.append("EIC blob-BLR")
+#         p2.append(ax.plot(v_eic_blr, vFv_eic_blr, color=cmap(9), label="EIC blob-BLR", alpha=.7, ls=(0, (3, 1, 1, 1))))
+#         p2[-1] = p2[-1][0]
+# if jet:
+#     ax.plot(v_jet_sync, vFv_jet_sync, color='r', alpha=.7, ls=(0, (3, 1, 1, 1, 1, 1)))
+#     labels2.append("Jet Sync. & SSC")
+#     p2.append(ax.plot(v_jet_ssc, vFv_jet_ssc, color='r', label="Jet Sync. & SSC", alpha=.7, ls=(0, (3, 1, 1, 1, 1, 1))))
+#     p2[-1] = p2[-1][0]
     
-    labels2.append("EIC Blob-Jet")
-    p2.append(ax.plot(v_eic_jet, vFv_eic_jet, color=cmap(4), label="EIC blob-jet", alpha=.7, ls='--'))
-    p2[-1] = p2[-1][0]
+#     labels2.append("EIC Blob-Jet")
+#     p2.append(ax.plot(v_eic_jet, vFv_eic_jet, color=cmap(4), label="EIC blob-jet", alpha=.7, ls='--'))
+#     p2[-1] = p2[-1][0]
     
-    labels2.append("EIC Jet-Blob")
-    p2.append(ax.plot(v_jet_eic, vFv_jet_eic, color=cmap(5), label="EIC jet-blob", alpha=.7, ls='--'))
-    p2[-1] = p2[-1][0]
-    labels2.append("Sum")
-    p2.append(ax.plot(v_sum, vFv_sum, color='brown', alpha=.7))
-    p2[-1] = p2[-1][0]
+#     labels2.append("EIC Jet-Blob")
+#     p2.append(ax.plot(v_jet_eic, vFv_jet_eic, color=cmap(5), label="EIC jet-blob", alpha=.7, ls='--'))
+#     p2[-1] = p2[-1][0]
+#     labels2.append("Sum")
+#     p2.append(ax.plot(v_sum, vFv_sum, color='brown', alpha=.7))
+#     p2[-1] = p2[-1][0]
     
-if Source[:5] == "OJ287":
-    labels2.append("8.6 pc core Sync. & SSC")
-    p2.append(ax.plot(v_core_sync, vFv_core_sync, color='r', alpha=.7, ls=(0, (1, 1))))
-    p2[-1] = p2[-1][0]
-    ax.plot(v_core_SSC, vFv_core_SSC, color='r', alpha=.7, ls=(0, (1, 1)))
+# if Source[:5] == "OJ287":
+#     labels2.append("8.6 pc core Sync. & SSC")
+#     p2.append(ax.plot(v_core_sync, vFv_core_sync, color='r', alpha=.7, ls=(0, (1, 1))))
+#     p2[-1] = p2[-1][0]
+#     ax.plot(v_core_SSC, vFv_core_SSC, color='r', alpha=.7, ls=(0, (1, 1)))
 
-lines, labels = ax.get_legend_handles_labels()
-legend2 = ax.legend(handles=p2, loc='lower center', labels=labels2, ncol=3)
+# lines, labels = ax.get_legend_handles_labels()
+# legend2 = ax.legend(handles=p2, loc='lower center', labels=labels2, ncol=3)
 
 ax.loglog()
 ax.set_ylim(Ylim[0],Ylim[1])
