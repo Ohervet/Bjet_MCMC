@@ -16,7 +16,7 @@ You can adapt lines 40-60 with your chosen setup and inputs. You will need to ca
 
 Manual installation of bjet_core
 -------------------
-The following parts are for more advanced users who want to directly use the C++ code ``bjet_core''.
+The following parts are for more advanced users who want to use the C++ code ``bjet_core`` directly.
 
 The code is in the ``bjet_core`` folder. The necessary files are ``bj_core.cpp``, ``bj_core.h``, ``processes_supp_core.cpp``, and ``processes_supp_core.h``.
 
