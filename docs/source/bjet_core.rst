@@ -1,10 +1,22 @@
-bjet_core
+Running Bjet manually (bjet_core)
 =========
 
 ``bjet_core`` contains an updated version of the multi-zone Bjet code developed in `Hervet et al. (2015) <https://ui.adsabs.harvard.edu/abs/2015A%26A...578A..69H/abstract>`_. This is the physical core of Bjet_MCMC and can be run in standalone mode outside the MCMC frame.
 
-Manual installation
+run_Bjet_manual.py
 -------------------
+If you want to run Bjet manually in its variant forms (pure SSC, SSC+EIC, multi-zone SSC+EIC). It is advised to use the Python script ``run_Bjet_manual.py''. This script launches ``bjet_core'' with a given parameter file and plots the resulting SED (data + model).
+Any user can freely edit this script for their needs. This is especially useful for quick fit-by-eye processes, or to visualize the impact of parameters on the SED.
+
+You can adapt lines 40-60 with your chosen setup and inputs. You will need to call a parameter file, following the format of the example given in ``parameter_files/J1010.par''. The SED data file format is the same as for the general use of BJet_MCMC, with an example given in ``real_data/J1010_SED_reduced.dat''
+
+
+
+
+
+Manual installation of bjet_core
+-------------------
+The following parts are for more advanced users who want to directly use the C++ code ``bjet_core''.
 
 The code is in the ``bjet_core`` folder. The necessary files are ``bj_core.cpp``, ``bj_core.h``, ``processes_supp_core.cpp``, and ``processes_supp_core.h``.
 
