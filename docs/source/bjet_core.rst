@@ -72,9 +72,9 @@ Example of ``parameter_files/J1010.par``: ::
 **Some instructions for using a parameter file:**
 
 - Do not remove/add lines, do not change the order of parameters, this will crash the code.
-- You can activate/deactivate thermal EIC with the option ``compute_EIC_(0=NO___1=YES)`` and the extended SSC jet with ``compute_JET_(0=NO___1=YES)``
-- The torus and X-ray corona parameters are unsafe to use
-- I suggest not editing the Numerical_parameters, but you can increase the number of spectral points up to 200 if you want a smoother SED model (it will also take more time to compute)
+- You can activate/deactivate thermal EIC with the option ``compute_EIC_(0=NO___1=YES)`` and the extended SSC jet with ``compute_JET_(0=NO___1=YES)``.
+- The torus and X-ray corona parameters are unsafe to use.
+- I suggest not editing the Numerical_parameters, but you can increase the number of spectral points up to 200 if you want a smoother SED model (it will also take more time to compute).
 
 
 
