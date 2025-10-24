@@ -11,6 +11,71 @@ Any user can freely edit this script for their needs. This is especially useful 
 You can adapt lines 40-60 with your chosen setup and inputs. You will need to call a parameter file, following the format of the example given in ``parameter_files/J1010.par``. The SED data file format is the same as for the general use of BJet_MCMC, with an example given in ``real_data/J1010_SED_reduced.dat``
 
 
+Parameter file
+-------------------
+Example of ``parameter_files/J1010.par``: ::
+
+   ------------------------------------------------------------------------------ 
+   Transformation_parameters 
+   ------------------------------------------------------------------------------ 
+   0.143          redshift 
+   69.6           Hubble_constant______________________________________[km/(sMpc)] 
+   0.57           angle_to_the_line_of_sight___________________________[degrees] 
+   ------------------------------------------------------------------------------ 
+   Blob_parameters 
+   ------------------------------------------------------------------------------ 
+   8.38e+01        Doppler_factor 
+   4.24e+03        Particle_density_____________________________________[1/cm^3] 
+   2.56            First_slope_of_particle_energy_spectrum 
+   3.75            Second_slope_of_particle_energy_spectrum 
+   9.22            Minimum_electrons_energy 
+   1.99e+06        Maximum_electrons_energy 
+   2.13e+05        Break_in_electrons_energy_spectrum 
+   1.71e-03        Magnetic_field_______________________________________[G] 
+   1.40e+17        Radius_of_emitting_region____________________________[cm] 
+   0              length_of_emitting_region_(0_for_spherical_geometry)_[cm] 
+   1              absorption_by_EBL_(0=NO___1=YES) 
+   9.0e+17        distance_blob_SMBH_(host_galaxy_frame)_______________[cm] 
+   ------------------------------------------------------------------------------ 
+   Extern_Inverse_Compton_parameter 
+   ------------------------------------------------------------------------------ 
+   0              compute_EIC_(0=NO___1=YES) 
+   0              compute_X_corona_(0=NO___1=YES) 
+   4.0e+4         Disk_black_body_temperature__________________________[K] 
+   2.0e+4         Torus_black_body_temperature_________________________[K] 
+   3.0e+43        Luminosity_of_the_disk_______________________________[erg/s] 
+   9.0e-5         Tau___fraction_of_L_disk_reprocessed_isotropically 
+   5.5e+20        Luminosity_of_the_torus______________________________[erg/s] 
+   9.0e-5         Tau___fraction_of_L_tor_reprocessed_isotropically 
+   ------------------------------------------------------------------------------ 
+   Jet_parameters  
+   ------------------------------------------------------------------------------ 
+   0              compute_JET_(0=NO___1=YES) 
+   3.0            Doppler_factor 
+   1.0e+2         Initial_particle_density_____________________________[1/cm^3] 
+   2.1            Slope_of_particle_energy_spectrum 
+   1.0e+3         Minimum_electrons_energy 
+   2.0e+4         Maximum_electrons_energy 
+   0.08           Initial_magnetic_field_______________________________[G] 
+   1.2e+17        Inner_radius_(host_galaxy_frame)_____________________[cm] 
+   300            Jet_length_(host_galaxy_frame)_______________________[pc] 
+   1.0            Half-opening_angle_of_jet_(host_galaxy_frame)________[deg] 
+   50             number_of_slices 
+   ------------------------------------------------------------------------------ 
+   Numerical_parameters 
+   ------------------------------------------------------------------------------ 
+   99             number_of_spectral_points 
+   50000000.0        minimal_frequency____________________________________[Hz] 
+   1e+29        maximal_frequency____________________________________[Hz] 
+   test_bj        prefix_of_file_names 
+
+**Some instructions for using a parameter file:**
+
+- Do not remove/add lines, do not change the order of parameters, this will crash the code.
+- You can activate/deactivate thermal EIC with the option ``compute_EIC_(0=NO___1=YES)`` and the extended SSC jet with ``compute_JET_(0=NO___1=YES)``
+- The torus and X-ray corona parameters are unsafe to use
+- I suggest not editing the Numerical_parameters, but you can increase the number of spectral points up to 200 if you want a smoother SED model (it will also take more time to compute)
+
 
 
 
