@@ -5,7 +5,7 @@ Running Bjet manually (bjet_core)
 
 run_Bjet_manual.py
 -------------------
-If you want to run Bjet manually in its variant forms (pure SSC, SSC+EIC, multi-zone SSC+EIC). It is advised to use the Python script ``run_Bjet_manual.py``. This script launches ``bjet_core`` with a given parameter file and plots the resulting SED (data + model).
+If you want to run Bjet manually in its variant forms (pure SSC, SSC+EIC, multi-zone SSC+EIC), it is advised to use the Python script ``run_Bjet_manual.py``. This script launches ``bjet_core`` with a given parameter file and plots the resulting SED (data + model).
 Users can freely edit this script for their needs. This is especially useful for quick fit-by-eye processes, or to visualize the impact of parameters on the SED.
 
 You can adapt lines 40-60 with your chosen setup and inputs. You will need to call a parameter file, following the format of the example given in ``parameter_files/J1010.par``. The SED data file format is the same as for the general use of BJet_MCMC, with an example given in ``real_data/J1010_SED_reduced.dat``
