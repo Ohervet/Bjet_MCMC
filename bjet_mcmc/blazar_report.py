@@ -110,14 +110,14 @@ def min_max_params_1sigma(flat_data, flat_log_probs, eic=False, ndim=1):
     :return: A tuple containing the minimum values and maximum values within the 1-sigma contour.
     :rtype: tuple(array, array)
     """
-    n_dim = len(flat_data[0])
+    #n_dim = len(flat_data[0])
     indices_within_1sigma = get_indices_within_1sigma(
         flat_log_probs, eic=eic, ndim=ndim
     )
     mins = np.copy(flat_data[indices_within_1sigma[0]])
     maxes = np.copy(flat_data[indices_within_1sigma[0]])
     for i in range(len(indices_within_1sigma)):
-        for j in range(n_dim):
+        for j in range(len(flat_data[0])):
             val = flat_data[indices_within_1sigma[i]][j]
             if val < mins[j]:
                 mins[j] = val
@@ -281,6 +281,7 @@ def make_text_file(
         min_1sigma_params, max_1sigma_params = min_max_params_1sigma(
             flat_chain, log_probs, eic=eic, ndim=1
         )
+        
         min_1sigma_params_SED, max_1sigma_params_SED = min_max_params_1sigma(
             flat_chain, log_probs, eic=eic, ndim=modelProperties(eic).NUM_DIM
         )
@@ -638,6 +639,7 @@ def save_plots_and_info(
     min_1sigma_params, max_1sigma_params = min_max_params_1sigma(
         flat_chain, flat_log_probs, eic=eic
     )
+    
     indices_within_1sigma = get_indices_within_1sigma(
         flat_log_probs, eic=eic, ndim=modelProperties(eic).NUM_DIM
     )
@@ -681,7 +683,7 @@ def save_plots_and_info(
         redshift=redshift,
         eic=eic,
         lower_adjust_multiplier=20,
-        file_name=folder + "/model_and_data.svg",
+        file_name=folder + "/model_and_data.pdf",
         title=None,
         no_title=True,
         save=True,
@@ -695,11 +697,55 @@ def save_plots_and_info(
         min_1sigma_params,
         max_1sigma_params,
         configs["fixed_params"],
-        file_name=BASE_PATH + folder + "/particle_spectrum.svg",
+        file_name=BASE_PATH + folder + "/particle_spectrum.pdf",
         save=True,
         show=False,
     )
 
+
+    # This output is not easy to read, so not fully relevant. removed for now
+    # blazar_plots.plot_chain(chain, file_name=(folder + "/plot_of_chain.jpeg"), save=True, show=False,
+    #                         eic=eic)  # too much stuff for pdf
+    chi_squared_decay=blazar_plots.plot_chi_squared(
+        log_probs,
+        configs["discard"],
+        plot_type="med",
+        file_name=(folder + "/chi_squared_plot_med.pdf"),
+        save=True,
+        show=False,
+    )
+    blazar_plots.plot_chi_squared(
+        log_probs,
+        configs["discard"],
+        plot_type="best",
+        file_name=(folder + "/chi_squared_plot_best.pdf"),
+        save=True,
+        show=False,
+    )
+    blazar_plots.plot_chi_squared(
+        log_probs,
+        configs["discard"],
+        plot_type="all",
+        file_name=(folder + "/chi_squared_plot_all.png"),
+        save=True,
+        show=False,
+    )  # pdf is too big
+
+    blazar_plots.plot_cooling_times(
+        folder + "/bjet.log",
+        best_params,
+        fixed_params=configs["fixed_params"],
+        file_name=folder + "/cooling_time_obs(Thomson).pdf",
+        save=True,
+        show=False,
+        eic=eic,
+        redshift=redshift,
+    )
+    
+    if np.array_equal(max_1sigma_params, min_1sigma_params):
+        raise Exception("Not enough steps/walkers to estimate parameters uncertainties!!")
+    
+    
     blazar_plots.corner_plot(
         flat_chain,
         param_min_vals,
@@ -707,7 +753,7 @@ def save_plots_and_info(
         best_params,
         min_1sigma_params,
         max_1sigma_params,
-        file_name=folder + "/corner_plot.svg",
+        file_name=folder + "/mcmc_corner_plot.pdf",
         save=True,
         show=False,
         eic=eic,
@@ -725,44 +771,7 @@ def save_plots_and_info(
         eic=eic,
         folder_path=BASE_PATH + folder,
     )
-    # This output is not easy to read, so not fully relevant. removed for now
-    # blazar_plots.plot_chain(chain, file_name=(folder + "/plot_of_chain.jpeg"), save=True, show=False,
-    #                         eic=eic)  # too much stuff for svg
-    chi_squared_decay=blazar_plots.plot_chi_squared(
-        log_probs,
-        configs["discard"],
-        plot_type="med",
-        file_name=(folder + "/chi_squared_plot_med.svg"),
-        save=True,
-        show=False,
-    )
-    blazar_plots.plot_chi_squared(
-        log_probs,
-        configs["discard"],
-        plot_type="best",
-        file_name=(folder + "/chi_squared_plot_best.svg"),
-        save=True,
-        show=False,
-    )
-    blazar_plots.plot_chi_squared(
-        log_probs,
-        configs["discard"],
-        plot_type="all",
-        file_name=(folder + "/chi_squared_plot_all.jpeg"),
-        save=True,
-        show=False,
-    )  # svg is big
-
-    blazar_plots.plot_cooling_times(
-        folder + "/bjet.log",
-        best_params,
-        fixed_params=configs["fixed_params"],
-        file_name=folder + "/cooling_time_obs(Thomson).svg",
-        save=True,
-        show=False,
-        eic=eic,
-        redshift=redshift,
-    )
+    
     make_text_file(
         folder + "/info.txt",
         configs,
