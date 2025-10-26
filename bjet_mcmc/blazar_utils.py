@@ -220,7 +220,7 @@ def read_configs(config_file=None, config_string=None, verbose=False):
         "parallel",
         "use_variability",
         "redshift",
-        "custom_alpha2_limits",
+ #       "custom_alpha2_limits",
     ]
     optional_attributes = ["cores", "tau_variability", "description", "folder_label"]
     ssc_parameters = [
@@ -294,32 +294,32 @@ def read_configs(config_file=None, config_string=None, verbose=False):
         if "cores" in configurations:
             configurations["cores"] = int(configurations["cores"])
 
-        # set alpha2 limits
-        configurations["custom_alpha2_limits"] = configurations[
-            "custom_alpha2_limits"
-        ].split("=")
-        configurations["custom_alpha2_limits"] = configurations["custom_alpha2_limits"][
-            -1
-        ].split(",")
-        if (
-            configurations["custom_alpha2_limits"][0] == "True"
-            or configurations["custom_alpha2_limits"] == "true"
-        ):
-            if len(configurations["custom_alpha2_limits"]) < 3:
-                raise Exception(
-                    "custom_alpha2_limits True but insufficient alpha2 limits provided!"
-                )
-            alpha2_limits = [
-                float(configurations["custom_alpha2_limits"][1]),
-                float(configurations["custom_alpha2_limits"][2]),
-            ]
-            alpha2_limits.sort()
-            configurations["custom_alpha2_limits"] = True
-            print("alpha2 limits sets at", alpha2_limits)
-        else:
-            configurations["custom_alpha2_limits"] = False
-            alpha2_limits = default_alpha2_limits
-        configurations["alpha2_limits"] = alpha2_limits
+        ## set alpha2 limits
+        # configurations["custom_alpha2_limits"] = configurations[
+        #     "custom_alpha2_limits"
+        # ].split("=")
+        # configurations["custom_alpha2_limits"] = configurations["custom_alpha2_limits"][
+        #     -1
+        # ].split(",")
+        # if (
+        #     configurations["custom_alpha2_limits"][0] == "True"
+        #     or configurations["custom_alpha2_limits"] == "true"
+        # ):
+        #     if len(configurations["custom_alpha2_limits"]) < 3:
+        #         raise Exception(
+        #             "custom_alpha2_limits True but insufficient alpha2 limits provided!"
+        #         )
+        #     alpha2_limits = [
+        #         float(configurations["custom_alpha2_limits"][1]),
+        #         float(configurations["custom_alpha2_limits"][2]),
+        #     ]
+        #     alpha2_limits.sort()
+        #     configurations["custom_alpha2_limits"] = True
+        #     print("alpha2 limits sets at", alpha2_limits)
+        # else:
+        #     configurations["custom_alpha2_limits"] = False
+        #     alpha2_limits = default_alpha2_limits
+        # configurations["alpha2_limits"] = alpha2_limits
 
         # set up  fixed parameters
         if configurations["eic"]:
