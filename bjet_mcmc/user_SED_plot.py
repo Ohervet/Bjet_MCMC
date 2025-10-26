@@ -491,7 +491,7 @@ if __name__ == "__main__":
 
     plt.tight_layout()
     # plt.show()
-    plt.savefig(BASE_PATH + folder + "/user_plot_SED.svg")
+    plt.savefig(BASE_PATH + folder + "/user_plot_SED.pdf")
 
     if Full_outputs:
         blazar_report.save_plots_and_info(
