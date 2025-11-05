@@ -153,6 +153,7 @@ import glob
 import os
 import random
 import re
+import ast
 
 import numpy as np
 from scipy import interpolate
@@ -209,7 +210,7 @@ def read_configs(config_file=None, config_string=None, verbose=False):
     :rtype: dict
     """
 
-    default_alpha2_limits = [1.5, 7.5]
+    #default_alpha2_limits = [1.5, 7.5]
     attributes = [
         "eic",
         "data_file",
@@ -250,12 +251,18 @@ def read_configs(config_file=None, config_string=None, verbose=False):
                 if (
                     elements[0].strip() in attributes
                     or elements[0].strip() in optional_attributes
-                    or elements[0].strip() in ssc_parameters
-                    or elements[0].strip() in eic_parameters
-                ):  # determine if line with an attribute
+                ):
                     configurations[elements[0].strip()] = elements[1].strip()
+                if (
+                    elements[0].strip() in ssc_parameters
+                    or elements[0].strip() in eic_parameters
+                ):  
+                    #new, include parameter boundaries in the configurations
+                    tmp = ast.literal_eval(elements[2].strip())
+                    configurations[elements[0].strip()] = [elements[1].strip(), tmp]
+                    
     else:
-        inf = np.inf
+        #inf = np.inf
         configurations = eval(config_string)
 
     # check if all configs present
@@ -294,45 +301,29 @@ def read_configs(config_file=None, config_string=None, verbose=False):
         if "cores" in configurations:
             configurations["cores"] = int(configurations["cores"])
 
-        ## set alpha2 limits
-        # configurations["custom_alpha2_limits"] = configurations[
-        #     "custom_alpha2_limits"
-        # ].split("=")
-        # configurations["custom_alpha2_limits"] = configurations["custom_alpha2_limits"][
-        #     -1
-        # ].split(",")
-        # if (
-        #     configurations["custom_alpha2_limits"][0] == "True"
-        #     or configurations["custom_alpha2_limits"] == "true"
-        # ):
-        #     if len(configurations["custom_alpha2_limits"]) < 3:
-        #         raise Exception(
-        #             "custom_alpha2_limits True but insufficient alpha2 limits provided!"
-        #         )
-        #     alpha2_limits = [
-        #         float(configurations["custom_alpha2_limits"][1]),
-        #         float(configurations["custom_alpha2_limits"][2]),
-        #     ]
-        #     alpha2_limits.sort()
-        #     configurations["custom_alpha2_limits"] = True
-        #     print("alpha2 limits sets at", alpha2_limits)
-        # else:
-        #     configurations["custom_alpha2_limits"] = False
-        #     alpha2_limits = default_alpha2_limits
-        # configurations["alpha2_limits"] = alpha2_limits
-
         # set up  fixed parameters
         if configurations["eic"]:
             all_parameters = ssc_parameters + eic_parameters
         else:
             all_parameters = ssc_parameters
         configurations["fixed_params"] = [-np.inf] * len(all_parameters)
+        configurations["boundaries_params"] = []# [[-np.inf, np.inf]] * len(all_parameters)
         for i in range(len(all_parameters)):
-            if configurations[all_parameters[i]] != "null":
+            if configurations[all_parameters[i]][0] != "null":
                 configurations["fixed_params"][i] = float(
-                    configurations[all_parameters[i]]
+                    configurations[all_parameters[i]][0]
                 )
+            else:
+                configurations["boundaries_params"].append(configurations[all_parameters[i]][1])
+                tmp = configurations["boundaries_params"][-1]
+                if tmp[0] >= tmp[1]:
+                    raise Exception(f"Upper boundary of parameter {all_parameters[i]} ({tmp[1]}) must be above lower boundary ({tmp[0]})!")
             configurations.pop(all_parameters[i])
+        
+
+        #test parameter boundaries from config file
+        min_max_parameters(config_boundaries=configurations["boundaries_params"], eic=False, 
+                           fixed_params=configurations["fixed_params"])
 
     if verbose:
         # show parameters
@@ -756,12 +747,13 @@ def random_eic_from_std(
     return np.array(defaults)
 
 
-def min_max_parameters(alpha2_limits=None, eic=False, fixed_params=None):
+def min_max_parameters(config_boundaries=None, eic=False, fixed_params=None):
     """
-    Get the default minimum and maximum values for all the  parameters.
+    Get the minimum and maximum allowed values for all the  parameters.
 
-    :param alpha2_limits: A tuple of two values representing the lower and upper limits for the alpha2 parameter. Defaults to (1.5, 7.5).
-    :type alpha2_limits: tuple
+    :config_boundaries: values of the lower and upper limits for the parameters from the config file.
+    The list contains only the free parameters
+    :type config_boundaries: 2D list
     :param eic: A boolean value indicating whether to include extra parameters. Defaults to False.
     :type eic: bool
     :param fixed_params: A list of fixed parameter values to be removed from the parameter list. Defaults to None.
@@ -774,17 +766,17 @@ def min_max_parameters(alpha2_limits=None, eic=False, fixed_params=None):
             - :code:`[delta, K, n1, n2, gamma_min, gamma_max, gamma_break, B, R]`
             - with eic:  :code:`["delta", "K", "n_1", "n_2", "gamma_min", "gamma_max", "gamma_break", "B", "R", "bb_temp", "l_nuc", "tau", "blob_dist"]`
     """
-    if alpha2_limits is None or len(alpha2_limits) != 2:
-        alpha2_limits = (1.5, 7.5)
-    param_min_vals = [1.0, 0.0, 1.0, float(alpha2_limits[0]), 0.0, 3.0, 2.0, -4.0, 14.0]
-    param_max_vals = [100, 8.0, 5.0, float(alpha2_limits[1]), 5.0, 8.0, 7.0, 0.0, 19.0]
+    #these are the default boundaries for all parameters
+    param_min_vals = [1.0, 0.0, 1.0, 1.5, 0.0, 3.0, 2.0, -4.0, 14.0]
+    param_max_vals = [100, 8.0, 5.0, 7.5, 5.0, 8.0, 7.0, 0.0, 19.0]
     if eic:
         extra_min = [3.5, 40.0, -5.0, 15]
         extra_max = [6.0, 50.0, 0.0, 21.0]
         param_min_vals = param_min_vals + extra_min
         param_max_vals = param_max_vals + extra_max
-
-    # remove any frozen parameter from the parameter list
+               
+    
+    param_names = modelProperties(eic).PARAM_NAMES
     if fixed_params:
         fixed_params2 = fixed_params.copy()
         i = 0
@@ -793,8 +785,25 @@ def min_max_parameters(alpha2_limits=None, eic=False, fixed_params=None):
                 del param_min_vals[i]
                 del param_max_vals[i]
                 del fixed_params2[i]
+                del param_names[i]
             else:
                 i += 1
+                
+    #replace by config boundaries
+    #check if config boundaries are valid
+    if config_boundaries:
+        config_boundaries = np.array(config_boundaries)
+        #comparing boolean list / array is quite tricky in python
+        #the easiest is to use the "or" operator of C "|" when using np.arrays
+        mask = (config_boundaries[:,0] < np.array(param_min_vals)) | (config_boundaries[:,1] > np.array(param_max_vals))
+        if any(mask):          
+            index = list(mask).index(True)
+            raise Exception(f"Parameter {param_names[index]} boundaries [{config_boundaries[index,0],config_boundaries[index,1]}]  are outside the allowed range of {param_min_vals[index]} - {param_max_vals[index]} !")
+        else:
+            param_min_vals = list(config_boundaries[:,0])
+            param_max_vals = list(config_boundaries[:,1])                
+                
+                
     return np.array(param_min_vals), np.array(param_max_vals)
 
 
