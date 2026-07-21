@@ -1,4 +1,4 @@
-# Configuration file for running mcmc
+# Configuration file of Bjet-mcmc
 
 # description:
 description=J1010
@@ -12,23 +12,26 @@ eic=False
 # Data file:
 data_file=real_data/J1010_SED_reduced.dat
 
+# starting point of the mcmc chain: (default: random, other option: gaussian)
+p0=random
+
 # Number of steps:
-n_steps=3600
+n_steps=1000
 
 # Number of walkers:
 n_walkers=30
 
 # Discard number:
-discard = 200
+discard = 50
 
 # Parallel processing (True/False):
 parallel=True
 
-# If parallel processing, # of cores (will use # of cores - 1 if not specified)
+# If parallel processing, # of cores (will use # of available cores - 1 if not specified)
 cores=15
 
 # use tau variability (boolean):
-use_variability=False
+use_variability=True
 
 # tau variability (in hours):
 tau_variability = 24
@@ -36,22 +39,23 @@ tau_variability = 24
 # redshift
 redshift = 0.143
 
-# Custom alpha2 limits (True/False, <val1>, <val2>) val1 and val2 optional
-custom_alpha2_limits=False
 
-#to freeze a parameter to a given value, replace null by the values you want it to be frozen
-delta		= null	#       doppler factor                  linear
-K		= null	#       particle density [cm^-3]        log10
-n1		= null	#       first particle index            linear
-n2		= null	#       second particle index           linear
-gamma_min	= null	#       low-energy cutoff               log10
-gamma_max	= null	#       high-energy cutoff              log10
-gamma_break	= null	#       energy break                    log10
-B		= null	#       magnetic field strength [G]     log10
-R		= null	#       blob radius [cm]                log10
-#-----------------------------------------------------------------------#
-#-----------------------Additional params for EIC-----------------------#
-bb_temp		= null	#       Black body temp of disk [K]     log10
-l_nuc		= null	#       Nucleus luminosity [ergs/s]     log10
-tau		= null	#       Frac of luminosity scattered    log10
-blob_dist	= null	#       Distance of blob from SMBH[cm]  log10
+# to freeze a parameter to a given value, replace null by the values you want it to be frozen
+# custom parameter boundaries can only be narrower than the default range
+
+#parameter       #frozen value  #boundaries	#descrition			#scale
+delta		= null		= [1,100]	#Doppler factor                 linear
+K		= null		= [0,8]		#particle density [cm^-3]       log10
+n1		= null		= [1,5]		#first particle index           linear
+n2		= null		= [1.5,7.5]	#second particle index          linear
+gamma_min	= null		= [0,5]		#low-energy cutoff              log10
+gamma_max	= null		= [3,8]		#high-energy cutoff             log10
+gamma_break	= null		= [2,7]		#energy break                   log10
+B		= null		= [-4,0]	#magnetic field strength [G]    log10
+R		= null		= [14,19]	#blob radius [cm]               log10
+#-----------------------------------------------------------------------------------#
+#-----------------------Additional parameters for EIC-------------------------------#
+bb_temp		= null		= [3.5,6]	#Black body temp of disk [K]    log10
+l_nuc		= null		= [40,50]	#Nucleus luminosity [ergs/s]    log10
+tau		= null		= [-5,0]	#Frac of luminosity scattered   log10
+blob_dist	= null		= [15,21]	#Distance blob - SMBH [cm]	log10

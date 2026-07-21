@@ -243,11 +243,6 @@ if jet:
     p2.append(ax.plot(v_sum, vFv_sum, color='brown', alpha=.7))
     p2[-1] = p2[-1][0]
     
-if Source[:5] == "OJ287":
-    labels2.append("8.6 pc core Sync. & SSC")
-    p2.append(ax.plot(v_core_sync, vFv_core_sync, color='r', alpha=.7, ls=(0, (1, 1))))
-    p2[-1] = p2[-1][0]
-    ax.plot(v_core_SSC, vFv_core_SSC, color='r', alpha=.7, ls=(0, (1, 1)))
 
 lines, labels = ax.get_legend_handles_labels()
 legend2 = ax.legend(handles=p2, loc='lower center', labels=labels2, ncol=3)

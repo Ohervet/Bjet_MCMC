@@ -39,6 +39,7 @@ from matplotlib import pyplot as plt
 from scipy import interpolate
 from scipy import stats
 from scipy.optimize import curve_fit
+import matplotlib.colors as mcolors
 
 from bjet_mcmc import blazar_model
 from bjet_mcmc.blazar_properties import *
@@ -68,7 +69,7 @@ __all__ = [
 ]
 
 cmap = plt.get_cmap("tab10")
-image_type = "svg"
+image_type = "pdf"
 plt.ioff()
 
 
@@ -460,7 +461,7 @@ def corner_plot(
     title=None,
     no_title=False,
     param_names=None,
-    file_name=RESULTS_FOLDER + "/corner." + image_type,
+    file_name=RESULTS_FOLDER + "/mcmc_corner_plot." + image_type,
     save=False,
     show=True,
     dpi=300,
@@ -528,10 +529,21 @@ def corner_plot(
         ).FORMATTED_PARAM_NAMES
 
     min_maxes = []
+    
     for i in range(modelProperties(eic, fixed_params=fixed_params).NUM_DIM):
+        param_min_vals[i] = min(values[:,i])
+        param_max_vals[i] = max(values[:,i])
         #automatically rescale x axis if the parameter space is too narrow
-        custom_low = best_params[i]-5*(best_params[i]-sigma_below_params[i])
-        custom_high = best_params[i]+5*(sigma_above_params[i]-best_params[i])
+        sig_low = best_params[i]-sigma_below_params[i]
+        sig_high = sigma_above_params[i]-best_params[i]
+        sigma_max = max([sig_low,sig_high])
+        if sigma_max == sig_low:
+            custom_low = best_params[i]-3*sigma_max
+            custom_high = best_params[i]+2*(sig_low+sig_high)
+        else:
+            custom_low = best_params[i]-2*(sig_low+sig_high)
+            custom_high = best_params[i]+3*sigma_max
+            
         if param_min_vals[i] < custom_low:
             min_val = custom_low
         else:
@@ -540,7 +552,7 @@ def corner_plot(
             max_val = custom_high
         else:
             max_val = param_max_vals[i]
-        min_maxes.append([custom_low, custom_high])
+        min_maxes.append([min_val, max_val])
         
     
         
@@ -611,7 +623,7 @@ def plot_chain(
     :type chain: numpy.ndarray
     :param param_names: List of parameter names corresponding to the dimensions of the chain. Default is None.
     :type param_names: list, optional
-    :param file_name: The name of the file to save the plot as. Default is "chain.svg".
+    :param file_name: The name of the file to save the plot as. Default is "chain.pdf".
     :type file_name: str, optional
     :param save: Whether to save the plot to a file. Default is False.
     :type save: bool, optional
@@ -1039,7 +1051,7 @@ def plot_1sigma(
         if save:
             if file is None:
                 if descriptor != " extreme":
-                    plt.savefig(file_name + "png")  # too big for svg
+                    plt.savefig(file_name + "png")  # too big for pdf
                 else:
                     plt.savefig(file_name + image_type)
             else:
@@ -1318,7 +1330,7 @@ def plot_1sigma_plots(
     if save:
         if file is None:
             if descriptor != " extreme":
-                plt.savefig(file_name + "png")  # too big for svg
+                plt.savefig(file_name + "png")  # too big for pdf
             else:
                 plt.savefig(file_name + image_type)
         else:
@@ -1602,7 +1614,7 @@ def plot_particle_spectrum(
     min_1sigma_params,
     max_1sigma_params,
     fixed_params,
-    file_name=BASE_PATH + RESULTS_FOLDER + "/particle_spectrum.svg",
+    file_name=BASE_PATH + RESULTS_FOLDER + "/particle_spectrum." + image_type,
     save=False,
     show=True,
 ):
@@ -1679,7 +1691,7 @@ def plot_particle_spectrum(
     :type max_1sigma_params: numpy array (shape: (6,))
     :param fixed_params: List of user-fixed parameters. If no fixed parameters in simple SSC model: fixed_params = [-inf, -inf, -inf, -inf, -inf, -inf, -inf, -inf, -inf]
     :type fixed_params: numpy array (shape: (9,))
-    :param file_name: Absolute path and name for the saved plot.The default is BASE_PATH + RESULTS_FOLDER + "/particle_spectrum.svg".
+    :param file_name: Absolute path and name for the saved plot.The default is BASE_PATH + RESULTS_FOLDER + "/particle_spectrum.pdf".
     :type file_name: str
     :param save: Flag to save the plot of the particle spectrum. Default is False.
     :type save: bool
@@ -1688,7 +1700,8 @@ def plot_particle_spectrum(
     :return: None
     :rtype: None
 
-    This function plots the particle spectrum based on the given best-fit parameters, lower and upper bounds of the 1-sigma confidence interval, and fixed parameters. The plot is saved as an SVG file if the "save" flag is set to True. The plot is also displayed if the "show" flag is set to True.
+    This function plots the particle spectrum based on the given best-fit parameters, lower and upper bounds of the 1-sigma confidence interval, and fixed parameters. 
+    The plot is saved as an pdf file if the "save" flag is set to True. The plot is also displayed if the "show" flag is set to True.
     """
 
     # crate a list of particle spectrum parameters (free and fixed)
@@ -1801,7 +1814,7 @@ def plot_cooling_times(
     logfile,
     best_params,
     fixed_params,
-    file_name=RESULTS_FOLDER + "/cooling_times.svg",
+    file_name=RESULTS_FOLDER + "/cooling_times." + image_type,
     save=False,
     show=True,
     eic=False,
@@ -1818,7 +1831,7 @@ def plot_cooling_times(
     :type fixed_params: list
     :param file_name: The name of the output file.
     :type file_name: str
-    :param save: Whether to save the plot as an SVG file.
+    :param save: Whether to save the plot as an pdf file.
     :type save: bool
     :param show: Whether to display the plot.
     :type show: bool
@@ -1875,6 +1888,8 @@ def plot_likelihood_profiles(
     folder_path=BASE_PATH + RESULTS_FOLDER,
 ):
     """
+    Plot posterior likelihood profiles for all free parameters.
+    
     :param flat_samples: The flattened samples of the parameters obtained from the MCMC sampling.
     :type flat_samples: array-like
     :param flat_log_probs: The flattened log-probability values corresponding to the samples.
@@ -1899,64 +1914,188 @@ def plot_likelihood_profiles(
     :rtype: None
 
     """
-    # plot posterior likelihood profiles for all free parameters.
-
+    
     param_names = modelProperties(eic, fixed_params=fixed_params).PARAM_NAMES
-    fromatted_param_names = modelProperties(
+    formatted_param_names = modelProperties(
         eic, fixed_params=fixed_params
     ).FORMATTED_PARAM_NAMES
-
-    for j in range(len(best_params)):
+ 
+    
+    Ndim = len(best_params)
+    min_val = np.zeros(Ndim)
+    max_val = np.zeros(Ndim)
+    param_binned_mid = [0]*Ndim
+    prob_max = [0]*Ndim
+    for j in range(Ndim):
         # test to plot likelihood profiles
         param_array = flat_samples[:, j]
         # sort parameter with associated log_prob
         param_array, sorted_log_probs = zip(*sorted(zip(param_array, flat_log_probs)))
-        nbins = 40
+        nbins = 30
         #automatically rescale x axis if the parameter space is too narrow
         custom_low = best_params[j]-5*(best_params[j]-min_1sigma_params[j])
         custom_high = best_params[j]+5*(max_1sigma_params[j]-best_params[j])
         if param_array[0] < custom_low:
-            min_val = custom_low
+            min_val[j] = custom_low
         else:
-            min_val = param_array[0]
+            min_val[j] = param_array[0]
         if param_array[-1] > custom_high:
-            max_val = custom_high
+            max_val[j] = custom_high
         else:
-            max_val = param_array[-1]
-        Drange = max_val - min_val
+            max_val[j] = param_array[-1]
+        Drange = max_val[j] - min_val[j]
         binsize = Drange / (nbins - 1)
-        bin_min = min_val
+        bin_min = min_val[j]
         bin_max = bin_min + binsize
         prob_tmp = []
-        prob_max = []
+        prob_max[j] = []
         ln_prob_max = []
-        param_binned_mid = []
+        param_binned_mid[j] = []
         for i in range(len(param_array)):
-            if min_val <= param_array[i] <= max_val:
+            if min_val[j] <= param_array[i] <= max_val[j]:
                 if bin_min <= param_array[i] < bin_max:
                     prob_tmp.append(sorted_log_probs[i])
                 else:
                     if len(prob_tmp) == 0:
                         prob_tmp.append(-np.inf)
-                    prob_max.append(np.exp(max(prob_tmp)))
+                    prob_max[j].append(np.exp(max(prob_tmp)))
                     ln_prob_max.append(max(prob_tmp))
-                    param_binned_mid.append(bin_min + binsize / 2.0)
+                    param_binned_mid[j].append(bin_min + binsize / 2.0)
                     prob_tmp = []
                     bin_min += binsize
                     bin_max += binsize
-
+        
         figure_name = "likelihood_" + param_names[j]
         plt.figure(figure_name)
-        plt.plot(param_binned_mid, prob_max, ds="steps-mid", color="0")
+        plt.plot(param_binned_mid[j], prob_max[j], ds="steps-mid", color="0")
         plt.axvline(best_params[j], color="r")
         plt.axvline(min_1sigma_params[j], color="b", ls="--")
         plt.axvline(max_1sigma_params[j], color="b", ls="--")
-        plt.xlabel(str(fromatted_param_names[j]), fontsize=13)
+        plt.xlabel(str(formatted_param_names[j]), fontsize=13)
         plt.ylabel(r"Likelihood", fontsize=13)
-        plt.xlim(min_val, max_val)
-        plt.ylim(0,max(prob_max)*1.2)
+        plt.xlim(min_val[j], max_val[j])
+        plt.ylim(0,max(prob_max[j])*1.2)
 
         if save:
-            plt.savefig(folder_path + "/" + figure_name + ".svg")
+            plt.savefig(folder_path + "/" + figure_name + "." + image_type)
+        if show:
+            plt.show()
+            
+            
+    #plot likelihood profiles as a corner plot
+    Ndim = len(best_params)
+    f, axarr = plt.subplots(Ndim,Ndim, gridspec_kw={'width_ratios': [1]*Ndim, 'height_ratios': [1]*Ndim})
+    #treat axarr as an array, from left to right
+    lw = 0.8
+    if not eic:
+        f.set_size_inches(11, 10)
+    else:
+        f.set_size_inches(17, 17)
+    
+    if Ndim > 6:
+        f.subplots_adjust(top=0.97, bottom=0.08, left=0.07, right=0.88)
+    else:
+        f.subplots_adjust(top=0.96, bottom=0.11, left=0.1, right=0.9)
+        
+    #remove space between figures
+    f.subplots_adjust(hspace = 0, wspace = 0)
+    #binning of 2D plots
+    nbins2D = 15
+    #plot boundaries
+    extent = np.zeros((Ndim,2))
+    binsize = np.zeros(Ndim)
+    # for i in range(Ndim):
+    #     #rows
+    #     binsize[i] = (max_val[i] - min_val[i])/nbins2D
+    #     extent[i] = np.array([min_val[i], max_val[i]])
+    
+    for i in range(Ndim):
+        #rows 
+        binsize[i] = (max_val[i] - min_val[i])/nbins2D
+        extent[i] = np.array([min_val[i], max_val[i]])
+        for j in range(Ndim):
+            #columns
+            if j>i:
+                #remove the plot in the upper-right corner
+                axarr[i,j].remove()
+            
+            if j<i:
+                #make 2D histograms
+                array_2D = np.zeros((nbins2D,nbins2D))
+                min_val[i] = extent[i,0]
+                
+                #y axis
+                for k in range(nbins2D):
+                    max_val[i] = min_val[i]+binsize[i]
+                    mask_y = (flat_samples[:, i] >= min_val[i]) & (flat_samples[:, i] < max_val[i])
+                    min_val[i] = max_val[i]
+                    min_val[j] = extent[j,0]
+
+                    #x axis
+                    for l in range(nbins2D):
+                        max_val[j] = min_val[j]+binsize[j]
+                        mask_x = (flat_samples[:, j] >= min_val[j]) & (flat_samples[:, j] < max_val[j])
+                        min_val[j] = max_val[j]
+                        Full_mask = mask_y *mask_x
+                        flat_log_probs2 = flat_log_probs*Full_mask
+                        #replace 0s by -inf to find max logprobs (which is a negative value)
+                        flat_log_probs2[flat_log_probs2 == 0] = -np.inf
+                        max_prob = np.max(flat_log_probs2)
+                        array_2D[k,l] = np.exp(max_prob)
+                
+                #Plot 2D histograms
+                axij = axarr[i,j]
+                # axarr[1,0].imshow(array_2D, cmap='gray_r', origin="lower", extent=extent, 
+                #                        interpolation="nearest", aspect ="auto")
+                levels = list(np.linspace(array_2D.min(), array_2D.max(), 5))
+                
+                cmap_g = plt.get_cmap('gray_r', len(levels))
+                cmap_g.set_under("white")
+                full_ext = [extent[j,0], extent[j,1], extent[i,0], extent[i,1]]
+                axij.contourf(array_2D ,origin='lower', levels=levels, extent=full_ext,
+                                    cmap=cmap_g)
+                axij.contour(array_2D ,origin='lower', levels=levels, extent=full_ext,
+                                    cmap='gray_r',linewidths=0.8)
+                axij.axvline(best_params[j], color="r", ls=":",lw = lw) #x axis
+                axij.axhline(best_params[i], color="r", ls=":",lw = lw) #y axis
+                # axarr[1,0].set_aspect("auto")
+                if j != 0:
+                    axij.set_yticks([])
+                else:
+                    axij.set_ylabel(str(formatted_param_names[i]), fontsize=13)
+                if i != Ndim-1:
+                    axij.set_xticks([])
+                else:
+                    axij.set_xlabel(str(formatted_param_names[j]), fontsize=13)
+                    
+                    
+            
+            
+                
+        #1D histograms
+        axii = axarr[i,i]
+        #print(param_binned_mid[i], prob_max)
+        axii.plot(param_binned_mid[i], prob_max[i], ds="steps-mid", color="0",lw = lw)
+        axii.axvline(best_params[i], color="r",lw = lw)
+        axii.axvline(min_1sigma_params[i], color="b", ls="--",lw = lw)
+        axii.axvline(max_1sigma_params[i], color="b", ls="--",lw = lw)
+        axii.set_xlim(extent[i,0], extent[i,1])
+        axii.set_ylim(0,max(prob_max[i])*1.2)
+        #axii.tick_params(axis="both", labelsize=15)
+        best = "{:.3f}".format(best_params[i])
+        below = "{:.3f}".format(min_1sigma_params[i] - best_params[i])
+        above = "{:.3f}".format(max_1sigma_params[i] - best_params[i])
+        text = str(formatted_param_names[i]) + r" = $" + best + "^{" + above + "}_{" + below + "}$"
+        axii.set_title(text, loc="left", fontsize=13)
+        #remove the tick labels of the x axis of the histogram
+        axii.set_yticks([])
+        if i != Ndim-1:
+            axii.set_xticks([])
+        else:
+            axii.set_xlabel(str(formatted_param_names[i]), fontsize=13)
+            
+            
+        if save:
+            plt.savefig(folder_path + "/" + "Likelihood_corner_plot." + image_type)
         if show:
             plt.show()

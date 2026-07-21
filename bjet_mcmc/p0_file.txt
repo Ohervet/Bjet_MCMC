@@ -1,0 +1,14 @@
+  Parameter    Best_Value   low_bound   up_bound 
+    delta       51.7        41.5        66.0       
+      K         1.0e+04     5.2e+03     6.2e+04      
+     n_1        2.24        2.09        2.48       
+     n_2        4.32        4.20        4.68      
+  gamma_min     22.9        6.9         53.3        
+  gamma_max     7.5e+05     4.1e+05     2.3e+06         
+ gamma_break    9.1e+03     7.4e+03     1.1e+04       
+      B         2.7e-02     1.7e-02     4.7e-02   
+      R         3.8e+16     2.0e+16     5.2e+16
+   bb_temp      4.9e+04     1.2e+04     1.9e+05
+    l_nuc       8.6e+43     4.4e+40     2.6e+45
+     tau        1.9e-04     1.3e-05     1.9e-02  
+  blob_dist     1.8e+17     2.7e+15     7.8e+17

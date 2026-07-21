@@ -503,6 +503,27 @@ def process_model(
             )
     elif verbose:
         print("process_model SSC mode")
+ 
+    #this is very preliminary for NGC 1275 paper, I add the jet SSC and disk bb as a baseline
+    #okay if we can neglect any radiative interactions between the baseline and SSC blob
+    logv, logvFv, v, vFv = add_data(
+        (logv, logvFv, v, vFv),
+        file_suffix="syn_NGC1275",
+        name_stem="F_jet",
+        data_folder=data_folder,
+    )
+    logv, logvFv, v, vFv = add_data(
+        (logv, logvFv, v, vFv),
+        file_suffix="com_NGC1275",
+        name_stem="F_jet",
+        data_folder=data_folder,
+    )
+    logv, logvFv, v, vFv = add_data(
+        (logv, logvFv, v, vFv),
+        file_suffix="nuc",
+        name_stem="NGC1275",
+        data_folder=data_folder,
+    )
 
     return logv, logvFv, v, vFv
 
