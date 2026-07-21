@@ -262,7 +262,8 @@ def read_configs(config_file=None, config_string=None, verbose=False):
                     configurations[elements[0].strip()] = [elements[1].strip(), tmp]
                     
     else:
-        #inf = np.inf
+        #this is needed to recognize the 'inf' in the configuration file
+        inf = np.inf
         configurations = eval(config_string)
 
     # check if all configs present
@@ -322,8 +323,8 @@ def read_configs(config_file=None, config_string=None, verbose=False):
         
 
         #test parameter boundaries from config file
-        min_max_parameters(config_boundaries=configurations["boundaries_params"], eic=False, 
-                           fixed_params=configurations["fixed_params"])
+        #min_max_parameters(config_boundaries=configurations["boundaries_params"], eic=False, 
+         #                  fixed_params=configurations["fixed_params"])
 
     if verbose:
         # show parameters
@@ -452,6 +453,7 @@ def get_random_parameters(
     # ensures valid parameters
     parameter_size = param_max_vals - param_min_vals
     parameters = param_min_vals + parameter_size * np.random.rand(dim)
+    
 
     while not np.isfinite(
         log_prior(
@@ -768,7 +770,7 @@ def min_max_parameters(config_boundaries=None, eic=False, fixed_params=None):
     """
     #these are the default boundaries for all parameters
     param_min_vals = [1.0, 0.0, 1.0, 1.5, 0.0, 3.0, 2.0, -4.0, 14.0]
-    param_max_vals = [100, 8.0, 5.0, 7.5, 5.0, 8.0, 7.0, 0.0, 19.0]
+    param_max_vals = [100.0, 8.0, 5.0, 7.5, 5.0, 8.0, 7.0, 0.0, 19.0]
     if eic:
         extra_min = [3.5, 40.0, -5.0, 15]
         extra_max = [6.0, 50.0, 0.0, 21.0]
@@ -804,7 +806,7 @@ def min_max_parameters(config_boundaries=None, eic=False, fixed_params=None):
             param_max_vals = list(config_boundaries[:,1])                
                 
                 
-    return np.array(param_min_vals), np.array(param_max_vals)
+    return np.array(param_min_vals, dtype=np.float64), np.array(param_max_vals, dtype=np.float64)
 
 
 # probability functions ------------------------------------------------------------------------------------------------
@@ -845,7 +847,6 @@ def log_prior(
     :return: 0 if all parameters are valid: n1 > n2, g_min < g_max, all parameters are in range and otherwise -np.inf
     :rtype: float
     """
-
     if fixed_params:
         # reimplent fixed params
         for i in range(len(fixed_params)):
@@ -870,6 +871,7 @@ def log_prior(
         or gamma_break > gamma_max
     ):
         return -np.inf
+    
     # check if between min and max
     for i in range(len(params)):
         # gamma break is solely constrained by gamma_min and gamma_max

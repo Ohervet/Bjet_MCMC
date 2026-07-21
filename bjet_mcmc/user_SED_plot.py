@@ -40,7 +40,7 @@ plt.close()
 # -----FLAGS-----#
 
 # recreate all text files and plots outputs
-Full_outputs = True
+Full_outputs = False
 
 # user defined SED plot boundaries
 boundaries = "default"
@@ -72,7 +72,6 @@ if __name__ == "__main__":
         backend_file = input("Enter relative path to backend file: ")
 
     # example: local_results/J1010/J1010_2023-07-04-23:03:45/backend.h5
-    # local_results/BLLac_Claire/BLLac_2025-05-05-12:30:26/backend.h5
     folder = backend_file[: backend_file.rfind("/")]
     
     if not os.path.exists(FOLDER_PATH + folder):

@@ -330,11 +330,10 @@ def mcmc(
         folder_label = configs["folder_label"]
     data = blazar_utils.read_data(configs["data_file"])
     param_min_vals, param_max_vals = blazar_utils.min_max_parameters(
-        #alpha2_limits=configs["alpha2_limits"],
         eic=configs["eic"],
         fixed_params=configs["fixed_params"],
+        config_boundaries = configs["boundaries_params"]
     )
-
     # file is a folder with the data
     if directory is None:
         now = datetime.datetime.now()

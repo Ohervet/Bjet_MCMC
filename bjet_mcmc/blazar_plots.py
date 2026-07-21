@@ -529,10 +529,21 @@ def corner_plot(
         ).FORMATTED_PARAM_NAMES
 
     min_maxes = []
+    
     for i in range(modelProperties(eic, fixed_params=fixed_params).NUM_DIM):
+        param_min_vals[i] = min(values[:,i])
+        param_max_vals[i] = max(values[:,i])
         #automatically rescale x axis if the parameter space is too narrow
-        custom_low = best_params[i]-5*(best_params[i]-sigma_below_params[i])
-        custom_high = best_params[i]+5*(sigma_above_params[i]-best_params[i])
+        sig_low = best_params[i]-sigma_below_params[i]
+        sig_high = sigma_above_params[i]-best_params[i]
+        sigma_max = max([sig_low,sig_high])
+        if sigma_max == sig_low:
+            custom_low = best_params[i]-3*sigma_max
+            custom_high = best_params[i]+2*(sig_low+sig_high)
+        else:
+            custom_low = best_params[i]-2*(sig_low+sig_high)
+            custom_high = best_params[i]+3*sigma_max
+            
         if param_min_vals[i] < custom_low:
             min_val = custom_low
         else:
@@ -541,7 +552,7 @@ def corner_plot(
             max_val = custom_high
         else:
             max_val = param_max_vals[i]
-        min_maxes.append([custom_low, custom_high])
+        min_maxes.append([min_val, max_val])
         
     
         
