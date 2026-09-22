@@ -504,6 +504,7 @@ def process_model(
     elif verbose:
         print("process_model SSC mode")
 
+    return logv, logvFv, v, vFv
 
 def make_model(
     params,
