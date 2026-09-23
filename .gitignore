@@ -1,3 +1,7 @@
+# Bjet_MCMC files
+sed_calculations/
+local_results/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

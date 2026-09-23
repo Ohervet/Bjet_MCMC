@@ -227,18 +227,18 @@ def _get_path():
     """
     This function retrieves the base path of the current file and returns the path up to the main folder.
 
-    .. note:: This method should return __file__ from the location of the Bjet-MCMC repository root, and not the python install location in `site-packages`.
-
+    .. note::  This function assumes that the main folder is named "Bjet_MCMC" and is located in the current working directory path.
     :return: The base path up to the main folder.
     :rtype: str
     """
-    base_path = str(os.path.dirname(__file__))
-    # base_path = str(pathlib.Path().resolve())
-    stop = base_path.find(PROGRAM_NAME)
+    
+    base_path = os.getcwd()
+
+    stop = base_path.find("Bjet_MCMC")
     if stop == -1:
-        #raise Exception(PROGRAM_NAME + " is not in file path")
-        print(PROGRAM_NAME + " is not in file path")
-    return base_path[: -len(MAIN_FOLDER)] #+ "/"
+        raise RuntimeError("'Bjet_MCMC' is not in the current working directory path.")
+
+    return base_path[:stop] + "Bjet_MCMC/"
 
 
 if TMP:
