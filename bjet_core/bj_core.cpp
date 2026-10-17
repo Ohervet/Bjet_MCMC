@@ -111,6 +111,7 @@ namespace bj_core02 {
     int CASE_JET;
     int CASE_X;
     int CASE_EIC;
+    int elec_spec_model;
     const int EBLFLAG = 3; //!< 0: Kneiske et al. (2002,2004), 1: Franceschini (2008), 2: Finke (2010), 3: Franceschini (2017)
 
 // TIME VARIABLES
@@ -353,6 +354,17 @@ double I_JET	       = 0.0;
       return (K1 * gamma * gamma * exp(-2.0 * gamma / GAMMA_BRK));
     }
 
+    /**
+     * Calculates the electron energy distribution function using a simple power law.
+     *
+     *
+     * @param gamma The electron energy
+     * @return The value of the electron energy distribution function at the given energy
+     */
+    double N_e_PowLaw_Blob(double gamma) {
+      return K1 * pow(gamma, -N1);
+    }
+
 
 // Switch between different electron spectrum shapes
 /**
@@ -369,9 +381,16 @@ double I_JET	       = 0.0;
  */
     double N_e(double gamma) {
       double foo = 0.;
+      if (elec_spec_model == 1) {
+        foo = N_e_PowLaw_Blob(gamma);
+      } 
+      if (elec_spec_model == 2) {
+        foo = N_e_BknPowLaw(gamma);
+      }
       //foo=N_e_PileUp(gamma);
       //foo=N_e_SmoothBknPowLaw(gamma);
-      foo = N_e_BknPowLaw(gamma);
+      //foo = N_e_BknPowLaw(gamma);
+      //foo = N_e_PowLaw_Blob(gamma);
       return foo;
     }
 
@@ -463,7 +482,7 @@ double N_e_Jet(double gg) {
  * @param a The input parameter for the power-law function. Use 1 for particle density, 2 for energy density.
  * @return The calculated integral of the power-law function.
  */
-    double int_spec_b(int a) {
+    double int_spec_b_BknPowLaw(int a) {
       //use a = 1 for particle density, a = 2 for energy density
       if (N1 == a and N2 == a) {
         return K1 * ((log(GAMMA_BRK) - log(GAMMA_MIN)) + pow(GAMMA_BRK, N2 - N1) * (log(GAMMA_MAX) - log(GAMMA_BRK)));
@@ -479,6 +498,44 @@ double N_e_Jet(double gg) {
         return K1 * (1 / (a - N1) * (pow(GAMMA_BRK, a - N1) - pow(GAMMA_MIN, a - N1)) +
                      pow(GAMMA_BRK, (N2 - N1)) / (a - N2) * (pow(GAMMA_MAX, a - N2) - pow(GAMMA_BRK, a - N2)));
       }
+    }
+
+// simple power law (blob)
+/**
+ * Calculate the integral spectrum using a power law (blob).
+ *
+ * @param a The input parameter for the power-law function. Use 1 for particle density, 2 for energy density.
+ * @return The calculated integral of the power-law function.
+ */
+    double int_spec_b_PowLaw(int a) {
+      //use a = 1 for particle density, a = 2 for energy density
+      if (N1 == a) {
+        return K1 * (log(GAMMA_MAX) - log(GAMMA_MIN));
+      } else {
+        return K1 / (a - N1) * (pow(GAMMA_MAX, a - N1) - pow(GAMMA_MIN, a - N1));
+      }
+    }
+
+// Switch between different electron spectrum integrals
+/**
+ * @brief Calculates the integral of a power-law function for a given input parameter for the blob.
+ *
+ * This function calculates the integral of electrons in a given electron spectrum shape. It supports two different shapes: BknPowLaw and PowLaw.
+ *
+ * @param gamma The gamma value representing the energy of the electron.
+ * @return The integrated number of electrons in the given electron spectrum shape.
+ *
+ * @see int_spec_b_BknPowLaw
+ */
+    double int_spec_b(int a) {
+      double foo = 0.;
+      if (elec_spec_model == 1) {
+        foo = int_spec_b_PowLaw(a);
+      } 
+      if (elec_spec_model == 2) {
+        foo = int_spec_b_BknPowLaw(a);
+      }
+      return foo;
     }
 
 
@@ -573,6 +630,14 @@ double N_e_Jet(double gg) {
         if (DEBUG) fprintf(stderr, "%s\n", stmp);
         if (!fscanf(stream_par, "%s\n", stmp)) return 0;
         if (DEBUG) fprintf(stderr, "%s\n", stmp);
+
+        if (!fscanf(stream_par, "%lf  %s\n", &dtmp, stmp)) return 0;
+        if (DEBUG) fprintf(stderr, "%e  %s\n", dtmp, stmp);
+        if ((dtmp == 1.0) || (dtmp == 2)) elec_spec_model = dtmp;
+        else {
+          fprintf(stderr, "wrong value of electron spectrum: %e (1 or 2) !!!\n", dtmp);
+          return 0;
+        }
 
         if (!fscanf(stream_par, "%lf  %s\n", &dtmp, stmp)) return 0;
         if (DEBUG) fprintf(stderr, "%e  %s\n", dtmp, stmp);
@@ -960,7 +1025,18 @@ double N_e_Jet(double gg) {
 
       // -------------------------------------------------------------------------------------------------------
 
-      // blob params--doppler factor, particle density, slope1, slope2, gamma min, gamma max, gamma break, magnetic field strength,
+
+     //elec_spec_model
+      //int tmp_espec = static_cast<int>(atof(list[list_index++]));
+      int tmp_espec = atoi(list[list_index++]);
+      if ((tmp_espec == 1) || (tmp_espec == 2))
+        elec_spec_model = tmp_espec;
+        else {
+          fprintf(stderr, "wrong value of electron spectrum: %e (1 or 2) !!!\n", tmp_espec);
+          return 0;
+      }
+
+      // blob params-- doppler factor, particle density, slope1, slope2, gamma min, gamma max, gamma break, magnetic field strength,
       //    radius, emitting length, absorption level, blob distance
       for (int i = 0; i < 10; ++i) {
         tmp[i] = atof(list[list_index]);
@@ -1044,7 +1120,7 @@ double N_e_Jet(double gg) {
       if (tmp_iir >= 0 && tmp_iir <= 1)
         IIR_level = tmp_iir;
       else {
-        fprintf(stderr, "wrong value of absorption level by\ninfrared intergalactic background: %d (0...1) !!!\n",
+        fprintf(stderr, "wrong value of absorption level by\ninfrared intergalactic background: %d (0 or 1) !!!\n",
                 tmp_iir);
         return 0;
       }
@@ -1113,7 +1189,7 @@ double N_e_Jet(double gg) {
           return 0;
         }
       }
-
+      
       // -------------------------------------------------------------------------------------------------------
 
       // numerical parameters--number of pts, min freq, max freq, file prefix
@@ -1141,13 +1217,13 @@ double N_e_Jet(double gg) {
         fprintf(stderr, "wrong value of maximum frequency: %e (1.0e+11...1.0e+35 [Hz]) !!!\n", tmp_max);
         return 0;
       }
-
+      
       // get file_prefix
       sprintf(prefix, "%s", list[list_index]);
       // we're done and it worked!
       return 1;
     }
-
+    
     /**
      * @brief Executes the run_models function.
      *
@@ -3694,7 +3770,7 @@ int main(int argc, char **argv) {
       strcpy(DATA_DIRECTORY, argv[2]);
       strcpy(PARA_FN, argv[3]);
       if (load_params(PARA_FN)); else return 2;
-    } else if (argc >= 22) { // called with command line args
+    } else if (argc >= 23) { // called with command line args
       int index = 2;
       // set data folder if necessary
       if (input_type >= 2) {
@@ -3712,11 +3788,11 @@ int main(int argc, char **argv) {
         return 2;
       }
       // check if right number of args for model type
-      if (model_type == 0 && ((input_type < 2 && argc != 22) || (input_type >= 2 & argc != 23))) {
+      if (model_type == 0 && ((input_type < 2 && argc != 23) || (input_type >= 2 & argc != 24))) {
         std::cerr << "Incorrect number of parameters for model.\n";
         return 2;
       }
-      if (model_type == 1 && ((input_type < 2 && argc != 28) || (input_type >= 2 & argc != 29))) {
+      if (model_type == 1 && ((input_type < 2 && argc != 29) || (input_type >= 2 & argc != 30))) {
         std::cerr << "Incorrect number of parameters for model.\n";
         return 2;
       }
