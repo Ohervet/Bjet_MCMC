@@ -1,4 +1,4 @@
-# Configuration file of Bjet-mcmc
+# Configuration file of Bjet_MCMC
 
 # description:
 description=J1010
@@ -16,13 +16,13 @@ data_file=real_data/J1010_SED_reduced.dat
 p0=random
 
 # Number of steps:
-n_steps=1000
+n_steps=5000
 
 # Number of walkers:
-n_walkers=30
+n_walkers=45
 
 # Discard number:
-discard = 50
+discard = 200
 
 # Parallel processing (True/False):
 parallel=True
@@ -31,7 +31,7 @@ parallel=True
 cores=15
 
 # use tau variability (boolean):
-use_variability=True
+use_variability=False
 
 # tau variability (in hours):
 tau_variability = 24
@@ -39,12 +39,16 @@ tau_variability = 24
 # redshift
 redshift = 0.143
 
+# electron spectrum: (default: broken_pwl, other option: pwl)
+#note that for pwl, the parameters n2 and gamma_break are ignored
+elec_spec = broken_pwl
+
 
 # to freeze a parameter to a given value, replace null by the values you want it to be frozen
 # custom parameter boundaries can only be narrower than the default range
 
 #parameter       #frozen value  #boundaries	#descrition			#scale
-delta		= null		= [1,100]	#Doppler factor                 linear
+delta		= null		= [1,5.76]	#Doppler factor                 linear
 K		= null		= [0,8]		#particle density [cm^-3]       log10
 n1		= null		= [1,5]		#first particle index           linear
 n2		= null		= [1.5,7.5]	#second particle index          linear
