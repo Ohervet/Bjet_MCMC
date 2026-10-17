@@ -106,6 +106,7 @@ def run_mcmc(
     :return: The sampler object containing information about the MCMC run, and the duration of the run as a string (string of how long the MCMC took in hh:mm:ss.ssssss).
     :rtype:  tuple(emcee.EnsembleSampler, time)
     """
+    
     if configs["parallel"]:
         if "cores" not in configs:
             pool = multiprocessing.Pool()
@@ -230,11 +231,18 @@ def run_mcmc(
             fixed_params=configs["fixed_params"],
         )
         print("p0 from random")
-        for i in range(len(configs["fixed_params"])):
-            if configs["fixed_params"][i] != -np.inf and configs["eic"]:
-                print(EIC_PARAM_NAMES[i], "is fixed at", configs["fixed_params"][i])
-            elif configs["fixed_params"][i] != -np.inf:
-                print(SSC_PARAM_NAMES[i], "is fixed at", configs["fixed_params"][i])
+        
+    if configs["elec_spec"] == 1:
+        print("electron spectrum: simple power law")
+        print("parameters gamma_brk and n2 will be ignored")
+            
+    for i in range(len(configs["fixed_params"])):
+        if configs["fixed_params"][i] != -np.inf and configs["eic"]:
+            print(EIC_PARAM_NAMES[i], "is fixed at", configs["fixed_params"][i])
+        elif configs["fixed_params"][i] != -np.inf:
+            print(SSC_PARAM_NAMES[i], "is fixed at", configs["fixed_params"][i])
+                
+
     # create sampler
     sampler = emcee.EnsembleSampler(
         configs["n_walkers"],
@@ -248,6 +256,7 @@ def run_mcmc(
             "tau_var": configs["tau_variability"],
             "use_variability": configs["use_variability"],
             "redshift": configs["redshift"],
+            "elec_spec": configs["elec_spec"],
             "min_freq": min_freq,
             "max_freq": max_freq,
             "prev_files": prev_files,
@@ -264,7 +273,7 @@ def run_mcmc(
         moves=[(emcee.moves.StretchMove(a=2, live_dangerously=True), 1.0)],
         pool=pool,
     )
-
+    
     # moves set up by default moves=[(emcee.moves.StretchMove(live_dangerously=True), 1.)]
     # can try different moves to better probe the parameter space, but no real improvement so far after several tries
     # https://emcee.readthedocs.io/en/stable/user/moves/#moves-user
@@ -319,6 +328,11 @@ def mcmc(
     :rtype: tuple
     """
     configs = blazar_utils.read_configs(config_file=config_file)
+    
+    #test defining global variables (could do it for mlost of config inputs)
+    global elec_spec
+    elec_spec = configs["elec_spec"]
+    
 
     if description is None and "description" in configs:
         description = configs["description"]

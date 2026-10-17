@@ -221,7 +221,7 @@ def read_configs(config_file=None, config_string=None, verbose=False):
         "parallel",
         "use_variability",
         "redshift",
- #       "custom_alpha2_limits",
+        "elec_spec",
     ]
     optional_attributes = ["cores", "tau_variability", "description", "folder_label"]
     ssc_parameters = [
@@ -291,7 +291,23 @@ def read_configs(config_file=None, config_string=None, verbose=False):
             )
         else:
             configurations["eic"] = False
+            
+        if configurations["eic"]:
+            all_parameters = ssc_parameters + eic_parameters
+        else:
+            all_parameters = ssc_parameters
+            
+            
+        if configurations["elec_spec"] == "pwl":
+            configurations["elec_spec"] = int(1)
+            #quick and dirty: for eec simple pwl, just fix n2 and g_brk to not have them in results
+            #Need to fully remove them in a further version
+            configurations[all_parameters[3]][0] = "3"
+            configurations[all_parameters[6]][0] = "3"
+        if configurations["elec_spec"] == "broken_pwl":
+            configurations["elec_spec"] = int(2)
 
+        
         if configurations["use_variability"]:
             configurations["tau_variability"] = float(configurations["tau_variability"])
             if "tau_variability" not in configurations:
@@ -303,10 +319,6 @@ def read_configs(config_file=None, config_string=None, verbose=False):
             configurations["cores"] = int(configurations["cores"])
 
         # set up  fixed parameters
-        if configurations["eic"]:
-            all_parameters = ssc_parameters + eic_parameters
-        else:
-            all_parameters = ssc_parameters
         configurations["fixed_params"] = [-np.inf] * len(all_parameters)
         configurations["boundaries_params"] = []# [[-np.inf, np.inf]] * len(all_parameters)
         for i in range(len(all_parameters)):
@@ -975,6 +987,7 @@ def chi_squared(
     name_stem=None,
     theta=None,
     redshift=None,
+    elec_spec=None,
     min_freq=None,
     max_freq=None,
     torus_temp=None,
@@ -1053,11 +1066,13 @@ def chi_squared(
     :return: The chi-squared value for the model.
     :rtype: float
     """
+    
     model_results = blazar_model.make_model(
         params,
         name_stem=name_stem,
         theta=theta,
         redshift=redshift,
+        elec_spec=elec_spec,
         min_freq=min_freq,
         max_freq=max_freq,
         torus_temp=torus_temp,
@@ -1074,7 +1089,7 @@ def chi_squared(
         verbose=verbose,
         eic=eic,
     )
-
+    
     return chi_squared_from_model(model_results, v_data, vFv_data, err_data)
 
 
@@ -1109,6 +1124,7 @@ def log_probability(
     param_max_vals=None,
     theta=None,
     redshift=None,
+    elec_spec=None,
     tau_var=None,
     use_variability=True,
     min_freq=None,
@@ -1202,6 +1218,7 @@ def log_probability(
     :return: The log-likelihood value. -0.5 * chi squared value
     :rtype: float
     """
+    
     # all frozen parameters need to be reimplemented for the likelihood computation
     if fixed_params:
         for i in range(len(fixed_params)):
@@ -1231,6 +1248,7 @@ def log_probability(
         parameter_file = PARAMETER_FOLDER + "/" + name_stem + ".txt"
     if command_params_2 is not None:
         command_params_2[-1] = name_stem  # change the file stem
+    
     result = -0.5 * chi_squared(
         params,
         v_data,
@@ -1239,6 +1257,7 @@ def log_probability(
         name_stem=name_stem,
         theta=theta,
         redshift=redshift,
+        elec_spec=elec_spec,
         min_freq=min_freq,
         max_freq=max_freq,
         torus_temp=torus_temp,
@@ -1255,6 +1274,7 @@ def log_probability(
         verbose=verbose,
         eic=eic,
     )
+    
     if use_param_file:
         os.remove(parameter_file)
 

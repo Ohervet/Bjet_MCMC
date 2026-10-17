@@ -102,6 +102,7 @@ def make_SED(
     name_stem=None,
     theta=None,
     redshift=None,
+    elec_spec=None,
     min_freq=None,
     max_freq=None,
     torus_temp=None,
@@ -155,6 +156,8 @@ def make_SED(
     :param folder: Additional folder information; default is None.
     :type folder: str, optional
     """
+    
+    
     # TODO rewrite this entire method using bj_core methods and without building a command string.
     if executable is None:
         executable = CPP_FOLDER + "/" + EXECUTABLE
@@ -168,6 +171,7 @@ def make_SED(
             command_params_1, command_params_2 = command_line_sub_strings(
                 name_stem=name_stem,
                 theta=theta,
+                elec_spec=elec_spec,
                 redshift=redshift,
                 min_freq=min_freq,
                 max_freq=max_freq,
@@ -444,7 +448,7 @@ def process_model(
     :rtype: tuple of numpy arrays
 
     """
-
+    
     if name_stem is None:
         name_stem = NAME_STEM
     if data_folder is None:
@@ -466,7 +470,7 @@ def process_model(
             + name_stem
             + "_*.dat cannot be read"
         )
-
+    
     # extract data used - only use frequency and energy flux, which are the 1st
     # and 3rd columns
     logv_synchrotron = synchrotron_model[:, 0]
@@ -503,36 +507,15 @@ def process_model(
             )
     elif verbose:
         print("process_model SSC mode")
- 
-    #this is very preliminary for NGC 1275 paper, I add the jet SSC and disk bb as a baseline
-    #okay if we can neglect any radiative interactions between the baseline and SSC blob
-    logv, logvFv, v, vFv = add_data(
-        (logv, logvFv, v, vFv),
-        file_suffix="syn_NGC1275",
-        name_stem="F_jet",
-        data_folder=data_folder,
-    )
-    logv, logvFv, v, vFv = add_data(
-        (logv, logvFv, v, vFv),
-        file_suffix="com_NGC1275",
-        name_stem="F_jet",
-        data_folder=data_folder,
-    )
-    logv, logvFv, v, vFv = add_data(
-        (logv, logvFv, v, vFv),
-        file_suffix="nuc",
-        name_stem="NGC1275",
-        data_folder=data_folder,
-    )
 
     return logv, logvFv, v, vFv
-
 
 def make_model(
     params,
     name_stem=None,
     theta=None,
     redshift=None,
+    elec_spec=None,
     min_freq=None,
     max_freq=None,
     torus_temp=None,
@@ -628,6 +611,7 @@ def make_model(
     :return: The computed model.
     :rtype: numpy.ndarray
     """
+    
     if use_param_file:
         if eic:
             raise ValueError("EIC mode cannot be used with parameter file")
@@ -646,11 +630,13 @@ def make_model(
         for i in range(len(fixed_params)):
             if fixed_params[i] != -np.inf:
                 params = np.insert(params, i, fixed_params[i])
+    
     make_SED(
         params,
         name_stem=name_stem,
         theta=theta,
         redshift=redshift,
+        elec_spec=elec_spec,
         min_freq=min_freq,
         max_freq=max_freq,
         torus_temp=torus_temp,
@@ -666,6 +652,7 @@ def make_model(
         eic=eic,
         folder=folder,
     )
+    
     return process_model(name_stem=name_stem, data_folder=data_folder, eic=eic)
 
 
@@ -673,6 +660,7 @@ def command_line_sub_strings(
     name_stem=None,
     theta=None,
     redshift=None,
+    elec_spec=None,
     min_freq=None,
     max_freq=None,
     data_folder=None,
@@ -707,6 +695,8 @@ def command_line_sub_strings(
     if redshift is None:
         print("here in command_line_sub_strings")
         pass
+    if elec_spec is None:
+        elec_spec = "2"
     if min_freq is None:
         min_freq = 1.0e08
     if max_freq is None:
@@ -718,7 +708,7 @@ def command_line_sub_strings(
     else:
         p = "3"
 
-    # input type, data file, model specification, redshift, hubble const, angle
+    # input type, data file, model specification, redshift, hubble const, angle, electron spectrum model
     if eic:
         model_type = "1"
     else:
@@ -730,8 +720,10 @@ def command_line_sub_strings(
         str(redshift),
         "69.6",
         str(theta),
+        elec_spec
     ]
 
+    
     # length of emitting region, absorption by EBL, distance of blob (host galaxy frame)
     # number of spectral points, minimal frequency, maximal frequency, file name prefix
     constant_and_numerical = [
